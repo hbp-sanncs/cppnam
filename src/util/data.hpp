@@ -16,6 +16,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
+#ifndef CPPNAM_UTIL_DATA_HPP
+#define CPPNAM_UTIL_DATA_HPP
+
 #include <armadillo>
 #include <cstdint>
 #include <functional>
@@ -129,3 +134,5 @@ public:
 	bool unique() const { return m_unique; }
 };
 }
+
+#endif /* CPPNAM_UTIL_DATA_HPP */
