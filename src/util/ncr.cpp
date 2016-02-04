@@ -53,17 +53,11 @@ static IntType ncr_clamped(int n, int r)
 	static constexpr double log_max = std::log(max);
 
 	// Special case handling
-	if ((n < 0) || (n < r)) {
+	if ((n < 0) || (n < r) || (r < 0)) {
 		return 0;
 	}
 	if ((n == r) || (r == 0)) {
 		return 1;
-	}
-
-	// Check the lower bound for nCr >= (n/r)^r
-	const double lower_bound = r * std::log(n / float(r));
-	if (lower_bound > log_max) {
-		return max;
 	}
 
 	// Use lgamma provided by lnnccr to calculate the result
