@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 	}
 
 	// Generate the requested data
-	std::cerr << "Generating data..." << std::endl ;
+	std::cerr << "Generating data..." << std::endl;
 	auto data =
 	    DataGenerator().generate(n_bits, n_ones, n_samples, show_progress);
 	std::cerr << std::endl;
@@ -101,4 +101,3 @@ int main(int argc, char *argv[])
 	}
 	return 0;
 }
-
