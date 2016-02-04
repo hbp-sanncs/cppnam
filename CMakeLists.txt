@@ -23,12 +23,21 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
+enable_testing()
 find_package(Armadillo REQUIRED)
+find_package(GTest REQUIRED)
 
-include_directories(src/ ${ARMADILLO_INCLUDE_DIRS})
+include_directories(
+	src/
+	${ARMADILLO_INCLUDE_DIRS}
+	${GTEST_INCLUDE_DIRS}
+)
 
 add_library(cppnam_util
 	src/util/data
+	src/util/entropy
+	src/util/parameters
+	src/util/optimisation
 	src/util/ncr
 )
 
@@ -39,3 +48,14 @@ add_executable(data_generator_cli
 )
 
 target_link_libraries(data_generator_cli cppnam_util)
+
+add_executable(cppnam_test
+	test/util/test_ncr
+)
+
+target_link_libraries(cppnam_test
+	cppnam_util
+	${GTEST_BOTH_LIBRARIES}
+)
+
+add_test(cppnam_test cppnam_test)
