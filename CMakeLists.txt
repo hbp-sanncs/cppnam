@@ -34,6 +34,7 @@ include_directories(
 )
 
 add_library(cppnam_util
+	src/util/comperator
 	src/util/data
 	src/util/entropy
 	src/util/parameters
@@ -49,13 +50,14 @@ add_executable(data_generator_cli
 
 target_link_libraries(data_generator_cli cppnam_util)
 
-add_executable(cppnam_test
+add_executable(cppnam_test_util
 	test/util/test_ncr
+	test/util/test_comperator
 )
 
-target_link_libraries(cppnam_test
+target_link_libraries(cppnam_test_util
 	cppnam_util
 	${GTEST_BOTH_LIBRARIES}
 )
 
-add_test(cppnam_test cppnam_test)
+add_test(cppnam_test_util cppnam_test_util)
