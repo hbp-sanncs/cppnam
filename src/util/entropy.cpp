@@ -23,7 +23,25 @@
 
 namespace nam {
 
+double expected_false_positives(const DataParameters &params) {
+  size_t N = params.sample();
+  double p = double(params.ones_in() * params.ones_out()) /
+             double(params.bits_in() * params.bits_out());
+  return ((params.bits_out() - params.ones_out()) *
+          std::pow(1.0 - std::pow(1.0 - p, N), params.ones_in()));
+}
 
+double expected_entropy(const DataParameters &params) {
+  return entropy_hetero_uniform(params, expected_false_positives(params));
+}
 
-
+double entropy_hetero_uniform(const DataParameters &params,
+                              double false_positives) {
+  double res = 0;
+  for (size_t i = 0; i < params.ones_out(); i++) {
+    res += std::log2((params.bits_out() - i) /
+                     (params.ones_out() + false_positives - i));
+    return res * params.samples();
+  }
+}
 }
