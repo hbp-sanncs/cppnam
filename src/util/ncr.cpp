@@ -23,13 +23,26 @@
 
 namespace nam {
 
-
+static int handle_special_case(int n, int r)
+{
+	// Special case handling
+	if ((n < 0) || (n < r) || (r < 0)) {
+		return 0;
+	}
+	if ((n == r) || (r == 0)) {
+		return 1;
+	}
+	return -1;
+}
 
 uint64_t ncr(int n, int r)
 {
 	// Special case handling
-	if ((n < 0) || (n < r)) {
-		return 0;
+	{
+		int res = handle_special_case(n, r);
+		if (res >= 0) {
+			return res;
+		}
 	}
 
 	// Take the shorter path
@@ -53,11 +66,11 @@ static IntType ncr_clamped(int n, int r)
 	static constexpr double log_max = std::log(max);
 
 	// Special case handling
-	if ((n < 0) || (n < r) || (r < 0)) {
-		return 0;
-	}
-	if ((n == r) || (r == 0)) {
-		return 1;
+	{
+		int res = handle_special_case(n, r);
+		if (res >= 0) {
+			return res;
+		}
 	}
 
 	// Use lgamma provided by lnnccr to calculate the result
@@ -75,9 +88,7 @@ static IntType ncr_clamped(int n, int r)
 }
 
 uint32_t ncr_clamped32(int n, int r) { return ncr_clamped<uint32_t>(n, r); }
-
 uint64_t ncr_clamped64(int n, int r) { return ncr_clamped<uint64_t>(n, r); }
-
 double lnncrr(double x, double y)
 {
 	return std::lgamma(x + 1.0) - std::lgamma(y + 1.0) -
