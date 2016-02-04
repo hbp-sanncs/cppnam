@@ -27,10 +27,15 @@ find_package(Armadillo REQUIRED)
 
 include_directories(src/ ${ARMADILLO_INCLUDE_DIRS})
 
-add_executable(data_generator_cli
-	src/cli/data_generator_cli
+add_library(cppnam_util
 	src/util/data
 	src/util/ncr
 )
 
-target_link_libraries(data_generator_cli ${ARMADILLO_LIBRARIES})
+target_link_libraries(cppnam_util ${ARMADILLO_LIBRARIES})
+
+add_executable(data_generator_cli
+	src/cli/data_generator_cli
+)
+
+target_link_libraries(data_generator_cli cppnam_util)
