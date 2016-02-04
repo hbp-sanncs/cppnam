@@ -55,11 +55,31 @@ public:
 		       (m_ones_out > 0) && (m_samples > 0);
 	}
 
-	size_t bits_in() { return m_bits_in; }
-	size_t bits_out() { return m_bits_out; }
-	size_t ones_in() { return m_ones_in; }
-	size_t ones_out() { return m_ones_out; }
-	size_t samples() { return m_samples; }
+	size_t bits_in() const { return m_bits_in; }
+	size_t bits_out() const { return m_bits_out; }
+	size_t ones_in() const { return m_ones_in; }
+	size_t ones_out() const { return m_ones_out; }
+	size_t samples() const { return m_samples; }
+
+	DataParameters &bits_in(size_t bits_in) {
+		m_bits_in = bits_in;
+		return *this;
+	}
+
+	DataParameters &bits_out(size_t bits_out) {
+		m_bits_out = bits_out;
+		return *this;
+	}
+
+	DataParameters &ones_in(size_t ones_in) {
+		m_ones_in = ones_in;
+		return *this;
+	}
+
+	DataParameters &ones_out(size_t ones_out) {
+		m_ones_out = ones_out;
+		return *this;
+	}
 
 	static size_t optimal_sample_count(const DataParameters &params);
 
