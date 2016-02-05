@@ -40,10 +40,10 @@ double expected_entropy(const DataParameters &params)
 double entropy_hetero_uniform(const DataParameters &params,
                               double false_positives)
 {
-	double res = 0;
+	double res = 0.0;
 	for (size_t i = 0; i < params.ones_out(); i++) {
-		res += std::log2((params.bits_out() - i) /
-		                 (params.ones_out() + false_positives - i));
+		res += std::log2(double(params.bits_out() - i) /
+		                 double(params.ones_out() + false_positives - i));
 	}
 	return res * params.samples();
 }
