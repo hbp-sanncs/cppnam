@@ -21,9 +21,10 @@
 #ifndef CPPNAM_UTIL_DATA_HPP
 #define CPPNAM_UTIL_DATA_HPP
 
-#include <armadillo>
 #include <cstdint>
 #include <functional>
+
+#include "matrix.hpp"
 
 namespace nam {
 
@@ -42,7 +43,6 @@ private:
 
 public:
 	using ProgressCallback = std::function<bool(float)>;
-	using MatrixType = arma::Mat<uint8_t>;
 
 	/**
 	 * Constructor of the DataGenerator class.
@@ -67,10 +67,11 @@ public:
 	 * @param n_samples is the number of vectors that should be generatred.
 	 * @return a sparse matrix containing the generated data.
 	 */
-	MatrixType generate(uint32_t n_bits, uint32_t n_ones, uint32_t n_samples,
-	                    const ProgressCallback &progress = [](float) {
-		                    return true;
-		                });
+	Matrix<uint8_t> generate(uint32_t n_bits, uint32_t n_ones,
+	                         uint32_t n_samples,
+	                         const ProgressCallback &progress = [](float) {
+		                         return true;
+		                     });
 
 	/**
 	 * Setter of the "random" flag.
@@ -92,7 +93,6 @@ public:
 	 * @return the current state of the "random" flag.
 	 */
 	bool random() const { return m_random; }
-
 	/**
 	 * Setter of the "balance" flag.
 	 *
@@ -112,7 +112,6 @@ public:
 	 * @return the current state of the "balance" flag.
 	 */
 	bool balance() const { return m_balance; }
-
 	/**
 	 * Setter of the "unique" flag.
 	 *

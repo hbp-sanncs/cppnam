@@ -93,8 +93,8 @@ int main(int argc, char *argv[])
 	std::cerr << std::endl;
 
 	// Print a non-sparse version of the matrix to std::cout
-	for (size_t i = 0; i < data.n_rows; i++) {
-		for (size_t j = 0; j < data.n_cols; j++) {
+	for (size_t i = 0; i < data.rows(); i++) {
+		for (size_t j = 0; j < data.cols(); j++) {
 			std::cout << (int)(data(i, j));
 		}
 		std::cout << std::endl;
