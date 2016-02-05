@@ -33,23 +33,48 @@ namespace nam {
 template <typename T>
 struct Comperator {
 	/**
-	 * Internally used functor.
+	 * Functor which can be indefinitely chained by the user to build a
+	 * comperator.
 	 */
 	template <int Threshold, typename F>
 	struct ComperatorFunctor {
+		/**
+		 * Reference to the underlying comperator function.
+		 */
 		const F &f;
+
+		/**
+		 * Result of the previous evaluation of the comperator.
+		 */
 		const int res;
 
+		/**
+		 * Constructor of the ComperatorFunctor.
+		 *
+		 * @param f is the comperator function underlying the functor.
+		 * @param res is the result of the previous comperator evaluation.
+		 */
 		ComperatorFunctor(const F &f, int res = 0) : f(f), res(res) {}
+
+		/**
+		 * Compares the two given values t1 and t2 and returns a new functor.
+		 *
+		 * @param t1 is the first value that should be compared.
+		 * @param t2 is the second value that should be compared.
+		 * @return a new and updated ComperatorFunctor object.
+		 */
 		ComperatorFunctor<Threshold, F> operator()(const T &t1,
 		                                           const T &t2) const
 		{
 			if (res == 0) {
-				return make_comperator<Threshold, F>(f, (f(t1, t2)));
+				return make_comperator<Threshold, F>(f, f(t1, t2));
 			}
 			return make_comperator<Threshold, F>(f, res);
 		}
 
+		/**
+		 * Returns the final result of the comparison.
+		 */
 		bool operator()() const { return res >= Threshold; }
 	};
 
@@ -92,6 +117,13 @@ struct Comperator {
 	{
 		return make_comperator<0>([](const T &t1, const T &t2) {
 			return (t1 == t2) ? 0 : -1;
+		})(t1, t2);
+	}
+
+	static auto inequal(const T &t1, const T &t2)
+	{
+		return make_comperator<0>([](const T &t1, const T &t2) {
+			return (t1 != t2) ? 0 : -1;
 		})(t1, t2);
 	}
 };
