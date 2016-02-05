@@ -122,8 +122,8 @@ struct Comperator {
 
 	static auto inequal(const T &t1, const T &t2)
 	{
-		return make_comperator<0>([](const T &t1, const T &t2) {
-			return (t1 != t2) ? 0 : -1;
+		return make_comperator<1>([](const T &t1, const T &t2) {
+			return (t1 != t2) ? 1 : 0;
 		})(t1, t2);
 	}
 };

@@ -225,7 +225,6 @@ TEST(comperator, larger_equals) {
 	EXPECT_TRUE(Comperator<int>::larger_equals(1, 0)(0, 0)(0, 0)());
 }
 
-
 TEST(comperator, equals) {
 	EXPECT_EQ(-1, Comperator<int>::equals(0, 1).res);
 	EXPECT_EQ(0, Comperator<int>::equals(0, 0).res);
@@ -274,5 +273,55 @@ TEST(comperator, equals) {
 	EXPECT_FALSE(Comperator<int>::equals(0, 1)(0, 0)(0, 0)());
 	EXPECT_TRUE(Comperator<int>::equals(0, 0)(0, 0)(0, 0)());
 	EXPECT_FALSE(Comperator<int>::equals(1, 0)(0, 0)(0, 0)());
+}
+
+TEST(comperator, inequal) {
+	EXPECT_EQ(1, Comperator<int>::inequal(0, 1).res);
+	EXPECT_EQ(0, Comperator<int>::inequal(0, 0).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(1, 0).res);
+
+	EXPECT_EQ(1, Comperator<int>::inequal(0, 1)(1, 0).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(0, 0)(1, 0).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(1, 0)(1, 0).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(0, 1)(0, 1).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(0, 0)(0, 1).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(1, 0)(0, 1).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(0, 1)(0, 0).res);
+	EXPECT_EQ(0, Comperator<int>::inequal(0, 0)(0, 0).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(1, 0)(0, 0).res);
+
+	EXPECT_EQ(1, Comperator<int>::inequal(0, 1)(0, 0)(1, 0).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(0, 0)(0, 0)(1, 0).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(1, 0)(0, 0)(1, 0).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(0, 1)(0, 0)(0, 1).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(0, 0)(0, 0)(0, 1).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(1, 0)(0, 0)(0, 1).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(0, 1)(0, 0)(0, 0).res);
+	EXPECT_EQ(0, Comperator<int>::inequal(0, 0)(0, 0)(0, 0).res);
+	EXPECT_EQ(1, Comperator<int>::inequal(1, 0)(0, 0)(0, 0).res);
+
+	EXPECT_TRUE(Comperator<int>::inequal(0, 1)());
+	EXPECT_FALSE(Comperator<int>::inequal(0, 0)());
+	EXPECT_TRUE(Comperator<int>::inequal(1, 0)());
+
+	EXPECT_TRUE(Comperator<int>::inequal(0, 1)(1, 0)());
+	EXPECT_TRUE(Comperator<int>::inequal(0, 0)(1, 0)());
+	EXPECT_TRUE(Comperator<int>::inequal(1, 0)(1, 0)());
+	EXPECT_TRUE(Comperator<int>::inequal(0, 1)(0, 1)());
+	EXPECT_TRUE(Comperator<int>::inequal(0, 0)(0, 1)());
+	EXPECT_TRUE(Comperator<int>::inequal(1, 0)(0, 1)());
+	EXPECT_TRUE(Comperator<int>::inequal(0, 1)(0, 0)());
+	EXPECT_FALSE(Comperator<int>::inequal(0, 0)(0, 0)());
+	EXPECT_TRUE(Comperator<int>::inequal(1, 0)(0, 0)());
+
+	EXPECT_TRUE(Comperator<int>::inequal(0, 1)(0, 0)(1, 0)());
+	EXPECT_TRUE(Comperator<int>::inequal(0, 0)(0, 0)(1, 0)());
+	EXPECT_TRUE(Comperator<int>::inequal(1, 0)(0, 0)(1, 0)());
+	EXPECT_TRUE(Comperator<int>::inequal(0, 1)(0, 0)(0, 1)());
+	EXPECT_TRUE(Comperator<int>::inequal(0, 0)(0, 0)(0, 1)());
+	EXPECT_TRUE(Comperator<int>::inequal(1, 0)(0, 0)(0, 1)());
+	EXPECT_TRUE(Comperator<int>::inequal(0, 1)(0, 0)(0, 0)());
+	EXPECT_FALSE(Comperator<int>::inequal(0, 0)(0, 0)(0, 0)());
+	EXPECT_TRUE(Comperator<int>::inequal(1, 0)(0, 0)(0, 0)());
 }
 }
