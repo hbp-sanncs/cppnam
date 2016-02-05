@@ -24,7 +24,7 @@
 namespace nam {
 
 double expected_false_positives(const DataParameters &params) {
-  size_t N = params.sample();
+  size_t N = params.samples();
   double p = double(params.ones_in() * params.ones_out()) /
              double(params.bits_in() * params.bits_out());
   return ((params.bits_out() - params.ones_out()) *
