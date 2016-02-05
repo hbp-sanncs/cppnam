@@ -16,14 +16,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <map>
 #include <limits>
 #include <random>
 
 #include "data.hpp"
 #include "ncr.hpp"
-
-using namespace arma;
 
 namespace nam {
 namespace {
@@ -33,8 +32,8 @@ private:
 	int m_idx;
 	int m_remaining;
 	uint64_t m_total;
-	Row<uint32_t> m_max_permutations;
-	Row<uint32_t> m_permutations;
+	Vector<uint32_t> m_max_permutations;
+	Vector<uint32_t> m_permutations;
 	std::map<int, PermutationTrieNode> m_children;
 	static constexpr uint32_t MAX_PERMS = std::numeric_limits<uint32_t>::max();
 
@@ -57,17 +56,18 @@ public:
 		}
 
 		// Reserve as many entries as estimated above and fill them
-		m_max_permutations = Row<uint32_t>(max + 1);
+		m_max_permutations = Vector<uint32_t>(max + 1);
 		for (int i = 0; i <= max; i++) {
 			if (i > 0 && m_max_permutations[i - 1] == MAX_PERMS) {
-				m_max_permutations[i] = MAX_PERMS;
+				m_max_permutations(i) = MAX_PERMS;
 			}
 			else {
-				m_max_permutations[i] = ncr_clamped32(i, remaining - 1);
+				m_max_permutations(i) = ncr_clamped32(i, remaining - 1);
 			}
 		}
 		m_permutations = m_max_permutations;
-		m_total = accu(m_max_permutations);
+		m_total = std::accumulate<uint32_t *, uint64_t>(
+		    m_max_permutations.begin(), m_max_permutations.end(), uint64_t(0));
 	}
 
 	int idx() const { return m_idx; }
@@ -86,12 +86,12 @@ public:
 
 	bool has_permutation(int idx)
 	{
-		return idx >= m_permutations.size() ? true : m_permutations[idx] > 0;
+		return idx >= int(m_permutations.size()) ? true : m_permutations[idx] > 0;
 	}
 
 	uint32_t permutation_count(int idx)
 	{
-		if (idx >= m_permutations.size()) {
+		if (idx >= int(m_permutations.size())) {
 			return MAX_PERMS;
 		}
 		return m_permutations[idx];
@@ -99,7 +99,7 @@ public:
 
 	bool decrement_permutation(int idx)
 	{
-		if (idx >= m_permutations.size()) {
+		if (idx >= int(m_permutations.size())) {
 			return true;
 		}
 
@@ -108,33 +108,36 @@ public:
 		}
 
 		if (m_total > 1) {
-			m_permutations[idx]--;
+			m_permutations(idx)--;
 			m_total--;
 			return true;
 		}
 
 		m_permutations = m_max_permutations;
-		m_total = accu(m_max_permutations);
+		m_total = std::accumulate<uint32_t *, uint64_t>(
+		    m_max_permutations.begin(), m_max_permutations.end(), 0);
 		return false;
 	}
 };
 
 template <typename RandomEngine>
-DataGenerator::MatrixType generate_balanced(
+Matrix<uint8_t> generate_balanced(
     RandomEngine &re, uint32_t n_bits, uint32_t n_ones, uint32_t n_samples,
     bool random, bool balance, bool unique,
     const DataGenerator::ProgressCallback &progress)
 {
-	DataGenerator::MatrixType res(n_samples, n_bits,
-	                              fill::zeros);  // Result matrix
-	Row<uint32_t> usage(
-	    n_bits, fill::zeros);  // Vector tracking how often each bit is used
-	Row<uint32_t> allowed(n_bits, fill::zeros);  // Temporary vector holding the
-	                                             // number of ones which can be
-	                                             // inserted
-	Row<uint8_t> balancable(n_bits, fill::zeros);
-	Row<uint8_t> selected(n_bits, fill::zeros);
-	Row<double> weights(n_bits, fill::zeros);
+	Matrix<uint8_t> res(n_samples, n_bits,
+	                    MatrixFlags::ZEROS);  // Result matrix
+	Vector<uint32_t> usage(
+	    n_bits,
+	    MatrixFlags::ZEROS);  // Vector tracking how often each bit is used
+	Vector<uint32_t> allowed(n_bits,
+	                         MatrixFlags::ZEROS);  // Temporary vector holding
+	                                               // the number of ones which
+	                                               // can be inserted
+	Vector<uint8_t> balancable(n_bits, MatrixFlags::ZEROS);
+	Vector<uint8_t> selected(n_bits, MatrixFlags::ZEROS);
+	Vector<double> weights(n_bits, MatrixFlags::ZEROS);
 
 	PermutationTrieNode root(n_bits, n_ones);
 	for (size_t i = 0; i < n_samples; i++) {
@@ -145,7 +148,7 @@ DataGenerator::MatrixType generate_balanced(
 			// Select those elements for which a permutation is left
 			uint32_t min_usage = std::numeric_limits<uint32_t>::max();
 			for (size_t k = 0; k < idx; k++) {
-				selected[k] = node->has_permutation(k);
+				selected(k) = node->has_permutation(k);
 				if (selected[k]) {
 					min_usage = std::min(min_usage, usage[k]);
 				}
@@ -166,7 +169,7 @@ DataGenerator::MatrixType generate_balanced(
 				uint32_t cum_balancable = 0;
 				for (size_t k = 0; k < idx; k++) {
 					cum_balancable = cum_balancable + balancable[k];
-					allowed[k] = std::min<uint32_t>(n_ones - j, cum_balancable);
+					allowed(k) = std::min<uint32_t>(n_ones - j, cum_balancable);
 					max_allowed = std::max(max_allowed, allowed[k]);
 				}
 
@@ -222,8 +225,10 @@ DataGenerator::MatrixType generate_balanced(
 
 			// Set the corresponding output bit to one and update the trie
 			res(i, chosen_idx) = 1;
-			usage[chosen_idx]++;
-			node->decrement_permutation(chosen_idx);
+			usage(chosen_idx)++;
+			if (unique) {
+				node->decrement_permutation(chosen_idx);
+			}
 			node = &node->fetch(chosen_idx);
 		}
 
@@ -239,11 +244,11 @@ DataGenerator::MatrixType generate_balanced(
 }
 
 template <typename RandomEngine>
-DataGenerator::MatrixType generate_random(
-    RandomEngine &re, size_t n_bits, size_t n_ones, size_t n_samples,
-    const DataGenerator::ProgressCallback &progress)
+Matrix<uint8_t> generate_random(RandomEngine &re, size_t n_bits, size_t n_ones,
+                                size_t n_samples,
+                                const DataGenerator::ProgressCallback &progress)
 {
-	DataGenerator::MatrixType res(n_samples, n_bits, fill::zeros);
+	Matrix<uint8_t> res(n_samples, n_bits, MatrixFlags::ZEROS);
 	for (size_t i = 0; i < n_samples; i++) {
 		for (size_t j = n_bits - n_ones; j < n_bits; j++) {
 			size_t idx = std::uniform_int_distribution<size_t>(0, j)(re);
@@ -280,7 +285,7 @@ DataGenerator::DataGenerator(size_t seed, bool random, bool balance,
 {
 }
 
-DataGenerator::MatrixType DataGenerator::generate(
+Matrix<uint8_t> DataGenerator::generate(
     uint32_t n_bits, uint32_t n_ones, uint32_t n_samples,
     const DataGenerator::ProgressCallback &progress)
 {

@@ -24,12 +24,9 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 enable_testing()
-find_package(Armadillo REQUIRED)
-find_package(GTest REQUIRED)
 
 include_directories(
 	src/
-	${ARMADILLO_INCLUDE_DIRS}
 	${GTEST_INCLUDE_DIRS}
 )
 
@@ -38,11 +35,10 @@ add_library(cppnam_util
 	src/util/data
 	src/util/entropy
 	src/util/parameters
+	src/util/matrix
 	src/util/optimisation
 	src/util/ncr
 )
-
-target_link_libraries(cppnam_util ${ARMADILLO_LIBRARIES})
 
 add_executable(data_generator_cli
 	src/cli/data_generator_cli
