@@ -38,12 +38,26 @@ TEST(entropy, expected_false_positives)
 	        DataParameters().bits_out(n).ones_out(d).samples(N).canonicalize()),
 	    EPS);
 }
-/*
+
+TEST(entropy, entropy_hetero)
+{
+	constexpr double EPS = 0.00001;
+	DataParameters params(16, 16, 3, 3, 3);
+	std::vector<SampleError> errs = {SampleError(1, 0), SampleError(0, 0),
+	                                 SampleError(2, 0)};
+	std::vector<SampleError> errs2 = {SampleError(1), SampleError(0),
+	                                  SampleError(2)};
+	EXPECT_NEAR(entropy_hetero(params, errs), 22.06592095594754, EPS);
+	EXPECT_NEAR(entropy_hetero(params, errs2), 22.06592095594754, EPS);
+}
+
 TEST(entropy, entropy_hetero_uniform)
 {
-
-    int n = 3, m = 3, c = 1, d = 1, N = 3, false_pos = 2;
-    EXPECT_EQ(,
-              entropy_hetero_uniform(DataParameters(n, m, c, d, N), false_pos));
-}*/
+	constexpr double EPS = 0.00001;
+	DataParameters params(16, 16, 3, 3, 3);
+	std::vector<SampleError> err = {SampleError(1.5), SampleError(1.5),
+	                                SampleError(1.5)};
+	EXPECT_NEAR(entropy_hetero(params, err),
+	            entropy_hetero_uniform(params, 1.5), EPS);
+}
 }

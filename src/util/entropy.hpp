@@ -62,6 +62,18 @@ struct SampleError {
 	SampleError(double fp = 0.0, double fn = 0.0) : fp(fp), fn(fn) {}
 };
 
+/**
+ *   Calculates the entropy from an errors-per sample matrix (returned by
+ *   analyseSampleErrors) and for the given output vector size and the mean
+ *   number of set bits. All values may also be real/floating point numbers,
+ *   a corresponding real version of the underlying binomial coefficient is
+ * used.
+ *
+ *   :param errs: errs is either vector of SampleError containing "fn" and
+ *   "fp"entries, where "fn" corresponds to the number of false negatives and
+ *   "fp" to the number of false positives, or an vector of numbers which
+ *   correspond to the number of false positives.
+ */
 double entropy_hetero(const DataParameters &params,
                       const std::vector<SampleError> &errs);
 }

@@ -47,4 +47,27 @@ double entropy_hetero_uniform(const DataParameters &params,
 	}
 	return res * params.samples();
 }
+
+double entropy_hetero(const DataParameters &params,
+                      const std::vector<SampleError> &errs)
+{
+	double ent = 0.0;
+	for (size_t i = 0; i < errs.size(); i++) {
+		if (errs[i].fn > 0) {
+			ent += (lnncrr(params.bits_out(), params.ones_out()) -
+			        lnncrr(errs[i].fp + params.ones_out() - errs[i].fn,
+			               params.ones_out() - errs[i].fn) -
+			        lnncrr(params.bits_out() - errs[i].fp - params.ones_out() +
+			                   errs[i].fn,
+			               errs[i].fn)) /
+			       std::log(2);
+		}
+		else {
+			for (size_t j = 0; j < params.ones_out(); j++) {
+				ent += std::log2(double(params.bits_out() - j) /
+				                 double(params.ones_out() + errs[i].fp - j));
+			}
+		}
+	}
+}
 }
