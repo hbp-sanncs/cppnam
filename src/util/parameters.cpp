@@ -22,15 +22,42 @@
 
 namespace nam {
 
-DataParameters DataParameters::optimal(const size_t n_bits,
-                                       const size_t n_samples,
-                                       const size_t n_bits_in,
-                                       const size_t n_bits_out)
+DataParameters DataParameters::optimal(const size_t bits, const size_t samples)
 {
+	size_t I_max = 0;
+	size_t N_max = 0;
+
+	auto goal_fun = [&I_max, &N_max, &bits, &samples](size_t ones) mutable {
+		DataParameters params(bits, bits, ones, ones);
+		if (params.samples() == 0) {
+			params.optimal_sample_count();
+		}
+		double I = expected_entropy(params);
+		if (I == 0) {  // Quirk to make sure the function is truely unimodal
+			I = -ones;
+		}
+		if (I > I_max) {
+			I_max = I;
+			N_max = params.samples();
+		}
+		return -I;
+	};
+
+	size_t min = 1, max = std::floor(bits / 2) + 1;
+	size_t ones = int(find_minimum_unimodal(goal_fun, min, max));
+	return DataParameters(bits, bits, ones, ones, N_max);
 }
 
 size_t DataParameters::optimal_sample_count(const DataParameters &params)
 {
-	// TODO
+
+	double p = 1.0 -
+	           double(params.ones_in() * params.ones_out()) /
+	               double(params.bits_in() * params.bits_out());
+	size_t N_min = 0;
+	size_t N_max = std::ceil(std::log(0.1) / std::log(p));
+	return find_minimum_unimodal([&params](int N) {
+		return expected_entropy(DataParameters(params).samples(N));
+	}, N_min, N_max, 1.0);
 }
 }
