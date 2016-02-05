@@ -24,11 +24,13 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 enable_testing()
+find_package(GTest)
 
-include_directories(
-	src/
-	${GTEST_INCLUDE_DIRS}
-)
+include_directories(src/)
+
+# add_library(cppnam_binnf
+# 	src/binnf/binnf
+# )
 
 add_library(cppnam_util
 	src/util/comperator
@@ -36,8 +38,8 @@ add_library(cppnam_util
 	src/util/entropy
 	src/util/parameters
 	src/util/matrix
-	src/util/optimisation
 	src/util/ncr
+	src/util/optimisation
 )
 
 add_executable(data_generator_cli
@@ -46,14 +48,22 @@ add_executable(data_generator_cli
 
 target_link_libraries(data_generator_cli cppnam_util)
 
-add_executable(cppnam_test_util
-	test/util/test_ncr
-	test/util/test_comperator
-)
+#
+# Unit tests -- only enable if gtest is present
+#
 
-target_link_libraries(cppnam_test_util
-	cppnam_util
-	${GTEST_BOTH_LIBRARIES}
-)
+if(${GTEST_FOUND})
+	include_directories(${GTEST_INCLUDE_DIR})
 
-add_test(cppnam_test_util cppnam_test_util)
+	add_executable(cppnam_test_util
+		test/util/test_ncr
+		test/util/test_comperator
+	)
+
+	target_link_libraries(cppnam_test_util
+		cppnam_util
+		${GTEST_BOTH_LIBRARIES}
+	)
+
+	add_test(cppnam_test_util cppnam_test_util)
+endif()
