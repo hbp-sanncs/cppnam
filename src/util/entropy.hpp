@@ -21,6 +21,8 @@
 #ifndef CPPNAM_UTIL_ENTROPY_HPP
 #define CPPNAM_UTIL_ENTROPY_HPP
 
+#include <vector>
+
 #include "parameters.hpp"
 
 namespace nam {
@@ -54,7 +56,14 @@ double expected_entropy(const DataParameters &params);
 double entropy_hetero_uniform(const DataParameters &params,
                               double false_positives);
 
+struct SampleError {
+	double fp, fn;
 
+	SampleError(double fp = 0.0, double fn = 0.0) : fp(fp), fn(fn) {}
+};
+
+double entropy_hetero(const DataParameters &params,
+                      const std::vector<SampleError> &errs);
 }
 
 #endif /* CPPNAM_UTIL_ENTROPY_HPP */
