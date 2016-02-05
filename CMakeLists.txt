@@ -53,6 +53,7 @@ target_link_libraries(data_generator_cli cppnam_util)
 add_executable(cppnam_test_util
 	test/util/test_ncr
 	test/util/test_comperator
+	test/util/test_entropy
 )
 
 target_link_libraries(cppnam_test_util
