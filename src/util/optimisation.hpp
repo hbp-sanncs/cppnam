@@ -32,7 +32,7 @@ namespace nam {
 */
 template <typename Function>
 static double find_minimum_unimodal(Function f, double a, double b,
-                                    double tolerance)
+                                    double tolerance = 1.0)
 {
 	static constexpr double gr = 0.5 * (std::sqrt(5) - 1);
 	double c = b - gr * (b - a);

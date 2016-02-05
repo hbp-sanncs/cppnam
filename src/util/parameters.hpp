@@ -34,7 +34,7 @@ private:
 	size_t m_samples;
 
 public:
-	DataParameters(size_t bits_in, size_t bits_out, size_t ones_in = 0,
+	DataParameters(size_t bits_in = 0, size_t bits_out = 0, size_t ones_in = 0,
 	               size_t ones_out = 0, size_t samples = 0)
 	    : m_bits_in(bits_in),
 	      m_bits_out(bits_out),
@@ -44,10 +44,8 @@ public:
 	{
 	}
 
-	static DataParameters optimal(const size_t n_bits,
-	                              const size_t n_samples = 0,
-	                              const size_t n_bits_in = 0,
-	                              const size_t n_bits_out = 0);
+	static DataParameters optimal(const size_t bits, const size_t samples = 0);
+
 	DataParameters &canonicalize()
 	{
 		auto update = [](size_t &a, size_t &b) {
@@ -75,23 +73,33 @@ public:
 	size_t ones_out() const { return m_ones_out; }
 	size_t samples() const { return m_samples; }
 
-	DataParameters &bits_in(size_t bits_in) {
+	DataParameters &bits_in(size_t bits_in)
+	{
 		m_bits_in = bits_in;
 		return *this;
 	}
 
-	DataParameters &bits_out(size_t bits_out) {
+	DataParameters &bits_out(size_t bits_out)
+	{
 		m_bits_out = bits_out;
 		return *this;
 	}
 
-	DataParameters &ones_in(size_t ones_in) {
+	DataParameters &ones_in(size_t ones_in)
+	{
 		m_ones_in = ones_in;
 		return *this;
 	}
 
-	DataParameters &ones_out(size_t ones_out) {
+	DataParameters &ones_out(size_t ones_out)
+	{
 		m_ones_out = ones_out;
+		return *this;
+	}
+
+	DataParameters &samples(size_t samples)
+	{
+		m_samples = samples;
 		return *this;
 	}
 

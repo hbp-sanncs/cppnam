@@ -51,12 +51,9 @@ double expected_entropy(const DataParameters &params);
  *   :param n_bits_out: number of output bits.
  *   :param n_ones_out: number of ones in the output.
  */
-double entropy_hetero_uniform(const DataParameters &params, double false_positives);
+double entropy_hetero_uniform(const DataParameters &params,
+                              double false_positives);
 
-double entropy_hetero_uniform(const DataParameters &params)
-{
-	return entropy_hetero_uniform(params, expected_false_positives(params));
-}
 
 }
 
