@@ -69,5 +69,6 @@ double entropy_hetero(const DataParameters &params,
 			}
 		}
 	}
+	return ent;
 }
 }
