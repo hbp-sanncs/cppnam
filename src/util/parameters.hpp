@@ -48,6 +48,20 @@ public:
 	                              const size_t n_samples = 0,
 	                              const size_t n_bits_in = 0,
 	                              const size_t n_bits_out = 0);
+	DataParameters &canonicalize()
+	{
+		auto update = [](size_t &a, size_t &b) {
+			if (a == 0 && b != 0) {
+				a = b;
+			}
+			else if (a != 0 && b == 0) {
+				b = a;
+			}
+		};
+		update(m_bits_in, m_bits_out);
+		update(m_ones_in, m_ones_out);
+		return *this;
+	}
 
 	bool valid()
 	{
