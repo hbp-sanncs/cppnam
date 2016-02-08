@@ -28,9 +28,9 @@ find_package(GTest)
 
 include_directories(src/)
 
-# add_library(cppnam_binnf
-# 	src/binnf/binnf
-# )
+add_library(cppnam_binnf
+	src/binnf/serialiser
+)
 
 add_library(cppnam_util
 	src/util/comperator
@@ -65,5 +65,15 @@ if(${GTEST_FOUND})
 		${GTEST_BOTH_LIBRARIES}
 	)
 
-	add_test(cppnam_test_util cppnam_test_util)
+	add_executable(cppnam_test_binnf
+		test/binnf/test_serialiser
+	)
+
+	target_link_libraries(cppnam_test_binnf
+		cppnam_binnf
+		cppnam_util
+		${GTEST_BOTH_LIBRARIES}
+	)
+
+	add_test(cppnam_test_binnf cppnam_test_binnf)
 endif()
