@@ -158,6 +158,18 @@ public:
 	}
 
 	~Matrix() { delete[] m_buf; }
+
+	/**
+	 * Tests equality between two matrices.
+	 *
+	 * @param o is the matrix to which this matrix should be compared.
+	 */
+	bool operator==(const Matrix<T> &o) const
+	{
+		return rows() == o.rows() && cols() == o.cols() &&
+		       std::equal(begin(), end(), o.begin());
+	}
+
 	/**
 	 * Fills the matrix with the given value.
 	 */
