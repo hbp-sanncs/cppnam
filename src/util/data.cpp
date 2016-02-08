@@ -225,7 +225,7 @@ Matrix<uint8_t> generate_balanced(
 
 			// Set the corresponding output bit to one and update the trie
 			res(i, chosen_idx) = 1;
-			usage(chosen_idx)++;
+			usage[chosen_idx]++;
 			if (unique) {
 				node->decrement_permutation(chosen_idx);
 			}

@@ -60,7 +60,7 @@ double entropy_hetero(const DataParameters &params,
 			            params.ones_out() - err.fn) -
 			     lnncrr(params.bits_out() - err.fp - params.ones_out() + err.fn,
 			            err.fn)) /
-			    std::log(2);
+			    std::log(2.0);
 		}
 		else {
 			for (size_t j = 0; j < params.ones_out(); j++) {

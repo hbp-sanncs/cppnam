@@ -47,14 +47,16 @@ double expected_entropy(const DataParameters &params);
  * Calculates the entropy for an estimated number of false positives err (which
  * might be real-valued).
  *
- *   :param errs: estimated number of false positives per sample.
- *   :param n_samples: number of samples.
- *   :param n_bits_out: number of output bits.
- *   :param n_ones_out: number of ones in the output.
+ * @param params structure containing the data parameters.
+ * @param errs estimated number of false positives per sample.
  */
 double entropy_hetero_uniform(const DataParameters &params,
                               double false_positives);
 
+/**
+ * Datastructure containing the number of false positives and false negatives
+ * per sample.
+ */
 struct SampleError {
 	double fp, fn;
 
@@ -62,16 +64,15 @@ struct SampleError {
 };
 
 /**
- *   Calculates the entropy from an errors-per sample matrix (returned by
- *   analyseSampleErrors) and for the given output vector size and the mean
- *   number of set bits. All values may also be real/floating point numbers,
- *   a corresponding real version of the underlying binomial coefficient is
+ * Calculates the entropy from an errors-per sample matrix (returned by
+ * analyseSampleErrors) and for the given output vector size and the mean
+ * number of set bits. All values may also be real/floating point numbers,
+ * a corresponding real version of the underlying binomial coefficient is
  * used.
  *
- *   :param errs: errs is either vector of SampleError containing "fn" and
- *   "fp"entries, where "fn" corresponds to the number of false negatives and
- *   "fp" to the number of false positives, or an vector of numbers which
- *   correspond to the number of false positives.
+ * @param errs errs is a vector of SampleError containing "fn" and
+ * "fp" entries, where "fn" corresponds to the number of false negatives and
+ * "fp" to the number of false positives.
  */
 double entropy_hetero(const DataParameters &params,
                       const std::vector<SampleError> &errs);

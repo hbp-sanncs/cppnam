@@ -106,7 +106,8 @@ public:
 	/**
 	 * Default constructor. Creates an empty matrix.
 	 */
-	Matrix() : m_buf(nullptr), m_rows(rows), m_cols(cols) {}
+	Matrix() : m_buf(nullptr), m_rows(0), m_cols(0) {}
+
 	/**
 	 * Constructor of the Matrix type, creates a new matrix with the given
 	 * extent.
@@ -115,7 +116,7 @@ public:
 	    : m_buf(new T[rows * cols]), m_rows(rows), m_cols(cols)
 	{
 		if (flags == MatrixFlags::ZEROS) {
-			fill(0);
+			fill(T());
 		}
 	}
 
@@ -157,6 +158,18 @@ public:
 	}
 
 	~Matrix() { delete[] m_buf; }
+
+	/**
+	 * Tests equality between two matrices.
+	 *
+	 * @param o is the matrix to which this matrix should be compared.
+	 */
+	bool operator==(const Matrix<T> &o) const
+	{
+		return rows() == o.rows() && cols() == o.cols() &&
+		       std::equal(begin(), end(), o.begin());
+	}
+
 	/**
 	 * Fills the matrix with the given value.
 	 */
@@ -211,7 +224,7 @@ public:
 	/**
 	 * Returns a copy of the i-th element.
 	 */
-	T& operator[](size_t i)
+	T &operator[](size_t i)
 	{
 		check_range(i);
 		return *(m_buf + i);
@@ -220,7 +233,7 @@ public:
 	/**
 	 * Returns a copy of the i-th element.
 	 */
-	const T& operator[](size_t i) const
+	const T &operator[](size_t i) const
 	{
 		check_range(i);
 		return *(m_buf + i);
