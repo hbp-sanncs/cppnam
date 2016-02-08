@@ -53,7 +53,7 @@ struct Serialiser {
 	/**
 	 * Enum describing the actual type in the Number enum.
 	 */
-	enum class NumberType : uint8_t { INT = 0, FLOAT = 1 };
+	enum class NumberType : uint32_t { INT = 0, FLOAT = 1 };
 
 	/**
 	 * Class describing the columns of a matrix.

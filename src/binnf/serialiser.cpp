@@ -38,7 +38,9 @@ using SizeType = uint32_t;
 
 static constexpr uint32_t BLOCK_START_SEQUENCE = 0x4b636c42;
 static constexpr uint32_t BLOCK_END_SEQUENCE = 0x426c634b;
+static constexpr uint32_t BLOCK_TYPE_MATRIX = 0x01;
 static constexpr SizeType MAX_STR_SIZE = 1024;
+static constexpr SizeType BLOCK_TYPE_LEN = sizeof(uint32_t);
 static constexpr SizeType SIZE_LEN = sizeof(SizeType);
 static constexpr SizeType TYPE_LEN = sizeof(NumberType);
 static constexpr SizeType NUMBER_LEN = sizeof(Number);
@@ -55,14 +57,14 @@ SizeType header_len(const Header &header)
 
 SizeType matrix_len(const Matrix<Number> &matrix)
 {
-	return SIZE_LEN + SIZE_LEN + matrix.size() * NUMBER_LEN;
+	return 2 * SIZE_LEN + matrix.size() * NUMBER_LEN;
 }
 
-SizeType block_len(const std::string &name,
-                          const Header &header,
-                          const Matrix<Number> &matrix)
+SizeType block_len(const std::string &name, const Header &header,
+                   const Matrix<Number> &matrix)
 {
-	return str_len(name) + header_len(header) + matrix_len(matrix);
+	return BLOCK_TYPE_LEN + str_len(name) + header_len(header) +
+	       matrix_len(matrix);
 }
 
 /* Individual data write methods */
@@ -108,60 +110,64 @@ bool synchronise(std::istream &is, uint32_t marker)
 }
 
 template <typename T>
-bool read(std::istream &is, T &res)
+void read(std::istream &is, T &res)
 {
 	is.read((char *)&res, sizeof(T));
-	return is.gcount() == sizeof(T);
+	if (is.gcount() != sizeof(T)) {
+		throw 0;
+	}
 }
 
 template <>
-bool read(std::istream &is, std::string &str)
+void read(std::istream &is, std::string &str)
 {
 	// Read the string size, make sure it is below the maximum string size
 	SizeType size;
-	if (!read(is, size)) {
-		return false;
-	}
+	read(is, size);
+
 	if (size > MAX_STR_SIZE) {
-		return false;
+		throw 0;
 	}
 
 	// Read the actual string content
 	str.resize(size);
 	is.read(&str[0], size);
-	return is.gcount() == size;
+	if (is.gcount() != size) {
+		throw 0;
+	}
 }
 
 template <>
-bool read(std::istream &is, Matrix<Number> &matrix)
+void read(std::istream &is, Matrix<Number> &matrix)
 {
 	// Read the row and column count
 	SizeType rows, cols;
-	if (!(read(is, rows) && read(is, cols))) {
-		return false;
-	}
+	read(is, rows);
+	read(is, cols);
 
 	// Write the data into the matrix
 	matrix.resize(rows, cols);
-	SizeType total = matrix.size() * NUMBER_LEN;
-	is.read((char*)(matrix.data()), total);
-	return is.gcount() == total;
+	SizeType size = matrix.size() * NUMBER_LEN;
+	is.read((char *)(matrix.data()), size);
+	if (is.gcount() != size) {
+		throw 0;
+	}
 }
 }
 
 /* Entire block serialisation method */
 
 void Serialiser::serialise(std::ostream &os, const std::string &name,
-                           const Header &header,
-                           const Matrix<Number> &matrix)
+                           const Header &header, const Matrix<Number> &matrix)
 {
 	assert(matrix.cols() == header.size());
 
 	write(os, BLOCK_START_SEQUENCE);  // Write the block start mark
 	write(os,
 	      block_len(name, header, matrix));  //  Write the total block length
-	write(os, name);                         // Write the name of the block
-	write(os, SizeType(header.size()));      // Write the length of the header
+	write(os, BLOCK_TYPE_MATRIX);
+	write(os, name);                     // Write the name of the block
+	write(os, SizeType(header.size()));  // Write the length of the header
 	for (size_t i = 0; i < header.size(); i++) {
 		write(os, header.names[i]);  // Write the column name
 		write(os, header.types[i]);  // Write the column type
@@ -181,48 +187,54 @@ std::pair<bool, Block> Serialiser::deserialise(std::istream &is)
 {
 	Block res;
 
-	// Try to read the block start header
-	if (!synchronise(is, BLOCK_START_SEQUENCE)) {
-		return std::make_pair(false, Block());
-	}
+	try {
+		// Try to read the block start header
+		if (!synchronise(is, BLOCK_START_SEQUENCE)) {
+			throw 0;
+		}
 
-	// Read the block size
-	SizeType block_size;  // Note: the block size is currently unused
-	if (!read(is, block_size)) {
-		return std::make_pair(false, Block());
-	}
+		// Read the block size
+		SizeType block_size;
+		read(is, block_size);
 
-	// Read the name
-	if (!read(is, res.name)) {
-		return std::make_pair(false, Block());
-	}
+		// Fetch the current stream position
+		const std::streampos pos0 = is.tellg();
 
-	// Read the number of header elements
-	SizeType header_count;
-	if (!read(is, header_count)) {
-		return std::make_pair(false, Block());
-	}
+		uint32_t block_type;
+		read(is, block_type);
+		read(is, res.name);
 
-	// Read the header elements
-	res.header.names.resize(header_count);
-	res.header.types.resize(header_count);
-	for (size_t i = 0; i < header_count; i++) {
-		if (!(read(is, res.header.names[i]) && read(is, res.header.types[i]))) {
-			return std::make_pair(false, Block());
+		// Read the number of header elements
+		SizeType header_count;
+		read(is, header_count);
+
+		// Read the header elements
+		res.header.names.resize(header_count);
+		res.header.types.resize(header_count);
+		for (size_t i = 0; i < header_count; i++) {
+			read(is, res.header.names[i]);
+			read(is, res.header.types[i]);
+		}
+
+		// Read the matrix
+		read(is, res.matrix);
+
+		// Make sure the block size is correct
+		const std::streampos pos1 = is.tellg();
+		if (pos0 >= 0 && pos1 >= 0 && pos1 - pos0 != block_size) {
+			throw 0;
+		}
+
+		// Make sure the block ends with the block end sequence
+		uint32_t block_end = 0;
+		read(is, block_end);
+		if (block_end != BLOCK_END_SEQUENCE) {
+			throw 0;
 		}
 	}
-
-	// Read the matrix
-	if (!read(is, res.matrix)) {
+	catch (...) {
 		return std::make_pair(false, Block());
 	}
-
-	// Make sure the block ends with the block end sequence
-	uint32_t block_end = 0;
-	if (!read(is, block_end) || block_end != BLOCK_END_SEQUENCE) {
-		return std::make_pair(false, Block());
-	}
-
 	return std::make_pair(true, std::move(res));
 }
 

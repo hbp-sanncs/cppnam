@@ -75,5 +75,6 @@ if(${GTEST_FOUND})
 		${GTEST_BOTH_LIBRARIES}
 	)
 
+	add_test(cppnam_test_util cppnam_test_util)
 	add_test(cppnam_test_binnf cppnam_test_binnf)
 endif()

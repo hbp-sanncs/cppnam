@@ -32,7 +32,7 @@ static Serialiser::Block generate_test_block()
 	    {"col1", "col2", "col3"},
 	    {Serialiser::NumberType::INT, Serialiser::NumberType::FLOAT,
 	     Serialiser::NumberType::INT}};
-	Matrix<Serialiser::Number> matrix(2, 3);
+	Matrix<Serialiser::Number> matrix(100, 3);
 	for (size_t i = 0; i < matrix.rows(); i++) {
 		for (size_t j = 0; j < matrix.cols(); j++) {
 			switch (header.types[j]) {
