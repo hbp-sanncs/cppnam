@@ -22,7 +22,6 @@
 #define CPPNAM_UTIL_ENTROPY_HPP
 
 #include <vector>
-
 #include "parameters.hpp"
 
 namespace nam {
@@ -76,6 +75,12 @@ struct SampleError {
  */
 double entropy_hetero(const DataParameters &params,
                       const std::vector<SampleError> &errs);
+
+/**
+ *  Calculates storage capacity of a conventional MxN ROM holding data with the
+ *  specification
+ */
+double conventional_memory_entropy(const DataParameters &params);
 }
 
 #endif /* CPPNAM_UTIL_ENTROPY_HPP */

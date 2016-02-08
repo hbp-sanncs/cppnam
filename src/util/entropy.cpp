@@ -71,4 +71,10 @@ double entropy_hetero(const DataParameters &params,
 	}
 	return ent;
 }
+
+double conventional_memory_entropy(const DataParameters &params)
+{
+	return params.bits_in() * lnncrr(params.bits_out(), params.ones_out()) /
+	       std::log(2);
+}
 }
