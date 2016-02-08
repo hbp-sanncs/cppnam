@@ -185,8 +185,9 @@ public:
 	const T *end() const { return m_buf + size(); }
 	const T *cbegin() const { return m_buf; }
 	const T *cend() const { return m_buf + size(); }
+
 	/**
-	 * Returns a reference at the element at position x and y.
+	 * Returns a reference at the element at position row and col.
 	 */
 	T &operator()(size_t row, size_t col)
 	{
@@ -195,7 +196,7 @@ public:
 	}
 
 	/**
-	 * Returns a const reference at the element at position x and y.
+	 * Returns a const reference at the element at position row and col.
 	 */
 	const T &operator()(size_t row, size_t col) const
 	{
@@ -204,7 +205,7 @@ public:
 	}
 
 	/**
-	 * Returns a reference at the element at position x and y.
+	 * Returns a reference at the i-th element.
 	 */
 	T &operator()(size_t i)
 	{
@@ -213,7 +214,7 @@ public:
 	}
 
 	/**
-	 * Returns a const reference at the element at position x and y.
+	 * Returns a const reference at the i-th element.
 	 */
 	const T &operator()(size_t i) const
 	{
@@ -243,14 +244,17 @@ public:
 	 * Returns the width of the matrix.
 	 */
 	size_t rows() const { return m_rows; }
+
 	/**
 	 * Returns the height of the matrix.
 	 */
 	size_t cols() const { return m_cols; }
+
 	/**
 	 * Returns the size of the matrix.
 	 */
 	size_t size() const { return m_rows * m_cols; }
+
 	/**
 	 * Resizes the matrix, flushes all previously stored data, does nothing if
 	 * the dimensions do not change.
@@ -269,10 +273,12 @@ public:
 	 * Returns a pointer at the raw data buffer.
 	 */
 	T *data() { return m_buf; }
+
 	/**
 	 * Returns a const pointer at the raw data.
 	 */
 	const T *data() const { return m_buf; }
+
 	/**
 	 * Dumps the matrix as CSV.
 	 */
@@ -288,12 +294,6 @@ public:
 		}
 		return os;
 	}
-
-	/**
-	 * Returns a new matrix with the exact same properties as this matrix but
-	 * with detatched memory.
-	 */
-	Matrix<T> clone() const { return Matrix<T>(*this).detatch(); }
 };
 
 template <typename T>
