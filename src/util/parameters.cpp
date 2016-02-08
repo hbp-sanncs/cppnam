@@ -57,7 +57,7 @@ size_t DataParameters::optimal_sample_count(const DataParameters &params)
 	size_t N_min = 0;
 	size_t N_max = std::ceil(std::log(0.1) / std::log(p));
 	return find_minimum_unimodal([&params](int N) {
-		return expected_entropy(DataParameters(params).samples(N));
+		return -expected_entropy(DataParameters(params).samples(N));
 	}, N_min, N_max, 1.0);
 }
 }
