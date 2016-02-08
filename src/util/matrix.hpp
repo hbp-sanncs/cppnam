@@ -224,7 +224,7 @@ public:
 	/**
 	 * Returns a copy of the i-th element.
 	 */
-	T& operator[](size_t i)
+	T &operator[](size_t i)
 	{
 		check_range(i);
 		return *(m_buf + i);
@@ -233,7 +233,7 @@ public:
 	/**
 	 * Returns a copy of the i-th element.
 	 */
-	const T& operator[](size_t i) const
+	const T &operator[](size_t i) const
 	{
 		check_range(i);
 		return *(m_buf + i);
