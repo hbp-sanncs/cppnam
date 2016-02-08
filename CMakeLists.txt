@@ -42,11 +42,13 @@ add_library(cppnam_util
 	src/util/optimisation
 )
 
-add_executable(data_generator_cli
-	src/cli/data_generator_cli
+add_executable(data_generator
+	src/cli/data_generator
 )
 
-target_link_libraries(data_generator_cli cppnam_util)
+target_link_libraries(data_generator
+	cppnam_util
+)
 
 #
 # Unit tests -- only enable if gtest is present
