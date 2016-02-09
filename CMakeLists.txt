@@ -69,6 +69,7 @@ if(${GTEST_FOUND})
 		test/util/test_ncr
 		test/util/test_comperator
 		test/util/test_entropy
+		test/util/test_parameters
 	)
 
 	target_link_libraries(cppnam_test_util

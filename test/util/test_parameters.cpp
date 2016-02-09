@@ -16,43 +16,29 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#ifndef CPPNAM_UTIL_OPTIMISATION
-#define CPPNAM_UTIL_OPTIMISATION
+#include "gtest/gtest.h"
 
 #include <cstdint>
-#include <cmath>
+#include <limits>
+
+#include <util/entropy.hpp>
+#include <util/parameters.hpp>
 
 namespace nam {
 
-/**
-* Implementation of Golden section search
-* https://en.wikipedia.org/wiki/Golden_section_search
-*/
-template <typename Function>
-static double find_minimum_unimodal(Function f, double a, double b,
-                                    double tolerance = 1.0)
+TEST(parameters, optimal_sample_count)
 {
-	static constexpr double gr = 0.5 * (std::sqrt(5.0) - 1.0);
-	double c = b - gr * (b - a);
-	double d = a + gr * (b - a);
-	while (std::abs(c - d) > tolerance) {
-		const double fc = f(c);
-		const double fd = f(d);
-		if (fc < fd) {
-			b = d;
-			d = c;
-			c = b - gr * (b - a);
-		}
-		else {
-			a = c;
-			c = d;
-			d = a + gr * (b - a);
-		}
-	}
-	return (b + a) / 2.0;
-}
+	EXPECT_EQ(52, DataParameters::optimal_sample_count(
+	                  DataParameters(16, 16, 2, 2, 0)));
+	EXPECT_EQ(62, DataParameters::optimal_sample_count(
+	                  DataParameters(32, 32, 4, 4, 0)));
 }
 
-#endif /* CPPNAM_UTIL_OPTIMISATION */
+TEST(parameters, optimal)
+{
+	EXPECT_EQ(52, DataParameters::optimal(16).samples());
+	EXPECT_EQ(97, DataParameters::optimal(32).samples());
+	EXPECT_EQ(2, DataParameters::optimal(16).ones_out());
+	EXPECT_EQ(2, DataParameters::optimal(32).ones_out());
+}
+}
