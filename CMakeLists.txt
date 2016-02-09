@@ -50,6 +50,15 @@ target_link_libraries(data_generator
 	cppnam_util
 )
 
+add_executable(cppnam
+	src/cli/cppnam
+)
+
+target_link_libraries(cppnam
+	cppnam_util
+	cppnam_binnf
+)
+
 #
 # Unit tests -- only enable if gtest is present
 #
