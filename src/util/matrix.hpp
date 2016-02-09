@@ -28,6 +28,7 @@
 #ifndef CPPNAM_UTILS_MATRIX_HPP
 #define CPPNAM_UTILS_MATRIX_HPP
 
+#include <cassert>
 #include <algorithm>
 #include <memory>
 #include <ostream>
@@ -107,6 +108,30 @@ public:
 	 * Default constructor. Creates an empty matrix.
 	 */
 	Matrix() : m_buf(nullptr), m_rows(0), m_cols(0) {}
+
+	/**
+	 * Initialiser list constructor.
+	 */
+	Matrix(std::initializer_list<T> init) : Matrix(init.size(), 1) {
+		size_t i = 0;
+		for (const auto &elem: init) {
+			(*this)[i++] = elem;
+		}
+	}
+
+	/**
+	 * 2D array constructor.
+	 */
+	template <size_t Rows, size_t Cols>
+	Matrix(const std::array<std::array<T, Cols>, Rows> &init)
+	    : Matrix(Rows, Cols)
+	{
+		for (size_t i = 0; i < Rows; i++) {
+			for (size_t j = 0; j < Cols; j++) {
+				(*this)(i, j) = init[i][j];
+			}
+		}
+	}
 
 	/**
 	 * Constructor of the Matrix type, creates a new matrix with the given
@@ -296,6 +321,16 @@ public:
 	}
 };
 
+template <typename T, size_t Rows, size_t Cols>
+Matrix<T> make_matrix(const std::array<std::array<T, Cols>, Rows> &init) {
+	return Matrix<T>(init);
+}
+
+template <typename T>
+Matrix<T> make_matrix(std::initializer_list<T> list) {
+	return Matrix<T>(list);
+}
+
 template <typename T>
 class Vector : public Matrix<T> {
 public:
@@ -303,6 +338,12 @@ public:
 	Vector(size_t s, MatrixFlags flags = MatrixFlags::NONE)
 	    : Matrix<T>(s, 1, flags)
 	{
+	}
+	Vector(std::initializer_list<T> init) : Vector(init.size()) {
+		size_t i = 0;
+		for (const auto &elem: init) {
+			(*this)[i++] = elem;
+		}
 	}
 	void resize(size_t s) { resize(s, 1); }
 };
