@@ -42,6 +42,10 @@ struct Serialiser {
 
 		Number() : i(0){};
 
+		Number(int i): i(i) {}
+
+		Number(double d): f(d) {}
+
 		bool operator==(const Number &o) const { return o.i == i; }
 
 		friend std::ostream &operator<<(std::ostream &os, const Number &n)
