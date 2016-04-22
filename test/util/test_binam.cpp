@@ -24,6 +24,7 @@
 
 #include <util/binam.hpp>
 #include <util/binary_matrix.hpp>
+#include <util/entropy.hpp>
 
 namespace nam {
 TEST(BiNAM, BiNAM)
@@ -75,5 +76,18 @@ TEST(BiNAM, BiNAM)
 	EXPECT_TRUE(res.get_bit(1,2));
 	EXPECT_FALSE(res.get_bit(1,1));
 	
+	BinaryMatrix<uint8_t> pat_recall(2,3);
+	pat_recall.set_bit(1,1).set_bit(1,2);
+	std::vector<SampleError> err = bin2.false_bits_mat(pat_out, pat_recall);
+	EXPECT_EQ(0, err[0].fp);
+	EXPECT_EQ(1, err[0].fn);
+	EXPECT_EQ(1, err[1].fp);
+	EXPECT_EQ(0, err[1].fn);
+	
+	BiNAM<uint8_t> bin3(3, 4);
+	BinaryMatrix<uint8_t> pat_in2(2,3), pat_out2(2,4);
+	EXPECT_NO_THROW(bin3.train_mat(pat_in2, pat_out2));
+	EXPECT_ANY_THROW(bin3.train_mat(pat_in2, pat_out));
+	EXPECT_ANY_THROW(bin3.train_mat(bin, pat_out2));
 }
 }
