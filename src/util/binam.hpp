@@ -26,27 +26,19 @@
 #include "util/binary_matrix.hpp"
 
 namespace nam {
-
+/**
+ * The BiNAM class is the BinaryMatrix class with additional instructions used
+ * by the BiNAM_Container. This is basically still a simple matrix class, which
+ * knows the concept of training and recalling.
+ */
 template <typename T>
 class BiNAM : public BinaryMatrix<T> {
-public:
-	using Base = BinaryMatrix<T>;
-
-	BiNAM(){};
-	BiNAM(size_t input,size_t output) : BinaryMatrix<T>(output, input) {};
-	BiNAM<T>& train_vec_check(BinaryVector<uint8_t> in,
-	                         BinaryVector<uint8_t> out)
-	{
-		if (in.size() != Base::rows() || out.size() != Base::cols()) {
-			std::stringstream ss;
-			ss << "[" << in.size() << ", " << out.size()
-			   << "] out of range for matrix of size " << Base::rows() << " x "
-			   << Base::cols() << std::endl;
-			throw std::out_of_range(ss.str());
-		}
-		return train_vec(in, out);
-	}
-	BiNAM<T>& train_vec(BinaryVector<uint8_t> in, BinaryVector<uint8_t> out)
+private:
+	/**
+	 * Training of a sample pair. Dimensions are not checked, is only for
+	 * internal used
+	 */
+	BiNAM<T> &train_vec(BinaryVector<uint8_t> in, BinaryVector<uint8_t> out)
 	{
 		for (size_t i = 0; i < out.size(); i++) {
 			if (out.get_bit(i) != 0) {
@@ -58,7 +50,34 @@ public:
 		return *this;
 	}
 
-	BiNAM<T>& train_mat(BinaryMatrix<T> in, BinaryMatrix<T> out)
+public:
+	using Base = BinaryMatrix<T>;
+	/**
+	 * Constructor - nothing to do here
+	 */
+	BiNAM(){};
+	BiNAM(size_t input, size_t output) : BinaryMatrix<T>(output, input){};
+
+	/**
+	 * Training of a sample pair with checking of dimensions
+	 */
+	BiNAM<T> &train_vec_check(BinaryVector<uint8_t> in,
+	                          BinaryVector<uint8_t> out)
+	{
+		if (in.size() != Base::cols() || out.size() != Base::rows()) {
+			std::stringstream ss;
+			ss << "[" << in.size() << ", " << out.size()
+			   << "] out of range for matrix of size " << Base::cols() << " x "
+			   << Base::rows() << std::endl;
+			throw std::out_of_range(ss.str());
+		}
+		return train_vec(in, out);
+	}
+
+	/**
+	 * Training of whole matrices, should be favoured for using
+	 */
+	BiNAM<T> &train_mat(BinaryMatrix<T> in, BinaryMatrix<T> out)
 	{
 		if (in.cols() != Base::cols() || out.cols() != Base::rows() ||
 		    in.rows() != out.rows()) {
@@ -73,6 +92,10 @@ public:
 		};
 		return *this;
 	}
+
+	/**
+	 * Sum of all set bits of a BinaryVector. Used for recall
+	 */
 	size_t digit_sum(BinaryVector<T> vec)
 	{
 		size_t sum = 0;
@@ -82,6 +105,9 @@ public:
 		return sum;
 	}
 
+	/*
+	 * Recall procedure for a single sample, @param thresh is the threshold
+	 */
 	BinaryVector<T> recall(BinaryVector<T> in, size_t thresh)
 	{
 		BinaryVector<T> vec(Base::rows());
@@ -95,8 +121,17 @@ public:
 		return vec;
 	}
 
+	/*
+	 * Recall procedure for a matrix of samples, @param thresh is the threshold
+	 */
 	BinaryMatrix<T> recallMat(BinaryMatrix<T> in, size_t thresh)
 	{
+		if (in.cols() != Base::cols()) {
+			std::stringstream ss;
+			ss << in.size() << " out of range for matrix of size "
+			   << Base::cols() << std::endl;
+			throw std::out_of_range(ss.str());
+		}
 		BinaryMatrix<T> res(in.rows(), Base::cols());
 		for (size_t i = 0; i < res.rows(); i++) {
 			res.write_vec(i, recall(in.row_vec(i), thresh));
