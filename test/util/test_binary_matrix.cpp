@@ -96,5 +96,10 @@ TEST(BinaryMatrix, manipulation)
 	BinaryVector<uint8_t> vec_small(7);
 	EXPECT_ANY_THROW(bin.write_vec(1, vec_big));
 	EXPECT_ANY_THROW(bin.write_vec(1, vec_small));
+	
+	BinaryVector<uint8_t> vec2(3);
+	vec2.set_bit(1);
+	EXPECT_TRUE(vec2.VectorMult(vec2).get_bit(1));
+	EXPECT_FALSE(vec2.VectorMult(vec2).get_bit(0));
 }
 }

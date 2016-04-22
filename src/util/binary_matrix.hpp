@@ -158,11 +158,12 @@ public:
 	/**
 	 * Set a bit at [row,col]
 	 */
-	void set_bit(uint32_t row, uint32_t col)
+	BinaryMatrix<T>& set_bit(uint32_t row, uint32_t col)
 	{
 		check_range(row, col);
 		uint32_t m = col % intWidth;
 		m_mat(row, numberOfCells(col) - 1) |= ((T)1 << m);
+		return *this;
 	}
 
 	/**
@@ -177,10 +178,11 @@ public:
 	/**
 	 * Set a cell at [row,cell-col]
 	 */
-	void set_cell(uint32_t row, uint32_t col, T value)
+	BinaryMatrix<T>& set_cell(uint32_t row, uint32_t col, T value)
 	{
 		check_range_cells(row, col);
 		m_mat(row, col) = value;
+		return *this;
 	}
 
 	/**
@@ -243,24 +245,17 @@ public:
 	T get_cell(uint32_t row)
 	{
 		return Base::get_cell(0, row);
-		// Base::check_range_cells(0, row);
-		// return Base::m_mat(0, row);
 	}
 
 	bool get_bit(uint32_t row)
 	{
 		return Base::get_bit(0, row);
-		// Base::check_range(0, row);
-		// uint32_t m = row % Base::intWidth;
-		// return Base::m_mat(0, Base::numberOfCells(row)) & ((T)1 << m);
 	}
 
-	void set_bit(uint32_t row)
+	BinaryVector<T>& set_bit(uint32_t row)
 	{
 		Base::set_bit(0, row);
-		/*Base::check_range(0, row);
-		uint32_t m = row % Base::intWidth;
-		Base::m_mat(row, Base::numberOfCells(row)) |= ((T)1 << m);*/
+		return *this;
 	}
 
 	void set_cell(uint32_t row, T value) { Base::set_cell(0, row, value); }
@@ -278,7 +273,7 @@ public:
 		}
 		BinaryVector<T> vec(Base::size());
 		for (size_t i = 0; i < Base::numberOfCells(Base::size()); i++) {
-			vec.set_cell(i, Base::m_mat(0, i) & b(i));
+			vec.set_cell(i, Base::get_cell(0, i) & b.get_cell(i));
 		}
 		return vec;
 	}

@@ -18,35 +18,6 @@
 
 #include "binary_matrix.hpp"
 
-namespace nam {/*
-template <typename T>
-std::vector<T> BinaryMatrix<T>::bitVector(const std::vector<bool> &data)
-{
-	const uint32_t n = data.size();
-	const uint32_t nCells = numberOfCells(n);
-
-	std::vector<T> res(nCells);
-	for (uint32_t i = 0, cell = 0; cell < nCells; cell++) {
-		T c = 0;
-		for (uint32_t j = 0; j < intWidth && i < n; j++, i++) {
-			if (data[i]) {
-				c = c | 1 << j;
-			}
-		}
-		res[cell] = c;
-	}
-	return res;
-}
-
-template <typename T>
-std::vector<T> BinaryMatrix<T>::cellVector(const std::vector<bool> &data)
-{
-	const uint32_t n = data.size();
-
-	std::vector<T> res(n);
-	for (uint32_t i = 0; i < n; i++) {
-		res[i] = data[i] ? intMax : 0;
-	}
-	return res;
-}*/
+namespace nam {
+// Do nothing here, just make sure the header compiles.
 }
