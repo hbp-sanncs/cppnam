@@ -349,4 +349,4 @@ public:
 };
 }
 
-#endif /* _ADEXPSIM_UTILS_HPP_ */
+#endif /* CPPNAM_UTILS_MATRIX_HPP */

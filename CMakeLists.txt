@@ -40,6 +40,7 @@ add_library(cppnam_util
 	src/util/matrix
 	src/util/ncr
 	src/util/optimisation
+	src/util/binary_matrix
 )
 
 add_executable(data_generator
@@ -70,6 +71,7 @@ if(${GTEST_FOUND})
 		test/util/test_comperator
 		test/util/test_entropy
 		test/util/test_parameters
+		test/util/test_binary_matrix
 	)
 
 	target_link_libraries(cppnam_test_util
