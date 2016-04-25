@@ -63,7 +63,7 @@ template <typename IntType>
 static IntType ncr_clamped(int n, int r)
 {
 	static constexpr IntType max = std::numeric_limits<IntType>::max();
-	static constexpr double log_max = std::log(max);
+	static const double log_max = std::log(max);
 
 	// Special case handling
 	{

@@ -34,7 +34,7 @@ template <typename Function>
 static double find_minimum_unimodal(Function f, double a, double b,
                                     double tolerance = 1.0)
 {
-	static constexpr double gr = 0.5 * (std::sqrt(5.0) - 1.0);
+	static const double gr = 0.5 * (std::sqrt(5.0) - 1.0);
 	double c = b - gr * (b - a);
 	double d = a + gr * (b - a);
 	while (std::abs(c - d) > tolerance) {
