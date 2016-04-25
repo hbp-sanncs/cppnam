@@ -42,6 +42,7 @@ add_library(cppnam_util
 	src/util/optimisation
 	src/util/binary_matrix
 	src/util/binam
+	src/util/population_count
 )
 
 add_executable(data_generator
@@ -74,6 +75,7 @@ if(${GTEST_FOUND})
 		test/util/test_parameters
 		test/util/test_binary_matrix
 		test/util/test_binam
+		test/util/test_population_count
 	)
 
 	target_link_libraries(cppnam_test_util

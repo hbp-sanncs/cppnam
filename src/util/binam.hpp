@@ -22,11 +22,14 @@
 #define CPPNAM_UTIL_BINAM_HPP
 #include <sstream>
 #include <stdexcept>
+
 #include "data.hpp"
 #include "entropy.hpp"
-#include "util/binary_matrix.hpp"
+#include "binary_matrix.hpp"
+#include "population_count.hpp"
 
 namespace nam {
+
 /**
  * The BiNAM class is the BinaryMatrix class with additional instructions used
  * by the BiNAM_Container. This is basically still a simple matrix class, which
@@ -101,7 +104,7 @@ public:
 	{
 		size_t sum = 0;
 		for (size_t i = 0; i < Base::numberOfCells(vec.cols()); i++) {
-			sum += __builtin_popcount(vec.get_cell(i));
+			sum += population_count<T>(vec.get_cell(i));
 		};
 		return sum;
 	}
@@ -151,8 +154,8 @@ public:
 		T temp;
 		for (size_t i = 0; i < Base::numberOfCells(out.size()); i++) {
 			temp = out.get_cell(i) ^ recall.get_cell(i);
-			error.fp += __builtin_popcount(temp & recall.get_cell(i));
-			error.fn += __builtin_popcount(temp & out.get_cell(i));
+			error.fp += population_count<T>(temp & recall.get_cell(i));
+			error.fn += population_count<T>(temp & out.get_cell(i));
 		}
 		return error;
 	}
