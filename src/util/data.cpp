@@ -86,7 +86,8 @@ public:
 
 	bool has_permutation(int idx)
 	{
-		return idx >= int(m_permutations.size()) ? true : m_permutations[idx] > 0;
+		return idx >= int(m_permutations.size()) ? true
+		                                         : m_permutations[idx] > 0;
 	}
 
 	uint32_t permutation_count(int idx)
@@ -240,7 +241,7 @@ Matrix<uint8_t> generate_balanced(
 		}
 	}
 
-	return std::move(res);
+	return res;
 }
 
 template <typename RandomEngine>
@@ -267,7 +268,7 @@ Matrix<uint8_t> generate_random(RandomEngine &re, size_t n_bits, size_t n_ones,
 			}
 		}
 	}
-	return std::move(res);
+	return res;
 }
 }
 
@@ -291,13 +292,11 @@ Matrix<uint8_t> DataGenerator::generate(
 {
 	std::default_random_engine re(m_seed);
 	if (m_random && !m_balance && !m_unique) {
-		return std::move(
-		    generate_random(re, n_bits, n_ones, n_samples, progress));
+		return generate_random(re, n_bits, n_ones, n_samples, progress);
 	}
 	else {
-		return std::move(generate_balanced(re, n_bits, n_ones, n_samples,
-		                                   m_random, m_balance, m_unique,
-		                                   progress));
+		return generate_balanced(re, n_bits, n_ones, n_samples, m_random,
+		                         m_balance, m_unique, progress);
 	}
 }
 }
