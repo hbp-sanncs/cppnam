@@ -1,6 +1,6 @@
 /*
  *  CppNAM -- C++ Neural Associative Memory Simulator
- *  Copyright (C) 2016  Christoph Jenzen, Andreas Stöckel
+ *  Copyright (C) 2016  Andreas Stöckel
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,13 +20,13 @@
  * @file matrix.hpp
  *
  * Extremely small matrix library, allowing to define a two dimensional memory
- * region with shared memory.
+ * region.
  *
  * @author Andreas Stöckel
  */
 
-#ifndef CPPNAM_UTILS_MATRIX_HPP
-#define CPPNAM_UTILS_MATRIX_HPP
+#ifndef CPPNAM_UTIL_MATRIX_HPP
+#define CPPNAM_UTIL_MATRIX_HPP
 
 #include <cassert>
 #include <algorithm>
@@ -43,7 +43,6 @@ enum class MatrixFlags { NONE = 0, ZEROS = 1 };
 
 /**
  * Base class providing storage for a 2D memory region of an arbitrary type T.
- * Implements copy on write semantics.
  *
  * @tparam T is the type stored in the matrix.
  */
@@ -112,9 +111,10 @@ public:
 	/**
 	 * Initialiser list constructor.
 	 */
-	Matrix(std::initializer_list<T> init) : Matrix(init.size(), 1) {
+	Matrix(std::initializer_list<T> init) : Matrix(init.size(), 1)
+	{
 		size_t i = 0;
-		for (const auto &elem: init) {
+		for (const auto &elem : init) {
 			(*this)[i++] = elem;
 		}
 	}
@@ -136,6 +136,11 @@ public:
 	/**
 	 * Constructor of the Matrix type, creates a new matrix with the given
 	 * extent.
+	 *
+	 * @param rows is the number of rows in the matrix.
+	 * @param cols is the number of columns in the matrix.
+	 * @param flags set to MatrixFlags::ZEROS to force an initialisation of the
+	 * memory. If not given, the memory is not initialised.
 	 */
 	Matrix(size_t rows, size_t cols, MatrixFlags flags = MatrixFlags::NONE)
 	    : m_buf(new T[rows * cols]), m_rows(rows), m_cols(cols)
@@ -143,6 +148,21 @@ public:
 		if (flags == MatrixFlags::ZEROS) {
 			fill(T());
 		}
+	}
+
+	/**
+	 * Constructor of the Matrix type, creates a new matrix with the given
+	 * extent, copying the data from the given address.
+	 *
+	 * @param rows is the number of rows in the matrix.
+	 * @param cols is the number of columns in the matrix.
+	 * @param data is a pointer at a pre-existing data region from which the
+	 * data will be copied.
+	 */
+	Matrix(size_t rows, size_t cols, T *data)
+	    : m_buf(new T[rows * cols]), m_rows(rows), m_cols(cols)
+	{
+		std::copy(data, data + (rows * cols), begin());
 	}
 
 	Matrix(const Matrix &o)
@@ -185,6 +205,11 @@ public:
 	~Matrix() { delete[] m_buf; }
 
 	/**
+	 * Conversion to a std::vector
+	 */
+	operator std::vector<T>() const { return std::vector<T>(begin(), end()); }
+
+	/**
 	 * Tests equality between two matrices.
 	 *
 	 * @param o is the matrix to which this matrix should be compared.
@@ -204,11 +229,11 @@ public:
 		return *this;
 	}
 
-	T *begin() { return m_buf; }
+	T *begin(size_t row = 0) { return m_buf + row * cols(); }
 	T *end() { return m_buf + size(); }
-	const T *begin() const { return m_buf; }
+	const T *begin(size_t row = 0) const { return m_buf + row * cols(); }
 	const T *end() const { return m_buf + size(); }
-	const T *cbegin() const { return m_buf; }
+	const T *cbegin(size_t row = 0) const { return m_buf + row * cols(); }
 	const T *cend() const { return m_buf + size(); }
 
 	/**
@@ -319,15 +344,22 @@ public:
 		}
 		return os;
 	}
+
+	/**
+	 * Returns true if the matrix contains no data.
+	 */
+	bool empty() const { return size() == 0; }
 };
 
 template <typename T, size_t Rows, size_t Cols>
-Matrix<T> make_matrix(const std::array<std::array<T, Cols>, Rows> &init) {
+Matrix<T> make_matrix(const std::array<std::array<T, Cols>, Rows> &init)
+{
 	return Matrix<T>(init);
 }
 
 template <typename T>
-Matrix<T> make_matrix(std::initializer_list<T> list) {
+Matrix<T> make_matrix(std::initializer_list<T> list)
+{
 	return Matrix<T>(list);
 }
 
@@ -339,9 +371,10 @@ public:
 	    : Matrix<T>(s, 1, flags)
 	{
 	}
-	Vector(std::initializer_list<T> init) : Vector(init.size()) {
+	Vector(std::initializer_list<T> init) : Vector(init.size())
+	{
 		size_t i = 0;
-		for (const auto &elem: init) {
+		for (const auto &elem : init) {
 			(*this)[i++] = elem;
 		}
 	}
@@ -349,4 +382,4 @@ public:
 };
 }
 
-#endif /* CPPNAM_UTILS_MATRIX_HPP */
+#endif /* CPPNAM_UTIL_MATRIX_HPP */
