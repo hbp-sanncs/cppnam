@@ -32,7 +32,7 @@ size_t population_count(T i)
 {
 	size_t res;
 	for (size_t j = 0; j < sizeof(T) * 8; j++) {
-		res += (i & (1 << j)) ? 1 : 0;
+		res += (i & (T(1) << j)) ? 1 : 0;
 	}
 	return res;
 }
