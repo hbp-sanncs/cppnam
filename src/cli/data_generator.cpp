@@ -15,7 +15,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-//#include <stddef.h>
 
 #include <csignal>
 #include <iomanip>
@@ -91,7 +90,8 @@ int main(int argc, char *argv[])
 	// Generate the requested data
 	std::cerr << "Generating data..." << std::endl;
 	DataGenerator empty;
-	auto data = empty.generate<uint8_t>(n_bits, n_ones, n_samples, show_progress);
+	auto data =
+	    empty.generate<uint8_t>(n_bits, n_ones, n_samples, show_progress);
 	std::cerr << std::endl;
 
 	// Print a non-sparse version of the matrix to std::cout

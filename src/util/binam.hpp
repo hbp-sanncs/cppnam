@@ -42,7 +42,7 @@ private:
 	 * Training of a sample pair. Dimensions are not checked, is only for
 	 * internal used
 	 */
-	BiNAM<T> &train_vec(BinaryVector<uint8_t> in, BinaryVector<uint8_t> out)
+	BiNAM<T> &train_vec(BinaryVector<T> in, BinaryVector<T> out)
 	{
 		for (size_t i = 0; i < out.size(); i++) {
 			if (out.get_bit(i) != 0) {
@@ -65,8 +65,7 @@ public:
 	/**
 	 * Training of a sample pair with checking of dimensions
 	 */
-	BiNAM<T> &train_vec_check(BinaryVector<uint8_t> in,
-	                          BinaryVector<uint8_t> out)
+	BiNAM<T> &train_vec_check(BinaryVector<T> in, BinaryVector<T> out)
 	{
 		if (in.size() != Base::cols() || out.size() != Base::rows()) {
 			std::stringstream ss;
@@ -168,13 +167,13 @@ public:
 	std::vector<SampleError> false_bits_mat(BinaryMatrix<T> out,
 	                                        BinaryMatrix<T> recall)
 	{
-		if (recall.rows() > out.rows()) {
+		if (recall.rows() != out.rows()) {
 			std::stringstream ss;
 			ss << recall.rows() << " out of range for output matrix of size "
 			   << out.rows() << std::endl;
 			throw std::out_of_range(ss.str());
 		}
-		std::vector<SampleError> error(recall.rows(), SampleError());
+		std::vector<SampleError> error(recall.rows());
 		for (size_t i = 0; i < recall.rows(); i++) {
 			error[i] = false_bits(out.row_vec(i), recall.row_vec(i));
 		}
@@ -182,7 +181,75 @@ public:
 	}
 };
 
-class BiNAM_Container;
+template <typename T>
+class BiNAM_Container {
+private:
+	BiNAM<T> m_BiNAM;
+	DataParameters m_params;
+	DataGenerator m_generator;
+	BinaryMatrix<T> m_input, m_output, m_recall;
+	std::vector<SampleError> m_SampleError;
+
+public:
+	BiNAM_Container(DataParameters params, size_t seed, bool random = true,
+	                bool balanced = true, bool unique = true)
+	    : m_BiNAM(params.bits_in(), params.bits_out()),
+	      m_params(params),
+	      m_generator(seed, random, balanced, unique){};
+	BiNAM_Container(DataParameters params, bool random = true,
+	                bool balanced = true, bool unique = true)
+	    : m_BiNAM(params.bits_in(), params.bits_out()),
+	      m_params(params),
+	      m_generator(random, balanced, unique){};
+
+	BiNAM_Container<T> set_up()
+	{
+		m_input = m_generator.generate<T>(
+		    m_params.bits_in(), m_params.ones_in(), m_params.samples());
+		m_output = m_generator.generate<T>(
+		    m_params.bits_out(), m_params.ones_out(), m_params.samples());
+		m_BiNAM.train_mat(m_input, m_output);
+		return *this;
+	};
+
+	BiNAM_Container<T> recall()
+	{
+		m_recall = m_BiNAM.recallMat(m_input, m_params.ones_in());
+		m_SampleError = m_BiNAM.false_bits_mat(m_output, m_recall);
+		return *this;
+	};
+
+	SampleError false_bits()
+	{
+		SampleError sum;
+		for (size_t i = 0; i < m_params.samples(); i++) {
+			sum.fp += m_SampleError[i].fp;
+			sum.fn += m_SampleError[i].fn;
+		}
+		return sum;
+	};
+
+	SampleError theoretical_false_bits()
+	{
+		SampleError se;
+		se.fp = expected_false_positives(m_params);
+		return se;
+	};
+
+	void analysis()
+	{
+		SampleError se = false_bits();
+		SampleError se_th = theoretical_false_bits();
+		double info = entropy_hetero(m_params, m_SampleError);
+		double info_th = entropy_hetero_uniform(m_params, se_th.fp);
+		std::cout << "Result of the analysis" << std::endl;
+		std::cout << "\tInfo \t nInfo \t fp \t fn" << std::endl;
+		std::cout << "theor: \t" << info_th << "\t" << 1.00 << "\t" << se_th.fp
+		          << "\t" << se_th.fn << std::endl;
+		std::cout << "exp: \t" << info << "\t" << info / info_th << "\t"
+		          << se.fp << "\t" << se.fn << std::endl;
+	};
+};
 }
 
 #endif /* CPPNAM_UTIL_BINAM_HPP */

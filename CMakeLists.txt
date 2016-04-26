@@ -33,7 +33,6 @@ add_library(cppnam_util
 	src/util/binary_matrix
 	src/util/data
 	src/util/entropy
-	src/util/parameters
 	src/util/matrix
 	src/util/ncr
 	src/util/optimisation
@@ -48,6 +47,16 @@ add_executable(data_generator
 target_link_libraries(data_generator
 	cppnam_util
 )
+
+add_executable(binam
+	src/cli/binam
+)
+
+target_link_libraries(binam
+	cppnam_util
+)
+
+
 
 #
 # Unit tests -- only enable if gtest is present
