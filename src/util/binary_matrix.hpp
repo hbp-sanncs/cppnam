@@ -67,8 +67,13 @@ public:
 	 */
 	static constexpr uint32_t numberOfCells(uint32_t n)
 	{
-		return n != 0 ? ((n + intWidth - 1) & ~(intWidth - 1)) / intWidth : 1;
-		// return ((n + intWidth - 1) & ~(intWidth - 1)) / intWidth;
+		//return n != 0 ? ((n + intWidth - 1) & ~(intWidth - 1)) / intWidth : 1;
+		return ((n + intWidth - 1) & ~(intWidth - 1)) / intWidth;
+	};
+	
+	static constexpr uint32_t cellNumber(uint32_t n)
+	{
+		return int(n/intWidth);
 	};
 
 private:
@@ -114,8 +119,6 @@ public:
 	BinaryMatrix(uint32_t rows, uint32_t cols) : m_rows(rows), m_cols(cols)
 	{
 		m_mat = Matrix<T>(rows, numberOfCells(cols), MatrixFlags::ZEROS);
-		// m_buf = new T(numberOfCells(rows * cols));
-		// fillZeros();
 	};
 
 	/**
@@ -152,7 +155,7 @@ public:
 	{
 		check_range(row, col);
 		uint32_t m = col % intWidth;
-		return m_mat(row, numberOfCells(col) - 1) & ((T)1 << m);
+		return m_mat(row, cellNumber(col)) & (T(1) << m);
 	}
 
 	/**
@@ -162,7 +165,7 @@ public:
 	{
 		check_range(row, col);
 		uint32_t m = col % intWidth;
-		m_mat(row, numberOfCells(col) - 1) |= ((T)1 << m);
+		m_mat(row, cellNumber(col)) |= (T(1) << m);
 		return *this;
 	}
 

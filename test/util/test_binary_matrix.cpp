@@ -27,11 +27,16 @@ TEST(BinaryMatrix, constexpressions)
 	BinaryMatrix<uint8_t> bin(3, 9);
 	EXPECT_EQ(8, bin.intWidth);
 	EXPECT_EQ(255, bin.intMax);
-	EXPECT_EQ(1, bin.numberOfCells(0));
+	EXPECT_EQ(0, bin.numberOfCells(0));
 	EXPECT_EQ(2, bin.numberOfCells(9));
 	EXPECT_EQ(2, bin.numberOfCells(15));
 	EXPECT_EQ(2, bin.numberOfCells(16));
 	EXPECT_EQ(3, bin.numberOfCells(17));
+	EXPECT_EQ(0, bin.cellNumber(0));
+	EXPECT_EQ(1, bin.cellNumber(8));
+	EXPECT_EQ(1, bin.cellNumber(15));
+	EXPECT_EQ(2, bin.cellNumber(16));
+	EXPECT_EQ(2, bin.cellNumber(17));
 
 	EXPECT_NO_THROW(bin.check_range(2, 8));
 	EXPECT_ANY_THROW(bin.check_range(3, 8));
