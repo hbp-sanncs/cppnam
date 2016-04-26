@@ -15,6 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+//#include <stddef.h>
 
 #include <csignal>
 #include <iomanip>
@@ -22,6 +23,7 @@
 #include <string>
 
 #include <util/data.hpp>
+#include <util/binary_matrix.hpp>
 
 using namespace nam;
 
@@ -88,14 +90,14 @@ int main(int argc, char *argv[])
 
 	// Generate the requested data
 	std::cerr << "Generating data..." << std::endl;
-	auto data =
-	    DataGenerator().generate(n_bits, n_ones, n_samples, show_progress);
+	DataGenerator empty;
+	auto data = empty.generate<uint8_t>(n_bits, n_ones, n_samples, show_progress);
 	std::cerr << std::endl;
 
 	// Print a non-sparse version of the matrix to std::cout
 	for (size_t i = 0; i < data.rows(); i++) {
 		for (size_t j = 0; j < data.cols(); j++) {
-			std::cout << (int)(data(i, j));
+			std::cout << (int)(data.get_bit(i, j));
 		}
 		std::cout << std::endl;
 	}
