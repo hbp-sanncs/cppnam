@@ -25,7 +25,7 @@
 #include "ncr.hpp"
 
 namespace nam {
-
+/*
 DataGenerator::DataGenerator(bool random, bool balance, bool unique)
     : m_seed(std::random_device()()),
       m_random(random),
@@ -38,5 +38,5 @@ DataGenerator::DataGenerator(size_t seed, bool random, bool balance,
                              bool unique)
     : m_seed(seed), m_random(random), m_balance(balance), m_unique(unique)
 {
-}
+}*/
 }
