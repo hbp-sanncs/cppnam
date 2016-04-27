@@ -165,17 +165,17 @@ public:
 	 * @param recall the one with errors (the recalled one)
 	 */
 	std::vector<SampleError> false_bits_mat(BinaryMatrix<T> out,
-	                                        BinaryMatrix<T> recall)
+	                                        BinaryMatrix<T> res)
 	{
-		if (recall.rows() != out.rows()) {
+		if (res.rows() > out.rows()) {
 			std::stringstream ss;
-			ss << recall.rows() << " out of range for output matrix of size "
+			ss << res.rows() << " out of range for output matrix of size "
 			   << out.rows() << std::endl;
 			throw std::out_of_range(ss.str());
 		}
-		std::vector<SampleError> error(recall.rows());
-		for (size_t i = 0; i < recall.rows(); i++) {
-			error[i] = false_bits(out.row_vec(i), recall.row_vec(i));
+		std::vector<SampleError> error(res.rows());
+		for (size_t i = 0; i < res.rows(); i++) {
+			error[i] = false_bits(out.row_vec(i), res.row_vec(i));
 		}
 		return error;
 	}
@@ -202,7 +202,7 @@ public:
 	      m_params(params),
 	      m_generator(random, balanced, unique){};
 
-	BiNAM_Container<T> set_up()
+	BiNAM_Container<T> &set_up()
 	{
 		m_input = m_generator.generate<T>(
 		    m_params.bits_in(), m_params.ones_in(), m_params.samples());
@@ -212,17 +212,22 @@ public:
 		return *this;
 	};
 
-	BiNAM_Container<T> recall()
+	BiNAM_Container<T> &recall()
 	{
 		m_recall = m_BiNAM.recallMat(m_input, m_params.ones_in());
 		m_SampleError = m_BiNAM.false_bits_mat(m_output, m_recall);
 		return *this;
 	};
-
-	SampleError false_bits()
+	
+	const std::vector<SampleError> &false_bits()
 	{
-		SampleError sum;
-		for (size_t i = 0; i < m_params.samples(); i++) {
+		return m_SampleError;
+	};
+
+	SampleError sum_false_bits()
+	{
+		SampleError sum(0,0);
+		for (size_t i = 0; i < m_SampleError.size(); i++) {
 			sum.fp += m_SampleError[i].fp;
 			sum.fn += m_SampleError[i].fn;
 		}
@@ -231,17 +236,16 @@ public:
 
 	SampleError theoretical_false_bits()
 	{
-		SampleError se;
-		se.fp = expected_false_positives(m_params);
+		SampleError se(expected_false_positives(m_params),0);
 		return se;
 	};
 
 	void analysis()
 	{
-		SampleError se = false_bits();
+		SampleError se = sum_false_bits();
 		SampleError se_th = theoretical_false_bits();
 		double info = entropy_hetero(m_params, m_SampleError);
-		double info_th = entropy_hetero_uniform(m_params, se_th.fp);
+		double info_th = expected_entropy(m_params);
 		std::cout << "Result of the analysis" << std::endl;
 		std::cout << "\tInfo \t nInfo \t fp \t fn" << std::endl;
 		std::cout << "theor: \t" << info_th << "\t" << 1.00 << "\t" << se_th.fp
