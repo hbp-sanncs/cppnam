@@ -17,26 +17,77 @@
  */
 
 #include <csignal>
+#include <iomanip>
 #include <iostream>
+#include <fstream>
+#include <vector>
 
 #include <util/binam.hpp>
+#include <util/entropy.hpp>
 #include <util/parameters.hpp>
 
 using namespace nam;
 
+void show_progress(float progress)
+{
+	const int WIDTH = 50;
+	float perc = progress * 100.0;
+	std::cerr << std::setw(8) << std::setprecision(4) << perc << "% [";
+	for (int i = 0; i < WIDTH; i++) {
+		bool cur = i * 100 / WIDTH < perc;
+		bool prev = (i - 1) * 100 / WIDTH < perc;
+		if (cur && prev) {
+			std::cerr << "=";
+		}
+		else if (prev) {
+			std::cerr << ">";
+		}
+		else {
+			std::cerr << " ";
+		}
+	}
+	std::cerr << "]   \r";
+}
+
+void information_graph(size_t bits_in, size_t bits_out, size_t ones_in,
+                       size_t ones_out, size_t max_sample)
+{
+	std::ofstream file;
+	file.open("data.txt", std::ios::out );
+	for (size_t i = 1; i <= max_sample; i++) {
+		DataParameters params(bits_in, bits_out, ones_in, ones_out, i);
+		BiNAM_Container<uint64_t> binam(params);
+		binam.set_up().recall();
+		auto se = binam.false_bits();
+		double info = entropy_hetero(params, se);
+		file << i << "," << info << "," << binam.sum_false_bits().fp<< "\n";
+		show_progress(double(i)/double(max_sample));
+	}
+	std::cerr << std::endl;
+	file.close();
+}
+
 int main(int argc, char *argv[])
 {
-	if (argc != 4) {
-		std::cerr << "Usage: ./data_generator <BITS> <ONES> <SAMPLES>"
+	if (argc != 4 && argc != 6) {
+		std::cerr << "Usage: ./data_generator <BITS> <ONES> <SAMPLES> "
+		          << "or <BITS_IN> <BITS_OUT> <ONES_IN> <ONES_OUT> <SAMPLES>"
 		          << std::endl;
 		return 1;
+	}
+	if (argc == 6) {
+		information_graph(std::stoi(argv[1]), std::stoi(argv[2]),
+		                  std::stoi(argv[3]), std::stoi(argv[4]),
+		                  std::stoi(argv[5]));
+		return 0;
 	}
 	int n_bits = std::stoi(argv[1]);
 	int n_ones = std::stoi(argv[2]);
 	int n_samples = std::stoi(argv[3]);
 	DataParameters params(n_bits, n_bits, n_ones, n_ones, n_samples);
-	BiNAM_Container<uint32_t> binam(params);
-	binam.set_up().recall().analysis();
-	
-	
+	BiNAM_Container<uint8_t> binam(params, true, true, true);
+	binam.set_up().recall();
+	binam.print();
+	binam.analysis();
+	return 0;
 }
