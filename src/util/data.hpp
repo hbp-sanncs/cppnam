@@ -310,8 +310,9 @@ public:
 					}
 
 					// Normalise the weights
+					double inv_total = 1.0/double(total);
 					for (size_t k = 0; k < idx; k++) {
-						weights[k] = weights[k] / (double)(total);
+						weights[k] = weights[k] * inv_total;
 					}
 
 					// Select the indices
