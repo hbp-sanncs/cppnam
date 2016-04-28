@@ -53,15 +53,15 @@ void information_graph(size_t bits_in, size_t bits_out, size_t ones_in,
                        size_t ones_out, size_t max_sample)
 {
 	std::ofstream file;
-	file.open("data.txt", std::ios::out );
+	file.open("data.txt", std::ios::out);
 	for (size_t i = 1; i <= max_sample; i++) {
 		DataParameters params(bits_in, bits_out, ones_in, ones_out, i);
 		BiNAM_Container<uint64_t> binam(params);
 		binam.set_up().recall();
 		auto se = binam.false_bits();
 		double info = entropy_hetero(params, se);
-		file << i << "," << info << "," << binam.sum_false_bits().fp<< "\n";
-		show_progress(double(i)/double(max_sample));
+		file << i << "," << info << "," << binam.sum_false_bits().fp << "\n";
+		show_progress(double(i) / double(max_sample));
 	}
 	std::cerr << std::endl;
 	file.close();
@@ -85,9 +85,8 @@ int main(int argc, char *argv[])
 	int n_ones = std::stoi(argv[2]);
 	int n_samples = std::stoi(argv[3]);
 	DataParameters params(n_bits, n_bits, n_ones, n_ones, n_samples);
-	BiNAM_Container<uint8_t> binam(params, true, true, true);
-	binam.set_up().recall();
-	binam.print();
-	binam.analysis();
+	BiNAM_Container<uint64_t> binam(params, true, true, true);
+	binam.set_up().recall().analysis();
+	// binam.print();
 	return 0;
 }

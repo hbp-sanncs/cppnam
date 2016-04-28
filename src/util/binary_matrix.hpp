@@ -69,13 +69,13 @@ public:
 	 */
 	static constexpr uint32_t numberOfCells(uint32_t n)
 	{
-		//return n != 0 ? ((n + intWidth - 1) & ~(intWidth - 1)) / intWidth : 1;
+
 		return ((n + intWidth - 1) & ~(intWidth - 1)) / intWidth;
 	};
-	
+
 	static constexpr uint32_t cellNumber(uint32_t n)
 	{
-		return int(n/intWidth);
+		return int(n / intWidth);
 	};
 
 private:
@@ -89,25 +89,6 @@ private:
 	 * Number of rows and number of columns.
 	 */
 	size_t m_rows, m_cols;
-
-	/**
-	 * Helper function creating a dense bit vector of the given bool vector.
-	 *
-	 * @param data is the data that should be converted to a dense vector.
-	 * @return the input vector represented as a dense vector of type IntType.
-	 */
-	// static std::vector<T> bitVector(const std::vector<bool> &data);
-
-	/**
-	 * Helper function converting a bit vector to a vector of cells of IntType,
-	 * where each cell is either set to the maximum value of IntType or zero,
-	 * depending on the bit pattern in the input data.
-	 *
-	 * @param data is the data that should be converted to a dense vector.
-	 * @return the input vector, which each bit expanded to either the maximum
-	 * value that can be stored in an IntType or zero.
-	 */
-	// static std::vector<T> cellVector(const std::vector<bool> &data);
 
 public:
 	/**
@@ -215,9 +196,8 @@ public:
 	{
 		BinaryVector<T> vec(m_cols);
 		for (size_t j = 0; j < numberOfCells(m_cols); j++) {
-			
-			vec.set_cell(j, get_cell(i,j));
-			
+
+			vec.set_cell(j, get_cell(i, j));
 		}
 		return vec;
 	}
@@ -241,39 +221,34 @@ public:
 			m_mat(row, i) = vec.get_cell(i);
 		}
 	}
-	
+
 	/**
 	 * Gives back a 'normal' matrix
 	 */
 	Matrix<uint8_t> convertToMatrix()
 	{
 		Matrix<uint8_t> mat(m_rows, m_cols);
-		for (size_t i=0; i<m_rows;i++)
-		{
-			for(size_t j=0; j<m_cols;j++)
-			{
-				mat(i,j)=int(get_bit(i,j));
+		for (size_t i = 0; i < m_rows; i++) {
+			for (size_t j = 0; j < m_cols; j++) {
+				mat(i, j) = int(get_bit(i, j));
 			}
 		}
 		return mat;
 	}
-	
+
 	/**
 	 * Print the matrix for testing purposes
 	 */
 	void print()
 	{
-		for (size_t i=0; i<m_rows;i++)
-		{
-			for(size_t j=0; j<m_cols;j++)
-			{
-				std::cout<<int(get_bit(i,j));
+		for (size_t i = 0; i < m_rows; i++) {
+			for (size_t j = 0; j < m_cols; j++) {
+				std::cout << int(get_bit(i, j));
 			}
-			std::cout<<"\n";
+			std::cout << "\n";
 		}
 		std::cout << std::endl;
 	}
-		
 };
 
 /**
@@ -284,22 +259,16 @@ template <typename T>
 class BinaryVector : public BinaryMatrix<T> {
 public:
 	using Base = BinaryMatrix<T>;
-	
+
 	BinaryVector() : BinaryMatrix<T>() {}
 	BinaryVector(uint32_t size) : BinaryMatrix<T>(1, size) {}
-	
+
 	/**
 	 * Functions for manipulating the vector
 	 */
-	T get_cell(uint32_t row)
-	{
-		return Base::get_cell(0, row);
-	}
+	T get_cell(uint32_t row) { return Base::get_cell(0, row); }
 
-	bool get_bit(uint32_t row)
-	{
-		return Base::get_bit(0, row);
-	}
+	bool get_bit(uint32_t row) { return Base::get_bit(0, row); }
 
 	BinaryVector<T> &set_bit(uint32_t row)
 	{

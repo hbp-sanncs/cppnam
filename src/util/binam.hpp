@@ -258,7 +258,7 @@ public:
 	 * function.
 	 */
 	const std::vector<SampleError> &false_bits() { return m_SampleError; };
-	
+
 	/**
 	 * Returns the number of all false positives and negatives of the recall.
 	 */
@@ -271,7 +271,7 @@ public:
 		}
 		return sum;
 	};
-	
+
 	/*
 	 * Gives back an approximate number of expected false positives
 	 */
@@ -282,7 +282,8 @@ public:
 	};
 
 	/**
-	 * Prints out the results of analysis: Number of FP and FN, Information count and expected values.
+	 * Prints out the results of analysis: Number of FP and FN, Information
+	 * count and expected values.
 	 */
 	void analysis()
 	{
@@ -298,7 +299,7 @@ public:
 		std::cout << "exp: \t" << info << "\t" << info / info_th << "\t"
 		          << se.fp << "\t" << se.fn << std::endl;
 	};
-	
+
 	/**
 	 * Getter for member matrices
 	 */

@@ -61,4 +61,3 @@ uint64_t ncr_clamped64(int n, int r);
  */
 double lnncrr(double x, double y);
 }
-

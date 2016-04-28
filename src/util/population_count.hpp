@@ -84,7 +84,6 @@ inline size_t population_count<uint64_t>(uint64_t i)
 {
 	return __builtin_popcountll(i);
 }
-
 }
 
 #endif /* CPPNAM_POPULATION_COUNT_HPP */
