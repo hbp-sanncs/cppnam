@@ -83,13 +83,15 @@ TEST(BiNAM, BiNAM)
 	EXPECT_EQ(1, err[0].fn);
 	EXPECT_EQ(1, err[1].fp);
 	EXPECT_EQ(0, err[1].fn);
-
+	
+#ifndef NDEBUG
 	BiNAM<uint8_t> bin3(3, 4);
 	BinaryMatrix<uint8_t> pat_in2(2, 3), pat_out2(2, 4);
 	EXPECT_NO_THROW(bin3.train_mat(pat_in2, pat_out2));
 	EXPECT_ANY_THROW(bin3.train_mat(pat_in2, pat_out));
 	EXPECT_ANY_THROW(bin3.train_mat(bin, pat_out2));
-
+#endif
+	
 	BinaryMatrix<uint8_t> false_recall(2, 3);
 	false_recall.set_bit(0, 1).set_bit(0, 2);
 	auto se = bin2.false_bits_mat(pat_out, false_recall);

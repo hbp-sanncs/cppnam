@@ -25,8 +25,10 @@
 #include <limits>
 #include <vector>
 
+#ifndef NDBUG
 #include <sstream>
 #include <stdexcept>
+#endif
 
 #include "util/matrix.hpp"
 
@@ -121,6 +123,7 @@ public:
 		m_mat = Matrix<T>(rows, numberOfCells(cols), MatrixFlags::ZEROS);
 	};
 
+#ifndef NDEBUG
 	/**
 	 * Check if bit-numbers are in range of matrix to avoid overflows
 	 */
@@ -147,7 +150,17 @@ public:
 			throw std::out_of_range(ss.str());
 		}
 	}
+#else
+	/**
+	 * Check if bit-numbers are in range of matrix to avoid overflows
+	 */
+	void check_range(uint32_t, uint32_t) {}
+	/**
+	 * Check if cell-numbers are in range of matrix to avoid overflows
+	 */
+	void check_range_cells(uint32_t, uint32_t) {}
 
+#endif
 	/**
 	 * Read a bit at [row,col]
 	 */

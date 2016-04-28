@@ -38,12 +38,14 @@ TEST(BinaryMatrix, constexpressions)
 	EXPECT_EQ(2, bin.cellNumber(16));
 	EXPECT_EQ(2, bin.cellNumber(17));
 
+#ifndef NDEBUG
 	EXPECT_NO_THROW(bin.check_range(2, 8));
 	EXPECT_ANY_THROW(bin.check_range(3, 8));
 	EXPECT_ANY_THROW(bin.check_range(2, 9));
 	EXPECT_NO_THROW(bin.check_range_cells(2, 1));
 	EXPECT_ANY_THROW(bin.check_range_cells(3, 1));
 	EXPECT_ANY_THROW(bin.check_range_cells(2, 2));
+#endif
 }
 
 TEST(BinaryMatrix, manipulation)
@@ -53,11 +55,13 @@ TEST(BinaryMatrix, manipulation)
 
 	EXPECT_EQ(1, bin.get_cell(0, 0));
 	EXPECT_EQ(0, bin.get_cell(0, 1));
-	EXPECT_ANY_THROW(bin.get_cell(0, 2));
 	EXPECT_EQ(true, bin.get_bit(0, 0));
 	EXPECT_EQ(false, bin.get_bit(0, 1));
+#ifndef NDEBUG
+	EXPECT_ANY_THROW(bin.get_cell(0, 2));
 	EXPECT_ANY_THROW(bin.get_bit(0, 9));
-
+#endif
+	
 	EXPECT_TRUE(bin.row_vec(0).get_bit(0));
 	EXPECT_TRUE(bin.row_vec(0).get_cell(0));
 	EXPECT_FALSE(bin.row_vec(0).get_bit(1));
@@ -68,10 +72,12 @@ TEST(BinaryMatrix, manipulation)
 
 	EXPECT_EQ(2, vec.get_cell(0));
 	EXPECT_EQ(0, vec.get_cell(1));
-	EXPECT_ANY_THROW(vec.get_cell(2));
 	EXPECT_EQ(true, vec.get_bit(1));
 	EXPECT_EQ(false, vec.get_bit(0));
+#ifndef NDEBUG
+	EXPECT_ANY_THROW(vec.get_cell(2));
 	EXPECT_ANY_THROW(vec.get_bit(9));
+#endif
 
 	bin.write_vec(1, vec);
 
@@ -97,12 +103,14 @@ TEST(BinaryMatrix, manipulation)
 	EXPECT_EQ(true, vec.get_bit(0));
 	EXPECT_EQ(false, vec.get_bit(1));
 
+#ifndef NDEBUG
 	BinaryVector<uint8_t> vec_big(10);
 	BinaryVector<uint8_t> vec_small(7);
 	EXPECT_ANY_THROW(bin.write_vec(1, vec_big));
 	EXPECT_ANY_THROW(bin.write_vec(1, vec_small));
+#endif
 	
-	BinaryVector<uint8_t> vec2(3),vec3(3);
+	BinaryVector<uint8_t> vec2(3), vec3(3);
 	vec2.set_bit(1);
 	vec3.set_bit(0).set_bit(1);
 	EXPECT_TRUE(vec2.VectorMult(vec2).get_bit(1));
