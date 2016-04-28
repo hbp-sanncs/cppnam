@@ -48,7 +48,7 @@ TEST(BiNAM, BiNAM)
 	EXPECT_TRUE(bin.get_bit(2, 1));
 	EXPECT_FALSE(bin.get_bit(2, 2));
 
-	BinaryVector<uint8_t> vec_rec = bin.recall(vec_in, 1);
+	BinaryVector<uint8_t> vec_rec = bin.recall(vec_in);
 	EXPECT_TRUE(vec_rec.get_bit(0));
 	EXPECT_FALSE(vec_rec.get_bit(1));
 	EXPECT_TRUE(vec_rec.get_bit(2));
@@ -68,7 +68,7 @@ TEST(BiNAM, BiNAM)
 	EXPECT_TRUE(bin2.get_bit(2, 1));
 	EXPECT_FALSE(bin2.get_bit(2, 2));
 
-	BinaryMatrix<uint8_t> res = bin2.recallMat(pat_in, 1);
+	BinaryMatrix<uint8_t> res = bin2.recallMat(pat_in);
 	EXPECT_FALSE(res.get_bit(0, 0));
 	EXPECT_TRUE(res.get_bit(0, 1));
 	EXPECT_FALSE(res.get_bit(0, 2));

@@ -112,23 +112,30 @@ public:
 	 * Recall procedure for a single sample
 	 * @param thresh is the threshold
 	 */
-	BinaryVector<T> recall(BinaryVector<T> in, size_t thresh)
+	BinaryVector<T> recall(BinaryVector<T> in)
 	{
 		BinaryVector<T> vec(Base::rows());
 		for (size_t i = 0; i < Base::rows(); i++) {
-			size_t sum = digit_sum(in.VectorMult(Base::row_vec(i)));
-			if (sum >= thresh) {
+			bool iden = true;
+			for (size_t j = 0; j < in.numberOfCells(in.size()); j++) {
+				uint8_t v = in.get_cell(j);
+				uint8_t w = Base::get_cell(i, j);
+				if ((v & w) != v) {
+					iden = false;
+					break;
+				}
+			}
+			if (iden) {
 				vec.set_bit(i);
-			};
-		};
-
+			}
+		}
 		return vec;
-	}
+	};
 
 	/*
 	 * Recall procedure for a matrix of samples, @param thresh is the threshold
 	 */
-	BinaryMatrix<T> recallMat(BinaryMatrix<T> in, size_t thresh)
+	BinaryMatrix<T> recallMat(BinaryMatrix<T> in)
 	{
 		if (in.cols() != Base::cols()) {
 			std::stringstream ss;
@@ -138,7 +145,7 @@ public:
 		}
 		BinaryMatrix<T> res(in.rows(), Base::cols());
 		for (size_t i = 0; i < res.rows(); i++) {
-			res.write_vec(i, recall(in.row_vec(i), thresh));
+			res.write_vec(i, recall(in.row_vec(i)));
 		};
 		return res;
 	}
@@ -240,7 +247,7 @@ public:
 	 */
 	BiNAM_Container<T> &recall()
 	{
-		m_recall = m_BiNAM.recallMat(m_input, m_params.ones_in());
+		m_recall = m_BiNAM.recallMat(m_input);
 		m_SampleError = m_BiNAM.false_bits_mat(m_output, m_recall);
 		return *this;
 	};
