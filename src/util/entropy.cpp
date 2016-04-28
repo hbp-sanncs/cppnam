@@ -78,3 +78,4 @@ double conventional_memory_entropy(const DataParameters &params)
 	       std::log(2);
 }
 }
+

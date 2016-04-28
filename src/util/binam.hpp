@@ -102,14 +102,15 @@ public:
 	size_t digit_sum(BinaryVector<T> vec)
 	{
 		size_t sum = 0;
-		for (size_t i = 0; i < Base::numberOfCells(vec.cols()); i++) {
+		for (size_t i = 0; i < Base::numberOfCells(vec.size()); i++) {
 			sum += population_count<T>(vec.get_cell(i));
 		};
 		return sum;
 	}
 
 	/*
-	 * Recall procedure for a single sample, @param thresh is the threshold
+	 * Recall procedure for a single sample
+	 * @param thresh is the threshold
 	 */
 	BinaryVector<T> recall(BinaryVector<T> in, size_t thresh)
 	{
@@ -150,9 +151,8 @@ public:
 	SampleError false_bits(BinaryVector<T> out, BinaryVector<T> recall)
 	{
 		SampleError error;
-		T temp;
 		for (size_t i = 0; i < Base::numberOfCells(out.size()); i++) {
-			temp = out.get_cell(i) ^ recall.get_cell(i);
+			T temp = out.get_cell(i) ^ recall.get_cell(i);
 			error.fp += population_count<T>(temp & recall.get_cell(i));
 			error.fn += population_count<T>(temp & out.get_cell(i));
 		}
@@ -177,13 +177,21 @@ public:
 		for (size_t i = 0; i < res.rows(); i++) {
 			error[i] = false_bits(out.row_vec(i), res.row_vec(i));
 		}
+		std::cout << std::endl;
 		return error;
 	}
 };
 
+/**
+ * The BiNAM_Container is the general class to evaluate BiNAMs and the easy to
+ * use interface.
+ * Within the constructor one gives the general descritption of the memory and
+ * data-generation. With several commands one can generate the data, train the
+ * storage matrix and at last recall and analyse.
+ */
 template <typename T>
 class BiNAM_Container {
-private:
+public:
 	BiNAM<T> m_BiNAM;
 	DataParameters m_params;
 	DataGenerator m_generator;
@@ -191,6 +199,18 @@ private:
 	std::vector<SampleError> m_SampleError;
 
 public:
+	/**
+	 * Constructor of the Container. Sets all parameters needed for ongoing
+	 * Calculation. Therefore, one representation of the BiNAM_Container class
+	 * corresponds exactly to one realisation of associative memory.
+	 * @param params contains the BiNAM parameters like network size, number of
+	 * samples,...
+	 * @param seed for the random number generator which produces the data. Can
+	 * be used to generate exactly the same data in consecutive runs.
+	 * @param random: flag which (de)activates the randomization of data
+	 * @param balanced: activates the algorithm for balanced data generation
+	 * @param unique: Suppresses the multiple generation of the same pattern
+	 */
 	BiNAM_Container(DataParameters params, size_t seed, bool random = true,
 	                bool balanced = true, bool unique = true)
 	    : m_BiNAM(params.bits_in(), params.bits_out()),
@@ -202,6 +222,9 @@ public:
 	      m_params(params),
 	      m_generator(random, balanced, unique){};
 
+	/**
+	 * Generates input and output data, trains the storage matrix
+	 */
 	BiNAM_Container<T> &set_up()
 	{
 		m_input = m_generator.generate<T>(
@@ -212,34 +235,48 @@ public:
 		return *this;
 	};
 
+	/**
+	 * Recalls the patterns with the input matrix
+	 */
 	BiNAM_Container<T> &recall()
 	{
 		m_recall = m_BiNAM.recallMat(m_input, m_params.ones_in());
 		m_SampleError = m_BiNAM.false_bits_mat(m_output, m_recall);
 		return *this;
 	};
-	
-	const std::vector<SampleError> &false_bits()
-	{
-		return m_SampleError;
-	};
 
+	/**
+	 * Returns the vector of SampleError containing the number of false
+	 * positives and negatives per sample which is calculated by the recall
+	 * function.
+	 */
+	const std::vector<SampleError> &false_bits() { return m_SampleError; };
+	
+	/**
+	 * Returns the number of all false positives and negatives of the recall.
+	 */
 	SampleError sum_false_bits()
 	{
-		SampleError sum(0,0);
+		SampleError sum(0, 0);
 		for (size_t i = 0; i < m_SampleError.size(); i++) {
 			sum.fp += m_SampleError[i].fp;
 			sum.fn += m_SampleError[i].fn;
 		}
 		return sum;
 	};
-
+	
+	/*
+	 * Gives back an approximate number of expected false positives
+	 */
 	SampleError theoretical_false_bits()
 	{
-		SampleError se(expected_false_positives(m_params),0);
+		SampleError se(expected_false_positives(m_params), 0);
 		return se;
 	};
 
+	/**
+	 * Prints out the results of analysis: Number of FP and FN, Information count and expected values.
+	 */
 	void analysis()
 	{
 		SampleError se = sum_false_bits();
@@ -248,10 +285,30 @@ public:
 		double info_th = expected_entropy(m_params);
 		std::cout << "Result of the analysis" << std::endl;
 		std::cout << "\tInfo \t nInfo \t fp \t fn" << std::endl;
-		std::cout << "theor: \t" << info_th << "\t" << 1.00 << "\t" << se_th.fp
-		          << "\t" << se_th.fn << std::endl;
+		std::cout << "theor: \t" << info_th << "\t" << 1.00 << "\t"
+		          << se_th.fp * m_params.samples() << "\t" << se_th.fn
+		          << std::endl;
 		std::cout << "exp: \t" << info << "\t" << info / info_th << "\t"
 		          << se.fp << "\t" << se.fn << std::endl;
+	};
+	
+	/**
+	 * Getter for member matrices
+	 */
+	BiNAM<T> trained_matrix() { return m_BiNAM; };
+	BinaryMatrix<T> input_matrix() { return m_input; };
+	BinaryMatrix<T> output_matrix() { return m_output; };
+	BinaryMatrix<T> recall_matrix() { return m_recall; };
+
+	/**
+	 * Print out matrices for testing purposes
+	 */
+	void print()
+	{
+		m_BiNAM.print();
+		m_input.print();
+		m_output.print();
+		m_recall.print();
 	};
 };
 }

@@ -39,8 +39,8 @@ class BinaryVector;
 
 /**
  * Matrix class which is used for the BiNAM and storage of patterns.
- * Rows are stored in interger types, which are given as template type.
- * Then we use bitwise manipulation. Change in values are done by set_bit and
+ * Rows are stored in integer types, which are given as template type.
+ * Then we use bit-wise manipulation. Change in values are done by set_bit and
  * set_cell. Cells mean whole integer types. Via set_bit and get_bit one can use
  * the simple row/column numbers as one would do in a normal matrix
  */
@@ -161,7 +161,7 @@ public:
 	/**
 	 * Set a bit at [row,col]
 	 */
-	BinaryMatrix<T>& set_bit(uint32_t row, uint32_t col)
+	BinaryMatrix<T> &set_bit(uint32_t row, uint32_t col)
 	{
 		check_range(row, col);
 		uint32_t m = col % intWidth;
@@ -181,7 +181,7 @@ public:
 	/**
 	 * Set a cell at [row,cell-col]
 	 */
-	BinaryMatrix<T>& set_cell(uint32_t row, uint32_t col, T value)
+	BinaryMatrix<T> &set_cell(uint32_t row, uint32_t col, T value)
 	{
 		check_range_cells(row, col);
 		m_mat(row, col) = value;
@@ -201,10 +201,10 @@ public:
 	BinaryVector<T> row_vec(size_t i)
 	{
 		BinaryVector<T> vec(m_cols);
-		for (size_t j = 0; j < m_cols; j++) {
-			if (get_bit(i, j)) {
-				vec.set_bit(j);
-			}
+		for (size_t j = 0; j < numberOfCells(m_cols); j++) {
+			
+			vec.set_cell(j, get_cell(i,j));
+			
 		}
 		return vec;
 	}
@@ -228,10 +228,43 @@ public:
 			m_mat(row, i) = vec.get_cell(i);
 		}
 	}
+	
+	/**
+	 * Gives back a 'normal' matrix
+	 */
+	Matrix<uint8_t> convertToMatrix()
+	{
+		Matrix<uint8_t> mat(m_rows, m_cols);
+		for (size_t i=0; i<m_rows;i++)
+		{
+			for(size_t j=0; j<m_cols;j++)
+			{
+				mat(i,j)=int(get_bit(i,j));
+			}
+		}
+		return mat;
+	}
+	
+	/**
+	 * Print the matrix for testing purposes
+	 */
+	void print()
+	{
+		for (size_t i=0; i<m_rows;i++)
+		{
+			for(size_t j=0; j<m_cols;j++)
+			{
+				std::cout<<int(get_bit(i,j));
+			}
+			std::cout<<"\n";
+		}
+		std::cout << std::endl;
+	}
+		
 };
 
 /**
- * Binary vector class, compund of integers of type @param T. Usage is similar
+ * Binary vector class, compound of integers of type @param T. Usage is similar
  * to BinaryMatrix class
  */
 template <typename T>
@@ -255,7 +288,7 @@ public:
 		return Base::get_bit(0, row);
 	}
 
-	BinaryVector<T>& set_bit(uint32_t row)
+	BinaryVector<T> &set_bit(uint32_t row)
 	{
 		Base::set_bit(0, row);
 		return *this;
@@ -264,7 +297,7 @@ public:
 	void set_cell(uint32_t row, T value) { Base::set_cell(0, row, value); }
 
 	/**
-	 * Component-wise mulitplication of two vectors. NOT a scalarproduct
+	 * Component-wise multiplication of two vectors. NOT a scalar-product
 	 */
 	BinaryVector<T> VectorMult(BinaryVector<T> b)
 	{
