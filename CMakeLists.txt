@@ -38,6 +38,9 @@ add_library(cppnam_util
 	src/util/optimisation
 	src/util/parameters
 	src/util/population_count
+	src/util/spiking_parameters
+target_link_libraries(cppnam_util
+	/usr/local/lib/libcypress.a
 )
 
 add_executable(data_generator
@@ -57,6 +60,10 @@ target_link_libraries(binam
 )
 
 
+target_link_libraries(spiking_binam
+	cppnam_util
+)
+
 
 #
 # Unit tests -- only enable if gtest is present
@@ -71,6 +78,7 @@ if(${GTEST_FOUND})
 		test/util/test_ncr
 		test/util/test_parameters
 		test/util/test_population_count
+		test/util/test_spiking_parameters
 	)
 
 	target_link_libraries(cppnam_test_util
