@@ -33,7 +33,6 @@ add_library(cppnam_util
 	src/util/binary_matrix
 	src/util/data
 	src/util/entropy
-	src/util/matrix
 	src/util/ncr
 	src/util/optimisation
 	src/util/parameters
