@@ -44,6 +44,8 @@ add_library(cppnam_util
 
 target_link_libraries(cppnam_util
 	/usr/local/lib/libcypress.a
+#	/home/andreas/.local/lib/libcypress.a
+	-pthread
 )
 
 add_executable(data_generator
@@ -62,8 +64,11 @@ target_link_libraries(binam
 	cppnam_util
 )
 
+add_executable(sp_binam
+	src/cli/sp_binam
+)
 
-target_link_libraries(spiking_binam
+target_link_libraries(sp_binam
 	cppnam_util
 )
 
