@@ -118,8 +118,8 @@ public:
 		for (size_t i = 0; i < Base::rows(); i++) {
 			bool iden = true;
 			for (size_t j = 0; j < in.numberOfCells(in.size()); j++) {
-				uint8_t v = in.get_cell(j);
-				uint8_t w = Base::get_cell(i, j);
+				uint64_t v = in.get_cell(j);
+				uint64_t w = Base::get_cell(i, j);
 				if ((v & w) != v) {
 					iden = false;
 					break;
