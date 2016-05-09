@@ -77,6 +77,7 @@ if(${GTEST_FOUND})
 		test/util/test_ncr
 		test/util/test_parameters
 		test/util/test_population_count
+		test/util/test_spike_trains
 		test/util/test_spiking_parameters
 	)
 
