@@ -37,7 +37,11 @@ add_library(cppnam_util
 	src/util/optimisation
 	src/util/parameters
 	src/util/population_count
+	src/util/spike_trains
+	src/util/spiking_binam
 	src/util/spiking_parameters
+)
+
 target_link_libraries(cppnam_util
 	/usr/local/lib/libcypress.a
 )
@@ -63,6 +67,8 @@ target_link_libraries(spiking_binam
 	cppnam_util
 )
 
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/test/util/test.json 
+	DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 #
 # Unit tests -- only enable if gtest is present
@@ -78,6 +84,7 @@ if(${GTEST_FOUND})
 		test/util/test_parameters
 		test/util/test_population_count
 		test/util/test_spike_trains
+		test/util/test_spiking_binam
 		test/util/test_spiking_parameters
 	)
 
