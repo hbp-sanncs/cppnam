@@ -20,6 +20,7 @@
 
 #ifndef CPPNAM_UTIL_BINAM_HPP
 #define CPPNAM_UTIL_BINAM_HPP
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 
@@ -184,7 +185,6 @@ public:
 		for (size_t i = 0; i < res.rows(); i++) {
 			error[i] = false_bits(out.row_vec(i), res.row_vec(i));
 		}
-		std::cout << std::endl;
 		return error;
 	}
 };
@@ -228,6 +228,7 @@ public:
 	    : m_BiNAM(params.bits_in(), params.bits_out()),
 	      m_params(params),
 	      m_generator(random, balanced, unique){};
+	BiNAM_Container(){};
 
 	/**
 	 * Generates input and output data, trains the storage matrix
@@ -262,12 +263,16 @@ public:
 	/**
 	 * Returns the number of all false positives and negatives of the recall.
 	 */
-	SampleError sum_false_bits()
+	SampleError sum_false_bits(std::vector<SampleError> vec_err = {
+	                               SampleError(-1, -1)})
 	{
+		if (vec_err[0].fp < 0) {
+			vec_err = m_SampleError;
+		}
 		SampleError sum(0, 0);
-		for (size_t i = 0; i < m_SampleError.size(); i++) {
-			sum.fp += m_SampleError[i].fp;
-			sum.fn += m_SampleError[i].fn;
+		for (size_t i = 0; i < vec_err.size(); i++) {
+			sum.fp += vec_err[i].fp;
+			sum.fn += vec_err[i].fn;
 		}
 		return sum;
 	};
@@ -285,11 +290,18 @@ public:
 	 * Prints out the results of analysis: Number of FP and FN, Information
 	 * count and expected values.
 	 */
-	void analysis()
+	void analysis(std::vector<SampleError> vec_err = {SampleError(-1, -1)})
 	{
-		SampleError se = sum_false_bits();
+		std::vector<SampleError> err;
+		if (vec_err[0].fp < 0) {
+			err = m_SampleError;
+		}
+		else {
+			err = vec_err;
+		}
+		SampleError se = sum_false_bits(err);
 		SampleError se_th = theoretical_false_bits();
-		double info = entropy_hetero(m_params, m_SampleError);
+		double info = entropy_hetero(m_params, err);
 		double info_th = expected_entropy(m_params);
 		std::cout << "Result of the analysis" << std::endl;
 		std::cout << "\tInfo \t nInfo \t fp \t fn" << std::endl;
@@ -303,10 +315,10 @@ public:
 	/**
 	 * Getter for member matrices
 	 */
-	BiNAM<T> trained_matrix() { return m_BiNAM; };
-	BinaryMatrix<T> input_matrix() { return m_input; };
-	BinaryMatrix<T> output_matrix() { return m_output; };
-	BinaryMatrix<T> recall_matrix() { return m_recall; };
+	const BiNAM<T> &trained_matrix() const { return m_BiNAM; };
+	const BinaryMatrix<T> &input_matrix() const { return m_input; };
+	const BinaryMatrix<T> &output_matrix() const { return m_output; };
+	const BinaryMatrix<T> &recall_matrix() const { return m_recall; };
 
 	/**
 	 * Print out matrices for testing purposes
