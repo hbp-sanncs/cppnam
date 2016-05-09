@@ -30,9 +30,14 @@
 #include <stdexcept>
 #endif
 
-#include "util/matrix.hpp"
+#include <cypress/util/matrix.hpp>
 
 namespace nam {
+
+using cypress::Matrix;
+using cypress::MatrixFlags;
+using cypress::Vector;
+
 template <typename T>
 class BinaryMatrix;
 
@@ -108,7 +113,7 @@ public:
 	/**
 	 * Check if bit-numbers are in range of matrix to avoid overflows
 	 */
-	void check_range(uint32_t row, uint32_t col)
+	void check_range(uint32_t row, uint32_t col) const
 	{
 		if (row >= m_rows || col >= m_cols) {
 			std::stringstream ss;
@@ -121,7 +126,7 @@ public:
 	/**
 	 * Check if cell-numbers are in range of matrix to avoid overflows
 	 */
-	void check_range_cells(uint32_t row, uint32_t col)
+	void check_range_cells(uint32_t row, uint32_t col) const
 	{
 		if (row >= m_rows || col >= numberOfCells(m_cols)) {
 			std::stringstream ss;
@@ -135,17 +140,17 @@ public:
 	/**
 	 * Check if bit-numbers are in range of matrix to avoid overflows
 	 */
-	void check_range(uint32_t, uint32_t) {}
+	void check_range(uint32_t, uint32_t) const {}
 	/**
 	 * Check if cell-numbers are in range of matrix to avoid overflows
 	 */
-	void check_range_cells(uint32_t, uint32_t) {}
+	void check_range_cells(uint32_t, uint32_t) const {}
 
 #endif
 	/**
 	 * Read a bit at [row,col]
 	 */
-	bool get_bit(uint32_t row, uint32_t col)
+	bool get_bit(uint32_t row, uint32_t col) const
 	{
 		check_range(row, col);
 		uint32_t m = col % intWidth;
@@ -166,7 +171,7 @@ public:
 	/**
 	 * Get a cell at [row,cell-col]
 	 */
-	T get_cell(uint32_t row, uint32_t col)
+	T get_cell(uint32_t row, uint32_t col) const
 	{
 		check_range_cells(row, col);
 		return m_mat(row, col);
@@ -210,8 +215,8 @@ public:
 	{
 		if (row >= m_rows || m_cols != vec.size()) {
 			std::stringstream ss;
-			ss << "Either row out of bounds" << row
-			   << " or vector size too small:" << vec.size() << " , " << m_cols
+			ss << "Either row " << row << " out of bounds of " << m_rows
+			   << " or wrong vector size:" << vec.size() << " , " << m_cols
 			   << std::endl;
 			throw std::out_of_range(ss.str());
 		}
@@ -219,6 +224,23 @@ public:
 		vec.check_range(0, m_cols - 1);
 		for (size_t i = 0; i < numberOfCells(vec.size()); i++) {
 			m_mat(row, i) = vec.get_cell(i);
+		}
+	}
+
+	void write_col_vec(size_t col, Vector<uint8_t> vec)
+	{
+		if (col >= m_cols || m_rows != vec.size()) {
+			std::stringstream ss;
+			ss << "Either row " << col << " out of bounds of " << m_cols
+			   << " or wrong vector size:" << vec.size() << " , " << m_rows
+			   << std::endl;
+			throw std::out_of_range(ss.str());
+		}
+		check_range(vec.size() - 1, col);
+		for (size_t i = 0; i < vec.size(); i++) {
+			if (vec(i) > 0) {
+				set_bit(i, col);
+			}
 		}
 	}
 
@@ -266,9 +288,9 @@ public:
 	/**
 	 * Functions for manipulating the vector
 	 */
-	T get_cell(uint32_t row) { return Base::get_cell(0, row); }
+	T get_cell(uint32_t row) const { return Base::get_cell(0, row); }
 
-	bool get_bit(uint32_t row) { return Base::get_bit(0, row); }
+	bool get_bit(uint32_t row) const { return Base::get_bit(0, row); }
 
 	BinaryVector<T> &set_bit(uint32_t row)
 	{
