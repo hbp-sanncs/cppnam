@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <gtest/gtest.h>
 #include <util/binary_matrix.hpp>
+#include <cypress/util/matrix.hpp>
 
 namespace nam {
 
@@ -117,5 +118,33 @@ TEST(BinaryMatrix, manipulation)
 	EXPECT_FALSE(vec2.VectorMult(vec2).get_bit(0));
 	EXPECT_TRUE(vec2.VectorMult(vec3).get_bit(1));
 	EXPECT_FALSE(vec2.VectorMult(vec3).get_bit(0));
+	
+	
+	BinaryMatrix<uint8_t> mat(3,3);
+	cypress::Vector<uint8_t> hector({1,0,1});
+	EXPECT_EQ(1, hector[0]);
+	EXPECT_EQ(0, hector[1]);
+	EXPECT_EQ(1, hector[2]);
+	mat.write_col_vec(1,hector);
+	EXPECT_EQ(0, mat.get_bit(0,0));
+	EXPECT_EQ(1, mat.get_bit(0,1));
+	EXPECT_EQ(0, mat.get_bit(0,2));
+	EXPECT_EQ(0, mat.get_bit(1,0));
+	EXPECT_EQ(0, mat.get_bit(1,1));
+	EXPECT_EQ(0, mat.get_bit(1,2));
+	EXPECT_EQ(0, mat.get_bit(2,0));
+	EXPECT_EQ(1, mat.get_bit(2,1));
+	EXPECT_EQ(0, mat.get_bit(2,2));
+	mat.write_col_vec(2,hector);
+	EXPECT_EQ(0, mat.get_bit(0,0));
+	EXPECT_EQ(1, mat.get_bit(0,1));
+	EXPECT_EQ(1, mat.get_bit(0,2));
+	EXPECT_EQ(0, mat.get_bit(1,0));
+	EXPECT_EQ(0, mat.get_bit(1,1));
+	EXPECT_EQ(0, mat.get_bit(1,2));
+	EXPECT_EQ(0, mat.get_bit(2,0));
+	EXPECT_EQ(1, mat.get_bit(2,1));
+	EXPECT_EQ(1, mat.get_bit(2,2));
+	
 }
 }
