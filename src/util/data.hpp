@@ -30,7 +30,8 @@
 
 #include "binary_matrix.hpp"
 #include "ncr.hpp"
-#include "matrix.hpp"
+
+#include <cypress/util/matrix.hpp>
 
 namespace nam {
 class PermutationTrieNode {
