@@ -24,7 +24,7 @@
 #include <array>
 
 #include <cypress/cypress.hpp>
-#include "matrix.hpp"
+
 /**
  * Macro used for defining the getters and setters associated with a parameter
  * value.
@@ -57,9 +57,11 @@ public:
 
 class NetworkParameters {
 private:
-	std::array<double, 9> arr;
+	std::array<double, 10> arr;
 
 public:
+	static const std::array<const char *, 10> names;
+
 	NAMED_PARAMETER(input_burst_size, 0);
 	NAMED_PARAMETER(output_burst_size, 1);
 	NAMED_PARAMETER(time_window, 2);
@@ -69,11 +71,10 @@ public:
 	NAMED_PARAMETER(p0, 6);
 	NAMED_PARAMETER(p1, 7);
 	NAMED_PARAMETER(weight, 8);
+	NAMED_PARAMETER(general_offset, 9);
 	NetworkParameters(const cypress::Json &json);
-	NetworkParameters(){};
-	static std::array<const char *,9> names;
+	NetworkParameters() : arr{0, 0, 0, 0, 0, 0, 0, 0, 0, 0} {};
 };
-
 }
 
 #undef NAMED_PARAMETER

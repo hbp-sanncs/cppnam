@@ -21,7 +21,6 @@
 
 #include <cypress/cypress.hpp>
 #include "binary_matrix.hpp"
-#include "matrix.hpp"
 #include "parameters.hpp"
 #include "spiking_binam.hpp"
 
@@ -51,38 +50,12 @@ T read_check(cypress::Json json, std::string name, T default_val)
 	}
 	return default_val;
 }
-
-DataParameters read_data_params(const cypress::Json &json)
-{
-	int n_in = read_check<int>(json, "n_bits_in", 0);
-	int n_out = read_check<int>(json, "n_bits_out", 0);
-	int n_ones_in = read_check<int>(json, "n_ones_in", 0);
-	int n_ones_out = read_check<int>(json, "n_ones_out", 0);
-	int n_samples = read_check<int>(json, "n_samples", 0);
-	auto data = DataParameters(n_in, n_out, n_ones_in, n_ones_out, n_samples);
-	if (n_ones_in == 0) {
-		data = data.optimal(n_in, n_samples);
-	}
-	data.canonicalize();
-	if (n_samples == 0) {
-		data.optimal_sample_count();
-	}
-	if (!data.valid()) {
-		throw("Exception");
-	}
-	return data;
-}
 }
 
-std::array<const char *, 9> NetworkParameters::names = {"input_burst_size",
-                                                        "output_burst_size",
-                                                        "time_window",
-                                                        "isi",
-                                                        "sigma_t",
-                                                        "sigma_offs",
-                                                        "p0",
-                                                        "p1",
-                                                        "weight"};
+const std::array<const char *, 10> NetworkParameters::names = {
+    "input_burst_size", "output_burst_size", "time_window", "isi",
+    "sigma_t",          "sigma_offs",        "p0",          "p1",
+    "weight",           "general_offset"};
 
 NeuronParameters::NeuronParameters(const cypress::NeuronType &type,
                                    const cypress::Json &json)
