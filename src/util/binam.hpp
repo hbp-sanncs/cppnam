@@ -144,7 +144,7 @@ public:
 			   << Base::cols() << std::endl;
 			throw std::out_of_range(ss.str());
 		}
-		BinaryMatrix<T> res(in.rows(), Base::cols());
+		BinaryMatrix<T> res(in.rows(), Base::rows());
 		for (size_t i = 0; i < res.rows(); i++) {
 			res.write_vec(i, recall(in.row_vec(i)));
 		};
