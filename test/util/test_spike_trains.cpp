@@ -68,7 +68,6 @@ TEST(spiketrain, spikes_to_vector)
 	params.output_burst_size(3);
 	
 	res = spikes_to_vector(spike_vec, 15, params);
-	std::cout << spike_vec;
 	EXPECT_EQ(0, res[0]);
 	EXPECT_EQ(0, res[1]);
 	EXPECT_EQ(0, res[2]);
