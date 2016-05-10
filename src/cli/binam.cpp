@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 {
 	if (argc != 4 && argc != 6) {
 		std::cerr << "Usage: ./data_generator <BITS> <ONES> <SAMPLES> "
-		          << "or <BITS_IN> <BITS_OUT> <ONES_IN> <ONES_OUT> <SAMPLES>"
+		          << "or <BITS_IN> <BITS_OUT> <ONES_IN> <ONES_OUT> <MAX_SAMPLES>"
 		          << std::endl;
 		return 1;
 	}
