@@ -22,6 +22,7 @@
 #define CPPNAM_UTIL_SPIKING_PARAMETERS_HPP
 
 #include <array>
+#include <string>
 
 #include <cypress/cypress.hpp>
 
@@ -42,8 +43,8 @@ private:
 	std::vector<float> m_params;
 
 public:
-	NeuronParameters(const cypress::NeuronType &type,
-	                 const cypress::Json &json);
+	NeuronParameters(const cypress::NeuronType &type, const cypress::Json &json,
+	                 std::ostream &out = std::cout);
 	NeuronParameters(){};
 
 	const std::vector<float> &parameter() const { return m_params; };
@@ -72,7 +73,7 @@ public:
 	NAMED_PARAMETER(p1, 7);
 	NAMED_PARAMETER(weight, 8);
 	NAMED_PARAMETER(general_offset, 9);
-	NetworkParameters(const cypress::Json &json);
+	NetworkParameters(const cypress::Json &json, std::ostream &out = std::cout);
 	NetworkParameters() : arr{0, 0, 0, 0, 0, 0, 0, 0, 0, 0} {};
 };
 }

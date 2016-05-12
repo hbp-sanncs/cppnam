@@ -58,15 +58,24 @@ const std::array<const char *, 10> NetworkParameters::names = {
     "weight",           "general_offset"};
 
 NeuronParameters::NeuronParameters(const cypress::NeuronType &type,
-                                   const cypress::Json &json)
+                                   const cypress::Json &json, std::ostream &out)
 {
 	m_params = read_neuron_parameters_from_json(type, json["params"]);
+	out << "# Neuron Parameters: " << std::endl;
+	for (size_t i = 0; i < m_params.size(); i++) {
+		out << type.parameter_names[i] << ": " << m_params[i] << std::endl;
+	}
+	out << std::endl;
 }
 
-NetworkParameters::NetworkParameters(const cypress::Json &json)
+NetworkParameters::NetworkParameters(const cypress::Json &json,
+                                     std::ostream &out)
 {
+	out << "# NetworkParameters: " << std::endl;
 	for (size_t i = 0; i < names.size(); i++) {
 		arr[i] = read_check<double>(json, names[i], 0);
+		out << names[i] << ": " << arr[i] << std::endl;
 	}
+	out << std::endl;
 }
 }

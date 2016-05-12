@@ -79,7 +79,7 @@ public:
 	 * It sets up the BiNAM_Container, runs and evaluates them (latter one for
 	 * comparison).
 	 */
-	SpikingBinam(cypress::Json &json);
+	SpikingBinam(cypress::Json &json, std::ostream &out = std::cout);
 
 	/**
 	 * Getters for the parameter structures.
@@ -102,7 +102,7 @@ public:
 	/**
 	 * Evaluation based on that one used in the BiNAM_Container
 	 */
-	void eval_output();
+	void eval_output(std::ostream &output);
 };
 }
 

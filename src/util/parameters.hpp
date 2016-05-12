@@ -22,6 +22,7 @@
 #define CPPNAM_UTIL_PARAMETERS_HPP
 
 #include <cstddef>
+#include <iostream>
 
 namespace nam {
 
@@ -109,6 +110,17 @@ public:
 	{
 		m_samples = optimal_sample_count(*this);
 		return *this;
+	}
+
+	void print(std::ostream &out = std::cout)
+	{
+		out << "# Data Parameters: " << std::endl
+		    << "Input Bits: " << m_bits_in << std::endl
+		    << "Output Bits: " << m_bits_out << std::endl
+		    << "Input Ones: " << m_ones_in << std::endl
+		    << "Output Ones: " << m_ones_out << std::endl
+		    << "Samples: " << m_samples << std::endl
+		    << std::endl;
 	}
 };
 }

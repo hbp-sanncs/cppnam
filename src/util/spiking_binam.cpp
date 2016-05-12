@@ -104,17 +104,19 @@ std::vector<std::vector<float>> SpikingBinam::build_spike_times()
 	return res;
 }
 
-SpikingBinam::SpikingBinam(Json &json)
+SpikingBinam::SpikingBinam(Json &json, std::ostream &out)
     : m_pop_source(m_net, 0), m_pop_output(m_net, 0)
 {
+	std::cout << "read data"<< std::endl;
 	m_dataParams = read_data_params(json["data"]);
+	m_dataParams.print(out);
 	m_BiNAM_Container = BiNAM_Container<uint64_t>(m_dataParams);
 	m_neuronType = json["network"]["neuron_type"];
 	auto neuronType = detect_type(m_neuronType);
 
-	m_neuronParams = NeuronParameters(neuronType, json["network"]);
-	m_networkParams = NetworkParameters(json["network"]);
-	m_BiNAM_Container.set_up().recall().analysis();
+	m_neuronParams = NeuronParameters(neuronType, json["network"], out);
+	m_networkParams = NetworkParameters(json["network"], out);
+	m_BiNAM_Container.set_up().recall().analysis({SampleError(-1, -1)}, out);
 }
 
 template <typename T>
@@ -179,11 +181,11 @@ BinaryMatrix<uint64_t> SpikingBinam::spikes_to_matrix()
 	return res;
 }
 
-void SpikingBinam::eval_output()
+void SpikingBinam::eval_output(std::ostream &out = std::cout)
 {
 	BinaryMatrix<uint64_t> output = spikes_to_matrix();
 	auto err = m_BiNAM_Container.m_BiNAM.false_bits_mat(
 	    m_BiNAM_Container.m_output, output);
-	m_BiNAM_Container.analysis(err);
+	m_BiNAM_Container.analysis(err, out);
 }
 }

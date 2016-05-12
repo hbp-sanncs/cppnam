@@ -20,6 +20,7 @@
 
 #ifndef CPPNAM_UTIL_BINAM_HPP
 #define CPPNAM_UTIL_BINAM_HPP
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -290,11 +291,14 @@ public:
 	 * Prints out the results of analysis: Number of FP and FN, Information
 	 * count and expected values.
 	 */
-	void analysis(std::vector<SampleError> vec_err = {SampleError(-1, -1)})
+	void analysis(std::vector<SampleError> vec_err = {SampleError(-1, -1)},
+	              std::ostream &output = std::cout)
 	{
 		std::vector<SampleError> err;
+		bool member_flag = false;
 		if (vec_err[0].fp < 0) {
 			err = m_SampleError;
+			member_flag = true;
 		}
 		else {
 			err = vec_err;
@@ -303,13 +307,19 @@ public:
 		SampleError se_th = theoretical_false_bits();
 		double info = entropy_hetero(m_params, err);
 		double info_th = expected_entropy(m_params);
-		std::cout << "Result of the analysis" << std::endl;
-		std::cout << "\tInfo \t nInfo \t fp \t fn" << std::endl;
-		std::cout << "theor: \t" << info_th << "\t" << 1.00 << "\t"
-		          << se_th.fp * m_params.samples() << "\t" << se_th.fn
-		          << std::endl;
-		std::cout << "exp: \t" << info << "\t" << info / info_th << "\t"
-		          << se.fp << "\t" << se.fn << std::endl;
+
+		if (member_flag) {
+			output << "Result of the non-spiking analysis" << std::endl;
+		}
+		else {
+			output << "Result of the analysis" << std::endl;
+		}
+		output << "\tInfo \t nInfo \t fp \t fn" << std::endl;
+		output << "theor: \t" << info_th << "\t" << 1.00 << "\t"
+		       << se_th.fp * m_params.samples() << "\t" << se_th.fn
+		       << std::endl;
+		output << "exp: \t" << info << "\t" << info / info_th << "\t" << se.fp
+		       << "\t" << se.fn << std::endl;
 	};
 
 	/**

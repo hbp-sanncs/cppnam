@@ -31,12 +31,18 @@ int main(int argc,const char *argv[])
 	std::ifstream ifs("test.json", std::ifstream::in);
 	cypress::Json json(ifs);
 	SpikingBinam binam(json);
+	std::ofstream ofs("data.txt", std::ofstream::app);
+	auto time = std::time(NULL);
+	ofs << "Spiking Binam from " << std::ctime(&time) << std::endl;
+	std::cout << "data " << std::endl;
+	SpikingBinam binam(json, ofs);
 	binam.build();
-	std::cout << "Building complete"<< std::endl;
+	std::cout << "Building complete" << std::endl;
 	binam.run(argv[1]);
-	std::cout << "Run complete"<< std::endl;
-	binam.eval_output();
-	
-	
+	std::cout << "Run complete" << std::endl;
+	binam.eval_output(ofs);
+	ofs << std::endl << "____________________________________________" 
+	<< std::endl;
+
 	return 0;
 }
