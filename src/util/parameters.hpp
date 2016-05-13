@@ -24,6 +24,8 @@
 #include <cstddef>
 #include <iostream>
 
+#include <cypress/util/json.hpp>
+
 namespace nam {
 
 class DataParameters {
@@ -44,6 +46,8 @@ public:
 	      m_samples(samples)
 	{
 	}
+	
+	DataParameters(const cypress::Json &obj);
 
 	static DataParameters optimal(const size_t bits, const size_t samples = 0);
 

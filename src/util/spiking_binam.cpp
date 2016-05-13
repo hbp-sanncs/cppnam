@@ -30,43 +30,6 @@ using namespace cypress;
 
 namespace nam {
 namespace {
-
-/**
- * Read in a value with check. If not found, return @param default_val
- */
-template <typename T>
-T read_check(Json json, std::string name, T default_val)
-{
-	if (json.find(name) != json.end()) {
-		return json[name];
-	}
-	return default_val;
-}
-
-/**
- * Helper to read in all DataParameters
- */
-DataParameters read_data_params(const Json &json)
-{
-	int n_in = read_check<int>(json, "n_bits_in", 0);
-	int n_out = read_check<int>(json, "n_bits_out", 0);
-	int n_ones_in = read_check<int>(json, "n_ones_in", 0);
-	int n_ones_out = read_check<int>(json, "n_ones_out", 0);
-	int n_samples = read_check<int>(json, "n_samples", 0);
-	auto data = DataParameters(n_in, n_out, n_ones_in, n_ones_out, n_samples);
-	if (n_ones_in == 0) {
-		data = data.optimal(n_in, n_samples);
-	}
-	data.canonicalize();
-	if (n_samples == 0) {
-		data.optimal_sample_count();
-	}
-	if (!data.valid()) {
-		throw("Exception");
-	}
-	return data;
-}
-
 /**
  * Helper to return an instance of a certain neuron type
  */
@@ -107,8 +70,7 @@ std::vector<std::vector<float>> SpikingBinam::build_spike_times()
 SpikingBinam::SpikingBinam(Json &json, std::ostream &out)
     : m_pop_source(m_net, 0), m_pop_output(m_net, 0)
 {
-	std::cout << "read data"<< std::endl;
-	m_dataParams = read_data_params(json["data"]);
+	m_dataParams = DataParameters(json["data"]);
 	m_dataParams.print(out);
 	m_BiNAM_Container = BiNAM_Container<uint64_t>(m_dataParams);
 	m_neuronType = json["network"]["neuron_type"];

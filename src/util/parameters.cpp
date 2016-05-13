@@ -16,11 +16,37 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "parameters.hpp"
 #include "entropy.hpp"
 #include "optimisation.hpp"
+#include "read_json.hpp"
+#include "parameters.hpp"
 
 namespace nam {
+
+DataParameters::DataParameters(const cypress::Json &obj)
+{
+	std::map<std::string, size_t> input = json_to_map<size_t>(obj);
+	std::vector<std::string> names = {"n_bits_in", "n_bits_out", "n_ones_in",
+	                                  "n_ones_out", "n_samples"};
+	auto res =
+	    read_check<size_t>(input, names, std::vector<size_t>(names.size(), 0));
+
+	m_bits_in = res[0];
+	m_bits_out = res[1];
+	m_ones_in = res[2];
+	m_ones_out = res[3];
+	m_samples = res[4];
+	if (m_ones_in == 0) {
+		optimal(m_ones_in, m_samples);
+	}
+	this->canonicalize();
+	if (m_samples == 0) {
+		optimal_sample_count();
+	}
+	if (!valid()) {
+		throw("Exception in reading Data Parameters");
+	}
+}
 
 DataParameters DataParameters::optimal(const size_t bits, const size_t samples)
 {

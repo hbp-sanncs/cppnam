@@ -18,44 +18,26 @@
 #include <algorithm>  //std::sort
 #include <random>
 #include <string>
+#include <vector>
 
 #include <cypress/cypress.hpp>
 #include "binary_matrix.hpp"
 #include "parameters.hpp"
+#include "read_json.hpp"
 #include "spiking_binam.hpp"
+#include "spiking_parameters.hpp"
 
 namespace nam {
 namespace {
+
 std::vector<float> read_neuron_parameters_from_json(
     const cypress::NeuronType &type, const cypress::Json &obj)
 {
-	std::vector<float> res(type.parameter_names.size());
-	for (size_t i = 0; i < res.size(); i++) {
-		if (obj.find(type.parameter_names[i]) != obj.end()) {
-			res[i] = obj[type.parameter_names[i]];
-		}
-		else {
-			res[i] = type.parameter_defaults[i];
-		}
-	}
-
-	return res;
-}
-
-template <typename T>
-T read_check(cypress::Json json, std::string name, T default_val)
-{
-	if (json.find(name) != json.end()) {
-		return json[name];
-	}
-	return default_val;
+	std::map<std::string, float> input = json_to_map<float>(obj);
+	return read_check<float>(input, type.parameter_names,
+	                         type.parameter_defaults);
 }
 }
-
-const std::array<const char *, 10> NetworkParameters::names = {
-    "input_burst_size", "output_burst_size", "time_window", "isi",
-    "sigma_t",          "sigma_offs",        "p0",          "p1",
-    "weight",           "general_offset"};
 
 NeuronParameters::NeuronParameters(const cypress::NeuronType &type,
                                    const cypress::Json &json, std::ostream &out)
@@ -68,14 +50,23 @@ NeuronParameters::NeuronParameters(const cypress::NeuronType &type,
 	out << std::endl;
 }
 
-NetworkParameters::NetworkParameters(const cypress::Json &json,
+const std::vector<std::string> NetworkParameters::names = {
+    "input_burst_size", "output_burst_size", "time_window", "isi",
+    "sigma_t",          "sigma_offs",        "p0",          "p1",
+    "weight",           "general_offset"};
+
+NetworkParameters::NetworkParameters(const cypress::Json &obj,
                                      std::ostream &out)
 {
 	out << "# NetworkParameters: " << std::endl;
+	std::map<std::string, float> input = json_to_map<float>(obj);
+	arr = read_check<float>(input, names, std::vector<float>(names.size(),0));
+
 	for (size_t i = 0; i < names.size(); i++) {
-		arr[i] = read_check<double>(json, names[i], 0);
 		out << names[i] << ": " << arr[i] << std::endl;
 	}
 	out << std::endl;
 }
+
+
 }

@@ -25,6 +25,7 @@
 #include <string>
 
 #include <cypress/cypress.hpp>
+#include "parameters.hpp"
 
 /**
  * Macro used for defining the getters and setters associated with a parameter
@@ -32,9 +33,9 @@
  */
 #define NAMED_PARAMETER(NAME, IDX)            \
 	static constexpr size_t idx_##NAME = IDX; \
-	void NAME(double x) { arr[IDX] = x; }     \
-	double &NAME() { return arr[IDX]; }       \
-	double NAME() const { return arr[IDX]; }
+	void NAME(float x) { arr[IDX] = x; }     \
+	float &NAME() { return arr[IDX]; }       \
+	float NAME() const { return arr[IDX]; }
 
 namespace nam {
 
@@ -58,10 +59,10 @@ public:
 
 class NetworkParameters {
 private:
-	std::array<double, 10> arr;
+	std::vector<float> arr;
 
 public:
-	static const std::array<const char *, 10> names;
+	static const std::vector<std::string> names;
 
 	NAMED_PARAMETER(input_burst_size, 0);
 	NAMED_PARAMETER(output_burst_size, 1);
@@ -77,6 +78,8 @@ public:
 	NetworkParameters() : arr{0, 0, 0, 0, 0, 0, 0, 0, 0, 0} {};
 };
 }
+
+
 
 #undef NAMED_PARAMETER
 #endif /* CPPNAM_UTIL_SPIKING_PARAMETERS_HPP */
