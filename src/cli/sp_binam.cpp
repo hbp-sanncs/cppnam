@@ -21,15 +21,22 @@
 #include "cypress/cypress.hpp"
 #include "util/spiking_binam.hpp"
 
-
 using namespace nam;
-int main(int argc,const char *argv[])
+int main(int argc, const char *argv[])
 {
-	if (argc != 2 && !cypress::NMPI::check_args(argc, argv)) {
-		std::cout << "Usage: " << argv[0] << " <SIMULATOR>" << std::endl;
+	if (argc != 4 && argc != 3 && !cypress::NMPI::check_args(argc, argv)) {
+		std::cout << "Usage: " << argv[0] << " <SIMULATOR> <FILE> [NMPI]"
+		          << std::endl;
 		return 1;
 	}
-	std::ifstream ifs("test.json", std::ifstream::in);
+
+	if (argc == 4 && std::string(argv[3]) == "NMPI" &&
+	    !cypress::NMPI::check_args(argc, argv)) {
+		cypress::NMPI(argv[1], argc, argv);
+		return 0;
+	}
+	
+	std::ifstream ifs(argv[2], std::ifstream::in);
 	cypress::Json json(ifs);
 	std::ofstream ofs("data.txt", std::ofstream::app);
 	
@@ -41,6 +48,8 @@ int main(int argc,const char *argv[])
 	binam.run(argv[1]);
 	std::cout << "Run complete" << std::endl;
 	binam.eval_output(ofs);
+	// NMPI 3 argument list of files
+
 	ofs << std::endl << "____________________________________________" 
 	<< std::endl;
 

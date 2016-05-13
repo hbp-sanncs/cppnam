@@ -2,6 +2,12 @@
 cmake_minimum_required (VERSION 3.3)
 project (cppnam)
 
+# Add the local "cmake" directory to the search path
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+
+# Automatically download and compile Google-Test and the JSON library
+include(gtest_external)
+
 # Enable C++14 support
 set(CMAKE_CXX_STANDARD 14)
 
@@ -23,8 +29,13 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
+# Link statically
+SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+SET(BUILD_SHARED_LIBRARIES OFF)
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -s")
+
 enable_testing()
-find_package(GTest)
 
 include_directories(src/)
 
@@ -37,6 +48,7 @@ add_library(cppnam_util
 	src/util/optimisation
 	src/util/parameters
 	src/util/population_count
+	src/util/read_json
 	src/util/spike_trains
 	src/util/spiking_binam
 	src/util/spiking_parameters
@@ -88,6 +100,7 @@ if(${GTEST_FOUND})
 		test/util/test_ncr
 		test/util/test_parameters
 		test/util/test_population_count
+		test/util/test_read_json
 		test/util/test_spike_trains
 		test/util/test_spiking_binam
 		test/util/test_spiking_parameters
@@ -95,7 +108,7 @@ if(${GTEST_FOUND})
 
 	target_link_libraries(cppnam_test_util
 		cppnam_util
-		${GTEST_BOTH_LIBRARIES}
+		${GTEST_LIBRARIES}
 	)
 
 	add_test(cppnam_test_util cppnam_test_util)
