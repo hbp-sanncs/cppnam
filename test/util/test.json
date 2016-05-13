@@ -25,7 +25,7 @@
 		"time_window": 100.0,
 		"isi": 2.0,
 		"sigma_t": 2.0,
-		"sigma_t_offs": 0.0,
+		"sigma_offs": 0.0,
 		"p0": 0.0,
 		"p1": 0.0,
 		"general_offset" : 100
