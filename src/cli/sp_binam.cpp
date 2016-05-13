@@ -16,6 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <fstream>
+#include <string>
 
 #include "cypress/cypress.hpp"
 #include "util/spiking_binam.hpp"
@@ -30,11 +31,10 @@ int main(int argc,const char *argv[])
 	}
 	std::ifstream ifs("test.json", std::ifstream::in);
 	cypress::Json json(ifs);
-	SpikingBinam binam(json);
 	std::ofstream ofs("data.txt", std::ofstream::app);
+	
 	auto time = std::time(NULL);
 	ofs << "Spiking Binam from " << std::ctime(&time) << std::endl;
-	std::cout << "data " << std::endl;
 	SpikingBinam binam(json, ofs);
 	binam.build();
 	std::cout << "Building complete" << std::endl;

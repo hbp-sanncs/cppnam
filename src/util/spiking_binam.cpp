@@ -143,7 +143,7 @@ BinaryMatrix<uint64_t> SpikingBinam::spikes_to_matrix()
 	return res;
 }
 
-void SpikingBinam::eval_output(std::ostream &out = std::cout)
+void SpikingBinam::eval_output(std::ostream &out)
 {
 	BinaryMatrix<uint64_t> output = spikes_to_matrix();
 	auto err = m_BiNAM_Container.m_BiNAM.false_bits_mat(

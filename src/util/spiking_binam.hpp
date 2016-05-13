@@ -91,18 +91,23 @@ public:
 	/**
 	 * Complete building of the spiking neural network
 	 */
-	SpikingBinam& build();
+	SpikingBinam &build();
 
 	/**
-	 * Execution on hardware or software platform, where @param backend is the
-	 * repective platform
+	 * Execution on hardware or software platform
+	 * @param backend is the repective platform
+	 * @param argc and
+	 * @param argv are the command line options, this is used for the NMPI
+	 * execution on the hbp-collab
+	 * @param nmpi If true, NMPI and therefore the hbp-collab is used, else PyNN
+	 * is executed directly
 	 */
 	void run(std::string backend);
 
 	/**
 	 * Evaluation based on that one used in the BiNAM_Container
 	 */
-	void eval_output(std::ostream &output);
+	void eval_output(std::ostream &output = std::cout);
 };
 }
 
