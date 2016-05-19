@@ -44,6 +44,7 @@ add_library(cppnam_util
 	src/util/binary_matrix
 	src/util/data
 	src/util/entropy
+	src/util/experiment
 	src/util/ncr
 	src/util/optimisation
 	src/util/parameters
@@ -81,6 +82,14 @@ add_executable(sp_binam
 )
 
 target_link_libraries(sp_binam
+	cppnam_util
+)
+
+add_executable(exp
+	src/cli/exp
+)
+
+target_link_libraries(exp
 	cppnam_util
 )
 

@@ -23,6 +23,7 @@
 
 #include <cstddef>
 #include <iostream>
+#include <string>
 
 #include <cypress/util/json.hpp>
 
@@ -46,7 +47,7 @@ public:
 	      m_samples(samples)
 	{
 	}
-	
+
 	DataParameters(const cypress::Json &obj);
 
 	static DataParameters optimal(const size_t bits, const size_t samples = 0);
@@ -113,6 +114,29 @@ public:
 	DataParameters &optimal_sample_count()
 	{
 		m_samples = optimal_sample_count(*this);
+		return *this;
+	}
+
+	DataParameters &set(const std::string name, const size_t value)
+	{
+		if (name == "bits_in") {
+			m_bits_in = value;
+		}
+		else if (name == "bits_out") {
+			m_bits_out = value;
+		}
+		else if (name == "ones_in") {
+			m_ones_in = value;
+		}
+		else if (name == "ones_out") {
+			m_ones_out = value;
+		}
+		else if (name == "samples") {
+			m_samples = value;
+		}
+		else {  
+			throw std::invalid_argument("Unknown parameter \"" + name + "\"");
+		}
 		return *this;
 	}
 

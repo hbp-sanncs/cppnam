@@ -321,6 +321,22 @@ public:
 		output << "exp: \t" << info << "\t" << info / info_th << "\t" << se.fp
 		       << "\t" << se.fn << std::endl;
 	};
+	
+	/**
+	 * Analysis for parameter sweeps, gives out results for saving in files
+	 * IMPORTANT: Compares to recalled matrix instead of predicted values;
+	 */
+	void analysis_compare_file(std::vector<SampleError> vec_err,
+	                           std::ostream &output)
+	{
+		recall();
+		SampleError se = sum_false_bits(vec_err);
+		SampleError se_th = sum_false_bits(m_SampleError);
+		double info = entropy_hetero(m_params, vec_err);
+		double info_th = entropy_hetero(m_params, m_SampleError);
+		output << info << "," << info_th << "," << se.fp << "," << se_th.fp
+		       << "," << se.fn << "," << se_th.fn << ",";
+	}
 
 	/**
 	 * Getter for member matrices

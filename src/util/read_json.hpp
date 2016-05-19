@@ -28,9 +28,9 @@
 #include <cypress/util/json.hpp>
 
 namespace nam {
-	/**
- * Store input form json in a map to check everything!
- */
+/**
+* Store input form json in a map to check everything!
+*/
 template <typename T>
 std::map<std::string, T> json_to_map(const cypress::Json &obj)
 {
@@ -76,9 +76,6 @@ std::vector<T> read_check(std::map<std::string, T> &input,
 	return res;
 }
 }
-
-
-
 
 
 

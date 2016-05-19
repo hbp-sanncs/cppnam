@@ -150,4 +150,12 @@ void SpikingBinam::eval_output(std::ostream &out)
 	    m_BiNAM_Container.m_output, output);
 	m_BiNAM_Container.analysis(err, out);
 }
+void SpikingBinam::eval_to_file(std::ostream &out) {
+	
+	BinaryMatrix<uint64_t> output = spikes_to_matrix();
+	auto err = m_BiNAM_Container.m_BiNAM.false_bits_mat(
+	    m_BiNAM_Container.m_output, output);
+	m_BiNAM_Container.analysis_compare_file(err, out);
+	
+}
 }

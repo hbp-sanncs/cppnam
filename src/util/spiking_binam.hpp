@@ -89,6 +89,13 @@ public:
 	const NeuronParameters &NeuronParams() const { return m_neuronParams; }
 
 	/**
+	 * Setters for the parameter structures.
+	 */
+	void NetParams(NetworkParameters net) { m_networkParams = net; }
+	void DataParams(DataParameters data) { m_dataParams = data; }
+	void NeuronParams(NeuronParameters params) { m_neuronParams = params; }
+
+	/**
 	 * Complete building of the spiking neural network
 	 */
 	SpikingBinam &build();
@@ -108,6 +115,7 @@ public:
 	 * Evaluation based on that one used in the BiNAM_Container
 	 */
 	void eval_output(std::ostream &output = std::cout);
+	void eval_to_file(std::ostream &output);
 };
 }
 

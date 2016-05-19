@@ -22,6 +22,7 @@
 #define CPPNAM_UTIL_SPIKING_PARAMETERS_HPP
 
 #include <array>
+#include <iostream>
 #include <string>
 
 #include <cypress/cypress.hpp>
@@ -33,8 +34,8 @@
  */
 #define NAMED_PARAMETER(NAME, IDX)            \
 	static constexpr size_t idx_##NAME = IDX; \
-	void NAME(float x) { arr[IDX] = x; }     \
-	float &NAME() { return arr[IDX]; }       \
+	void NAME(float x) { arr[IDX] = x; }      \
+	float &NAME() { return arr[IDX]; }        \
 	float NAME() const { return arr[IDX]; }
 
 namespace nam {
@@ -42,18 +43,31 @@ namespace nam {
 class NeuronParameters {
 private:
 	std::vector<float> m_params;
+	std::vector<std::string> m_parameter_names;
 
 public:
+	/**
+	 * Construct from Json, give out parameters to @param out
+	 */
 	NeuronParameters(const cypress::NeuronType &type, const cypress::Json &json,
 	                 std::ostream &out = std::cout);
+	
 	NeuronParameters(){};
 
 	const std::vector<float> &parameter() const { return m_params; };
 
-	template <typename parameter>
-	void change_parameter(double value)
+	/**
+	 * Set parameter with name @param name to @param value
+	 */
+	NeuronParameters &set(std::string name, float value)
 	{
-		// Security + change correct value
+		for (size_t i = 0; i < m_parameter_names.size(); i++) {
+			if (m_parameter_names[i] == name) {
+				m_params[i] = value;
+				return *this;
+			}
+		}
+		throw std::invalid_argument("Unknown neuron parameter" + name);
 	}
 };
 
@@ -74,12 +88,32 @@ public:
 	NAMED_PARAMETER(p1, 7);
 	NAMED_PARAMETER(weight, 8);
 	NAMED_PARAMETER(general_offset, 9);
+	
+	/**
+	 * Construct from Json, give out parameters to @param out
+	 */
 	NetworkParameters(const cypress::Json &json, std::ostream &out = std::cout);
+	
+	/**
+	 * Empty constructor
+	 */
 	NetworkParameters() : arr{0, 0, 0, 0, 0, 0, 0, 0, 0, 0} {};
+	
+	/**
+	 * Set parameter with name @param name to @param value
+	 */
+	NetworkParameters &set(std::string name, float value)
+	{
+		for (size_t i = 0; i < names.size(); i++) {
+			if (names[i] == name) {
+				arr[i] = value;
+				return *this;
+			}
+		}
+		throw std::invalid_argument("Unknown neuron parameter" + name);
+	}
 };
 }
-
-
 
 #undef NAMED_PARAMETER
 #endif /* CPPNAM_UTIL_SPIKING_PARAMETERS_HPP */

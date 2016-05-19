@@ -41,6 +41,7 @@ std::vector<float> read_neuron_parameters_from_json(
 
 NeuronParameters::NeuronParameters(const cypress::NeuronType &type,
                                    const cypress::Json &json, std::ostream &out)
+    : m_parameter_names(type.parameter_names)
 {
 	m_params = read_neuron_parameters_from_json(type, json["params"]);
 	out << "# Neuron Parameters: " << std::endl;
@@ -60,13 +61,11 @@ NetworkParameters::NetworkParameters(const cypress::Json &obj,
 {
 	out << "# NetworkParameters: " << std::endl;
 	std::map<std::string, float> input = json_to_map<float>(obj);
-	arr = read_check<float>(input, names, std::vector<float>(names.size(),0));
+	arr = read_check<float>(input, names, std::vector<float>(names.size(), 0));
 
 	for (size_t i = 0; i < names.size(); i++) {
 		out << names[i] << ": " << arr[i] << std::endl;
 	}
 	out << std::endl;
 }
-
-
 }
