@@ -26,16 +26,16 @@
 #include <vector>
 
 #include <cypress/cypress.hpp>
-#include "read_json.hpp"
 #include "spiking_binam.hpp"
+#include "util/read_json.hpp"
 
 namespace nam {
-	
+
 class Experiment {
 private:
 	// Saves the backend where the experiment should run on
 	std::string m_backend;
-	
+
 	// Reference to the Json file containing all data
 	cypress::Json &json;
 

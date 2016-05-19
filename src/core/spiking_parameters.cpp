@@ -21,11 +21,12 @@
 #include <vector>
 
 #include <cypress/cypress.hpp>
-#include "binary_matrix.hpp"
 #include "parameters.hpp"
-#include "read_json.hpp"
 #include "spiking_binam.hpp"
 #include "spiking_parameters.hpp"
+#include "util/binary_matrix.hpp"
+#include "util/read_json.hpp"
+
 
 namespace nam {
 namespace {

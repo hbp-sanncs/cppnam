@@ -23,8 +23,8 @@
 #include <vector>
 #include <iostream>
 
-#include "binary_matrix.hpp"
 #include "spiking_parameters.hpp"
+#include "util/binary_matrix.hpp"
 
 namespace nam {
 std::vector<float> build_spike_train(NetworkParameters net_params,

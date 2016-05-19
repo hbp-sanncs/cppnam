@@ -22,8 +22,8 @@
 #include <vector>
 
 #include "experiment.hpp"
-#include "read_json.hpp"
 #include "spiking_binam.hpp"
+#include "util/read_json.hpp"
 
 namespace nam {
 namespace {
@@ -206,7 +206,7 @@ int Experiment::run(std::ostream &out)
 		for (auto j : m_sweep_params[i]) {
 			names.emplace_back(split(j, '.'));
 		}
-		
+
 		// Open file and write first line
 		std::ofstream ofs(experiment_names[i] + ".txt", std::ofstream::out);
 		ofs << "# ";
@@ -220,7 +220,7 @@ int Experiment::run(std::ostream &out)
 				set_parameter(binam, names[k], m_sweep_values[i][j][k]);
 				ofs << m_sweep_values[i][j][k] << ",";
 			}
-			
+
 			binam.build().run(m_backend);
 			binam.eval_to_file(ofs);
 			ofs << std::endl;

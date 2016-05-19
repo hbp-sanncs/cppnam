@@ -19,7 +19,7 @@
 #include <string>
 
 #include "cypress/cypress.hpp"
-#include "util/experiment.hpp"
+#include "core/experiment.hpp"
 
 
 using namespace nam;

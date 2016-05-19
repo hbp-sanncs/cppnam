@@ -22,7 +22,7 @@
 #include <vector>
 
 #include <cypress/cypress.hpp>
-#include "util/spiking_parameters.hpp"
+#include "core/spiking_parameters.hpp"
 
 namespace nam {
 

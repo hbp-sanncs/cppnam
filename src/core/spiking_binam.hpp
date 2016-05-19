@@ -27,9 +27,6 @@
 #include "binam.hpp"
 
 #include <cypress/cypress.hpp>
-#include <cypress/util/json.hpp>
-#include <cypress/util/matrix.hpp>
-
 #include "spiking_parameters.hpp"
 
 namespace nam {

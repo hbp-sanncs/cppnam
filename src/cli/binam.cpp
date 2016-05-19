@@ -22,9 +22,9 @@
 #include <fstream>
 #include <vector>
 
-#include <util/binam.hpp>
-#include <util/entropy.hpp>
-#include <util/parameters.hpp>
+#include <core/binam.hpp>
+#include <core/entropy.hpp>
+#include <core/parameters.hpp>
 
 using namespace nam;
 

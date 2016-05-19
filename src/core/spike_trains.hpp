@@ -21,8 +21,8 @@
 #ifndef CPPNAM_UTIL_SPIKE_TRAINS_HPP
 #define CPPNAM_UTIL_SPIKE_TRAINS_HPP
 
-#include "binary_matrix.hpp"
 #include "spiking_parameters.hpp"
+#include "util/binary_matrix.hpp"
 
 namespace nam {
 /**

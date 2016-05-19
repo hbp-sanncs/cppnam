@@ -20,9 +20,10 @@
 #include <vector>
 #include <cypress/util/matrix.hpp>
 #include <gtest/gtest.h>
+#include "core/spike_trains.hpp"
+#include "core/spiking_parameters.hpp"
 #include "util/binary_matrix.hpp"
-#include "util/spike_trains.hpp"
-#include "util/spiking_parameters.hpp"
+
 
 namespace nam {
 

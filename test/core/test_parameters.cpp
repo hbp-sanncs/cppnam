@@ -21,8 +21,8 @@
 #include <cstdint>
 #include <limits>
 
-#include <util/entropy.hpp>
-#include <util/parameters.hpp>
+#include <core/entropy.hpp>
+#include <core/parameters.hpp>
 
 namespace nam {
 

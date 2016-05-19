@@ -22,6 +22,7 @@
 #define CPPNAM_UTIL_ENTROPY_HPP
 
 #include <vector>
+
 #include "parameters.hpp"
 
 namespace nam {

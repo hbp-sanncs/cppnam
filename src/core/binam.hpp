@@ -25,10 +25,10 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "data.hpp"
 #include "entropy.hpp"
-#include "binary_matrix.hpp"
-#include "population_count.hpp"
+#include "util/data.hpp"
+#include "util/binary_matrix.hpp"
+#include "util/population_count.hpp"
 
 namespace nam {
 

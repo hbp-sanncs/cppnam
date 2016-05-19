@@ -19,7 +19,7 @@
 #include <string>
 
 #include "cypress/cypress.hpp"
-#include "util/spiking_binam.hpp"
+#include "core/spiking_binam.hpp"
 
 using namespace nam;
 int main(int argc, const char *argv[])

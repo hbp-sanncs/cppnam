@@ -39,25 +39,38 @@ enable_testing()
 
 include_directories(src/)
 
+add_library(cppnam_core
+	src/core/binam
+	src/core/entropy
+	src/core/experiment
+	src/core/parameters
+	src/core/spike_trains
+	src/core/spiking_binam
+	src/core/spiking_parameters
+)
+
 add_library(cppnam_util
-	src/util/binam
 	src/util/binary_matrix
 	src/util/data
-	src/util/entropy
-	src/util/experiment
 	src/util/ncr
 	src/util/optimisation
-	src/util/parameters
 	src/util/population_count
 	src/util/read_json
-	src/util/spike_trains
-	src/util/spiking_binam
-	src/util/spiking_parameters
+)
+
+target_link_libraries(cppnam_core
+	cppnam_util
+)
+
+target_link_libraries(cppnam_core
+	/usr/local/lib/libcypress.a
+#	~/.local/lib/libcypress.a
+	-pthread
 )
 
 target_link_libraries(cppnam_util
 	/usr/local/lib/libcypress.a
-#	/home/andreas/.local/lib/libcypress.a
+#	~/.local/lib/libcypress.a
 	-pthread
 )
 
@@ -74,6 +87,7 @@ add_executable(binam
 )
 
 target_link_libraries(binam
+	cppnam_core
 	cppnam_util
 )
 
@@ -82,6 +96,7 @@ add_executable(sp_binam
 )
 
 target_link_libraries(sp_binam
+	cppnam_core
 	cppnam_util
 )
 
@@ -90,6 +105,7 @@ add_executable(exp
 )
 
 target_link_libraries(exp
+	cppnam_core
 	cppnam_util
 )
 
@@ -102,23 +118,33 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/test/util/test.json
 if(${GTEST_FOUND})
 	include_directories(${GTEST_INCLUDE_DIR})
 
+	add_executable(cppnam_test_core
+		test/core/test_binam
+		test/core/test_entropy
+		test/core/test_parameters
+		test/core/test_spike_trains
+		test/core/test_spiking_binam
+		test/core/test_spiking_parameters
+	)
 	add_executable(cppnam_test_util
-		test/util/test_binam
 		test/util/test_binary_matrix
-		test/util/test_entropy
 		test/util/test_ncr
-		test/util/test_parameters
 		test/util/test_population_count
 		test/util/test_read_json
-		test/util/test_spike_trains
-		test/util/test_spiking_binam
-		test/util/test_spiking_parameters
+	)
+	
+	target_link_libraries(cppnam_test_core
+		cppnam_util
+		cppnam_core
+		${GTEST_LIBRARIES}
 	)
 
 	target_link_libraries(cppnam_test_util
 		cppnam_util
+		cppnam_core
 		${GTEST_LIBRARIES}
 	)
 
+	add_test(cppnam_test_core cppnam_test_core)
 	add_test(cppnam_test_util cppnam_test_util)
 endif()

@@ -19,7 +19,7 @@
 #include <cmath>
 
 #include "entropy.hpp"
-#include "ncr.hpp"
+#include "util/ncr.hpp"
 
 namespace nam {
 
@@ -78,4 +78,3 @@ double conventional_memory_entropy(const DataParameters &params)
 	       std::log(2);
 }
 }
-

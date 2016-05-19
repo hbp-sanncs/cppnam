@@ -17,8 +17,8 @@
  */
 
 #include "entropy.hpp"
-#include "optimisation.hpp"
-#include "read_json.hpp"
+#include "util/optimisation.hpp"
+#include "util/read_json.hpp"
 #include "parameters.hpp"
 
 namespace nam {

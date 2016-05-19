@@ -23,7 +23,7 @@
 #include <gtest/gtest.h>
 
 #include "util/read_json.hpp"
-#include "util/spiking_parameters.hpp"
+#include "core/spiking_parameters.hpp"
 
 namespace nam {
 TEST(ReadJSON, json_to_map)

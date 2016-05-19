@@ -22,9 +22,9 @@
 #include <limits>
 #include <iostream>
 
-#include <util/binam.hpp>
+#include <core/binam.hpp>
+#include <core/entropy.hpp>
 #include <util/binary_matrix.hpp>
-#include <util/entropy.hpp>
 
 namespace nam {
 TEST(BiNAM, BiNAM)
@@ -83,7 +83,7 @@ TEST(BiNAM, BiNAM)
 	EXPECT_EQ(1, err[0].fn);
 	EXPECT_EQ(1, err[1].fp);
 	EXPECT_EQ(0, err[1].fn);
-	
+
 #ifndef NDEBUG
 	BiNAM<uint8_t> bin3(3, 4);
 	BinaryMatrix<uint8_t> pat_in2(2, 3), pat_out2(2, 4);
@@ -91,7 +91,7 @@ TEST(BiNAM, BiNAM)
 	EXPECT_ANY_THROW(bin3.train_mat(pat_in2, pat_out));
 	EXPECT_ANY_THROW(bin3.train_mat(bin, pat_out2));
 #endif
-	
+
 	BinaryMatrix<uint8_t> false_recall(2, 3);
 	false_recall.set_bit(0, 1).set_bit(0, 2);
 	auto se = bin2.false_bits_mat(pat_out, false_recall);
@@ -99,15 +99,25 @@ TEST(BiNAM, BiNAM)
 	EXPECT_EQ(0, se[0].fn);
 	EXPECT_EQ(0, se[1].fp);
 	EXPECT_EQ(1, se[1].fn);
-	BinaryMatrix<uint8_t> out_test(20,20),out_false(20,20);
-	out_test.set_bit(0,0).set_bit(0,10).set_bit(1,9).set_bit(1,15).set_bit(1,16).set_bit(1,18);
-	out_false.set_bit(0,0).set_bit(0,7).set_bit(0,8).set_bit(0,10).set_bit(0,13).set_bit(1,9).set_bit(1,18);
-	auto se2 =bin2.false_bits_mat(out_test, out_false);
+	BinaryMatrix<uint8_t> out_test(20, 20), out_false(20, 20);
+	out_test.set_bit(0, 0)
+	    .set_bit(0, 10)
+	    .set_bit(1, 9)
+	    .set_bit(1, 15)
+	    .set_bit(1, 16)
+	    .set_bit(1, 18);
+	out_false.set_bit(0, 0)
+	    .set_bit(0, 7)
+	    .set_bit(0, 8)
+	    .set_bit(0, 10)
+	    .set_bit(0, 13)
+	    .set_bit(1, 9)
+	    .set_bit(1, 18);
+	auto se2 = bin2.false_bits_mat(out_test, out_false);
 	EXPECT_EQ(3, se2[0].fp);
 	EXPECT_EQ(0, se2[0].fn);
 	EXPECT_EQ(0, se2[1].fp);
 	EXPECT_EQ(2, se2[1].fn);
-	EXPECT_EQ(3,bin2.false_bits(out_test.row_vec(0), out_false.row_vec(0)).fp);
-	
+	EXPECT_EQ(3, bin2.false_bits(out_test.row_vec(0), out_false.row_vec(0)).fp);
 }
 }
