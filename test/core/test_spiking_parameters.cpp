@@ -33,17 +33,17 @@ TEST(SpikingParameters, NeuronParameters)
 	cypress::IfCondExp neurontype = cypress::IfCondExp::inst();
 	auto params = NeuronParameters(neurontype, json["network"]);
 	std::vector<float> parameter = params.parameter();
-	EXPECT_EQ(float(0.2), parameter[0]);
-	EXPECT_EQ(float(50), parameter[1]);
-	EXPECT_EQ(float(2), parameter[2]);
-	EXPECT_EQ(float(5), parameter[3]);  // Cypress standard
-	EXPECT_EQ(float(0.0), parameter[4]);
-	EXPECT_EQ(float(-70), parameter[5]);
-	EXPECT_EQ(float(-57), parameter[6]);
-	EXPECT_EQ(float(-80), parameter[7]);
-	EXPECT_EQ(float(0), parameter[8]);
-	EXPECT_EQ(float(-70), parameter[9]);  // Cypress standard
-	EXPECT_EQ(float(0), parameter[10]);
+	EXPECT_NEAR(float(0.2), parameter[0], 1e-8);
+	EXPECT_NEAR(float(50), parameter[1], 1e-8);
+	EXPECT_NEAR(float(2), parameter[2], 1e-8);
+	EXPECT_NEAR(float(5), parameter[3], 1e-8);  // Cypress standard
+	EXPECT_NEAR(float(0.0), parameter[4], 1e-8);
+	EXPECT_NEAR(float(-70), parameter[5], 1e-8);
+	EXPECT_NEAR(float(-57), parameter[6], 1e-8);
+	EXPECT_NEAR(float(-80), parameter[7], 1e-8);
+	EXPECT_NEAR(float(0), parameter[8], 1e-8);
+	EXPECT_NEAR(float(-70), parameter[9], 1e-8);  // Cypress standard
+	EXPECT_NEAR(float(0), parameter[10], 1e-8);
 }
 
 TEST(SpikingParameters, NetworkParameters)
@@ -51,15 +51,15 @@ TEST(SpikingParameters, NetworkParameters)
 	std::ifstream ifs("test.json", std::ifstream::in);
 	cypress::Json json(ifs);
 	auto params = NetworkParameters(json["network"]);
-	EXPECT_EQ(1, params.input_burst_size());
-	EXPECT_EQ(1, params.output_burst_size());
-	EXPECT_EQ(100, params.time_window());
-	EXPECT_EQ(2.0, params.isi());
-	EXPECT_EQ(2.0, params.sigma_t());
-	EXPECT_EQ(0.0, params.sigma_offs());
-	EXPECT_EQ(0, params.p0());
-	EXPECT_EQ(0, params.p1());
-	EXPECT_EQ(0.01, params.weight());
+	EXPECT_NEAR(1, params.input_burst_size(), 1e-8);
+	EXPECT_NEAR(1, params.output_burst_size(), 1e-8);
+	EXPECT_NEAR(100, params.time_window(), 1e-8);
+	EXPECT_NEAR(2.0, params.isi(), 1e-8);
+	EXPECT_NEAR(2.0, params.sigma_t(), 1e-8);
+	EXPECT_NEAR(0.0, params.sigma_offs(), 1e-8);
+	EXPECT_NEAR(0, params.p0(), 1e-8);
+	EXPECT_NEAR(0, params.p1(), 1e-8);
+	EXPECT_NEAR(0.01, params.weight(), 1e-8);
 }
 
 

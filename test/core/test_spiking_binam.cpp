@@ -41,28 +41,28 @@ TEST(SpikingBinam, SpikingBinam)
 	EXPECT_EQ(1000, data.samples());
 	
 	auto parameter = binam.NeuronParams().parameter();
-	EXPECT_EQ(float(0.2), parameter[0]);
-	EXPECT_EQ(float(50), parameter[1]);
-	EXPECT_EQ(float(2), parameter[2]);
-	EXPECT_EQ(float(5), parameter[3]);  // Cypress standard
-	EXPECT_EQ(float(0.0), parameter[4]);
-	EXPECT_EQ(float(-70), parameter[5]);
-	EXPECT_EQ(float(-57), parameter[6]);
-	EXPECT_EQ(float(-80), parameter[7]);
-	EXPECT_EQ(float(0), parameter[8]);
-	EXPECT_EQ(float(-70), parameter[9]);  // Cypress standard
-	EXPECT_EQ(float(0), parameter[10]);
+	EXPECT_NEAR(0.2, parameter[0], 1e-8);
+	EXPECT_NEAR(50, parameter[1], 1e-8);
+	EXPECT_NEAR(2, parameter[2], 1e-8);
+	EXPECT_NEAR(5, parameter[3], 1e-8);  // Cypress standard
+	EXPECT_NEAR(0.0, parameter[4], 1e-8);
+	EXPECT_NEAR(-70, parameter[5], 1e-8);
+	EXPECT_NEAR(-57, parameter[6], 1e-8);
+	EXPECT_NEAR(-80, parameter[7], 1e-8);
+	EXPECT_NEAR(0, parameter[8], 1e-8);
+	EXPECT_NEAR(-70, parameter[9], 1e-8);  // Cypress standard
+	EXPECT_NEAR(0, parameter[10], 1e-8);
 	
 	NetworkParameters params = binam.NetParams();
 	EXPECT_EQ(1, params.input_burst_size());
 	EXPECT_EQ(1, params.output_burst_size());
 	EXPECT_EQ(100, params.time_window());
-	EXPECT_EQ(2.0, params.isi());
-	EXPECT_EQ(2.0, params.sigma_t());
+	EXPECT_NEAR(2.0, params.isi(), 1e-8);
+	EXPECT_NEAR(2.0, params.sigma_t(), 1e-8);
 	EXPECT_EQ(0.0, params.sigma_offs());
 	EXPECT_EQ(0, params.p0());
 	EXPECT_EQ(0, params.p1());
-	EXPECT_EQ(0.01, params.weight());
+	EXPECT_NEAR(0.01, params.weight(), 1e-8);
 }
 
 }
