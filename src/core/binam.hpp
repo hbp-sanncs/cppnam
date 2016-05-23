@@ -47,10 +47,9 @@ private:
 	BiNAM<T> &train_vec(BinaryVector<T> in, BinaryVector<T> out)
 	{
 		for (size_t i = 0; i < out.size(); i++) {
-			if (out.get_bit(i) != 0) {
+			if (out.get_bit(i)) {
 				for (size_t j = 0; j < Base::numberOfCells(Base::cols()); j++)
-					Base::set_cell(i, j, Base::get_cell(i, j) |
-					                         (Base::intMax & in.get_cell(j)));
+					Base::set_cell(i, j, Base::get_cell(i, j) | in.get_cell(j));
 			}
 		}
 		return *this;
@@ -62,7 +61,7 @@ public:
 	 * Constructor - nothing to do here
 	 */
 	BiNAM(){};
-	BiNAM(size_t input, size_t output) : BinaryMatrix<T>(output, input){};
+	BiNAM(size_t output, size_t input) : BinaryMatrix<T>(output, input){};
 
 	/**
 	 * Training of a sample pair with checking of dimensions
@@ -94,14 +93,14 @@ public:
 		}
 		for (size_t i = 0; i < in.rows(); i++) {
 			train_vec(in.row_vec(i), out.row_vec(i));
-		};
+		}
 		return *this;
 	}
 
 	/**
 	 * Sum of all set bits of a BinaryVector. Used for recall
 	 */
-	size_t digit_sum(BinaryVector<T> vec)
+	size_t digit_sum(const BinaryVector<T> vec)
 	{
 		size_t sum = 0;
 		for (size_t i = 0; i < Base::numberOfCells(vec.size()); i++) {
@@ -132,7 +131,20 @@ public:
 			}
 		}
 		return vec;
-	};
+	}; /*
+	 BinaryVector<T> recall(BinaryVector<T> in)
+	 {
+	     BinaryVector<T> vec(Base::rows());
+	     BinaryVector<T> temp = in;
+	     size_t thresh = digit_sum(in);
+	     for (size_t i = 0; i < Base::rows(); i++) {
+	         size_t sum = digit_sum(temp.VectorMult(Base::row_vec(i)));
+	         if (sum >= thresh) {
+	             vec.set_bit(i);
+	         }
+	     }
+	     return vec;
+	 };*/
 
 	/*
 	 * Recall procedure for a matrix of samples, @param thresh is the threshold
