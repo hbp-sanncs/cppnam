@@ -358,6 +358,11 @@ public:
 	const BinaryMatrix<T> &output_matrix() const { return m_output; };
 	const BinaryMatrix<T> &recall_matrix() const { return m_recall; };
 
+	void trained_matrix(BiNAM<T> mat) { m_BiNAM = mat; };
+	void input_matrix(BinaryMatrix<T> mat) { m_input = mat; };
+	void output_matrix(BinaryMatrix<T> mat) { m_output = mat; };
+	void recall_matrix(BinaryMatrix<T> mat) { m_recall = mat; };
+
 	/**
 	 * Print out matrices for testing purposes
 	 */
