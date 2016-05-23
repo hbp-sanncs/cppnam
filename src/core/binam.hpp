@@ -214,7 +214,8 @@ class BiNAM_Container {
 public:
 	BiNAM<T> m_BiNAM;
 	DataParameters m_params;
-	DataGenerator m_generator;
+	size_t seed;
+	bool random, balanced, unique;
 	BinaryMatrix<T> m_input, m_output, m_recall;
 	std::vector<SampleError> m_SampleError;
 
@@ -233,14 +234,19 @@ public:
 	 */
 	BiNAM_Container(DataParameters params, size_t seed, bool random = true,
 	                bool balanced = true, bool unique = true)
-	    : m_BiNAM(params.bits_in(), params.bits_out()),
+	    : m_BiNAM(params.bits_out(), params.bits_in()),
 	      m_params(params),
-	      m_generator(seed, random, balanced, unique){};
+	      seed(seed),
+	      random(random),
+	      balanced(balanced),
+	      unique(unique){};
 	BiNAM_Container(DataParameters params, bool random = true,
 	                bool balanced = true, bool unique = true)
-	    : m_BiNAM(params.bits_in(), params.bits_out()),
+	    : m_BiNAM(params.bits_out(), params.bits_in()),
 	      m_params(params),
-	      m_generator(random, balanced, unique){};
+	      random(random),
+	      balanced(balanced),
+	      unique(unique){};
 	BiNAM_Container(){};
 
 	/**
@@ -248,10 +254,24 @@ public:
 	 */
 	BiNAM_Container<T> &set_up()
 	{
-		m_input = m_generator.generate<T>(
-		    m_params.bits_in(), m_params.ones_in(), m_params.samples());
-		m_output = m_generator.generate<T>(
-		    m_params.bits_out(), m_params.ones_out(), m_params.samples());
+		if (seed) {
+			m_input = DataGenerator(seed, random, balanced, unique)
+			              .generate<T>(m_params.bits_in(), m_params.ones_in(),
+			                           m_params.samples());
+			m_output =
+			    DataGenerator(seed + 5, random, balanced, unique)
+			        .generate<T>(m_params.bits_out(), m_params.ones_out(),
+			                     m_params.samples());
+		}
+		else {
+			m_input = DataGenerator(random, balanced, unique)
+			              .generate<T>(m_params.bits_in(), m_params.ones_in(),
+			                           m_params.samples());
+			m_output =
+			    DataGenerator(random, balanced, unique)
+			        .generate<T>(m_params.bits_out(), m_params.ones_out(),
+			                     m_params.samples());
+		}
 		m_BiNAM.train_mat(m_input, m_output);
 		return *this;
 	};
@@ -282,6 +302,7 @@ public:
 		if (vec_err[0].fp < 0) {
 			vec_err = m_SampleError;
 		}
+
 		SampleError sum(0, 0);
 		for (size_t i = 0; i < vec_err.size(); i++) {
 			sum.fp += vec_err[i].fp;
@@ -333,7 +354,7 @@ public:
 		output << "exp: \t" << info << "\t" << info / info_th << "\t" << se.fp
 		       << "\t" << se.fn << std::endl;
 	};
-	
+
 	/**
 	 * Analysis for parameter sweeps, gives out results for saving in files
 	 * IMPORTANT: Compares to recalled matrix instead of predicted values;
