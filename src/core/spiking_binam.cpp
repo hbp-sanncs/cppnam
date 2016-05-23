@@ -78,7 +78,7 @@ SpikingBinam::SpikingBinam(Json &json, std::ostream &out)
 
 	m_neuronParams = NeuronParameters(neuronType, json["network"], out);
 	m_networkParams = NetworkParameters(json["network"], out);
-	m_BiNAM_Container.set_up().recall().analysis({SampleError(-1, -1)}, out);
+	m_BiNAM_Container.set_up().recall();
 }
 
 template <typename T>
@@ -143,19 +143,25 @@ BinaryMatrix<uint64_t> SpikingBinam::spikes_to_matrix()
 	return res;
 }
 
-void SpikingBinam::eval_output(std::ostream &out)
+void SpikingBinam::evaluate_neat(std::ostream &out)
 {
 	BinaryMatrix<uint64_t> output = spikes_to_matrix();
-	auto err = m_BiNAM_Container.m_BiNAM.false_bits_mat(
-	    m_BiNAM_Container.m_output, output);
-	m_BiNAM_Container.analysis(err, out);
+	auto res_spike = m_BiNAM_Container.analysis(output);
+	auto res_theo = m_BiNAM_Container.analysis();
+	out << "Result of the analysis" << std::endl;
+	out << "\tInfo \t nInfo \t fp \t fn" << std::endl;
+	out << "theor: \t" << res_theo.Info << "\t" << 1.00 << "\t" << res_theo.fp
+	    << "\t" << res_theo.fn << std::endl;
+	out << "exp: \t" << res_spike.Info << "\t" << res_spike.Info / res_theo.Info
+	    << "\t" << res_spike.fp << "\t" << res_spike.fn << std::endl;
 }
-void SpikingBinam::eval_to_file(std::ostream &out)
+void SpikingBinam::evaluate_csv(std::ostream &out)
 {
 
 	BinaryMatrix<uint64_t> output = spikes_to_matrix();
-	auto err = m_BiNAM_Container.m_BiNAM.false_bits_mat(
-	    m_BiNAM_Container.m_output, output);
-	m_BiNAM_Container.analysis_compare_file(err, out);
+	auto res_spike = m_BiNAM_Container.analysis(output);
+	auto res_theo = m_BiNAM_Container.analysis();
+	out << res_spike.Info << "," << res_theo.Info << "," << res_spike.fp << ","
+	    << res_theo.fp << "," << res_spike.fn << "," << res_theo.fn << ",";
 }
 }

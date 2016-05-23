@@ -64,6 +64,15 @@ struct SampleError {
 	SampleError(double fp = 0.0, double fn = 0.0) : fp(fp), fn(fn) {}
 };
 
+struct ExpResults {
+	double Info, fp, fn;
+
+	ExpResults(double Info, double fp, double fn)
+	    : Info(Info), fp(fp), fn(fn){};
+	ExpResults(double Info, SampleError se)
+	    : Info(Info), fp(se.fp), fn(se.fn){};
+};
+
 /**
  * Calculates the entropy from an errors-per sample matrix (returned by
  * analyseSampleErrors) and for the given output vector size and the mean
@@ -79,8 +88,8 @@ double entropy_hetero(const DataParameters &params,
                       const std::vector<SampleError> &errs);
 
 /**
- *  Calculates storage capacity of a conventional MxN ROM holding data with the
- *  specification
+ * Calculates storage capacity of a conventional MxN ROM holding data with
+ * the specification
  */
 double conventional_memory_entropy(const DataParameters &params);
 }

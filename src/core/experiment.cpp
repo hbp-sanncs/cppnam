@@ -180,18 +180,19 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 	}
 }
 
-void Experiment::run_standard(std::ostream &out)
+void Experiment::run_standard()
 {
-	SpikingBinam m_SpBinam(json, out);
+	std::ofstream ofs("data_single_run.txt", std::ofstream::out);
+	auto time = std::time(NULL);
+	ofs << "# " << "Spiking Binam from " << std::ctime(&time) << std::endl;
+	SpikingBinam m_SpBinam(json, ofs);
 	m_SpBinam.build().run(m_backend);
-	m_SpBinam.eval_output(out);
-	// m_SpBinam = {SpikingBinam(json, out)};
-	// m_SpBinam[0].build().run(m_backend);
-	// m_SpBinam[0].eval_output(out);
+	m_SpBinam.evaluate_csv(ofs);
 }
 
 // TODO restore m_params functionality
 // TODO run several experiments on the hardware
+// TODO repeat + average
 int Experiment::run(std::ostream &out)
 {
 	if (standard) {
@@ -222,7 +223,7 @@ int Experiment::run(std::ostream &out)
 			}
 
 			binam.build().run(m_backend);
-			binam.eval_to_file(ofs);
+			binam.evaluate_csv(ofs);
 			ofs << std::endl;
 			std::cout << size_t(100 * float(j + 1) / m_sweep_values[i].size())
 			          << "% done from experiment " << i + 1 << " of "

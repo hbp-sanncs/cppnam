@@ -111,8 +111,8 @@ public:
 	/**
 	 * Evaluation based on that one used in the BiNAM_Container
 	 */
-	void eval_output(std::ostream &output = std::cout);
-	void eval_to_file(std::ostream &output);
+	void evaluate_neat(std::ostream &output = std::cout);
+	void evaluate_csv(std::ostream &output);
 };
 }
 

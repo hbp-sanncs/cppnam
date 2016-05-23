@@ -75,7 +75,7 @@ private:
 	 * Internal function to start the "normal" execution of a single BiNAM
 	 * triggerd by the boolian "standard"
 	 */
-	void run_standard(std::ostream &out = std::cout);
+	void run_standard();
 
 public:
 	Experiment(cypress::Json &json, std::string backend);

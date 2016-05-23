@@ -321,55 +321,27 @@ public:
 	};
 
 	/**
-	 * Prints out the results of analysis: Number of FP and FN, Information
-	 * count and expected values.
+	 * Calculate the false psotives and negatives as well as the stored
+	 * information.
+	 * @param recall_matrix: recalled matrix from experiment. If nothing is
+	 * given, it takes the member recall matrix.
 	 */
-	void analysis(std::vector<SampleError> vec_err = {SampleError(-1, -1)},
-	              std::ostream &output = std::cout)
+	ExpResults analysis(
+	    const BinaryMatrix<T> &recall_matrix = BinaryMatrix<T>())
 	{
-		std::vector<SampleError> err;
-		bool member_flag = false;
-		if (vec_err[0].fp < 0) {
-			err = m_SampleError;
-			member_flag = true;
+		BinaryMatrix<T> recall_mat;
+		if (recall_matrix.size() == 0) {
+			recall_mat = m_recall;
 		}
 		else {
-			err = vec_err;
+			recall_mat = recall_matrix;
 		}
-		SampleError se = sum_false_bits(err);
-		SampleError se_th = theoretical_false_bits();
-		double info = entropy_hetero(m_params, err);
-		double info_th = expected_entropy(m_params);
-
-		if (member_flag) {
-			output << "Result of the non-spiking analysis" << std::endl;
-		}
-		else {
-			output << "Result of the analysis" << std::endl;
-		}
-		output << "\tInfo \t nInfo \t fp \t fn" << std::endl;
-		output << "theor: \t" << info_th << "\t" << 1.00 << "\t"
-		       << se_th.fp * m_params.samples() << "\t" << se_th.fn
-		       << std::endl;
-		output << "exp: \t" << info << "\t" << info / info_th << "\t" << se.fp
-		       << "\t" << se.fn << std::endl;
+		std::vector<SampleError> se =
+		    m_BiNAM.false_bits_mat(m_output, recall_mat);
+		double info = entropy_hetero(m_params, se);
+		SampleError sum = sum_false_bits(se);
+		return ExpResults(info, sum);
 	};
-
-	/**
-	 * Analysis for parameter sweeps, gives out results for saving in files
-	 * IMPORTANT: Compares to recalled matrix instead of predicted values;
-	 */
-	void analysis_compare_file(std::vector<SampleError> vec_err,
-	                           std::ostream &output)
-	{
-		recall();
-		SampleError se = sum_false_bits(vec_err);
-		SampleError se_th = sum_false_bits(m_SampleError);
-		double info = entropy_hetero(m_params, vec_err);
-		double info_th = entropy_hetero(m_params, m_SampleError);
-		output << info << "," << info_th << "," << se.fp << "," << se_th.fp
-		       << "," << se.fn << "," << se_th.fn << ",";
-	}
 
 	/**
 	 * Getter for member matrices
