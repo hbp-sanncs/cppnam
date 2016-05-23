@@ -182,12 +182,16 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 
 void Experiment::run_standard()
 {
-	std::ofstream ofs("data_single_run.txt", std::ofstream::out);
+	std::ofstream ofs("data_single_run.txt", std::ofstream::app);
 	auto time = std::time(NULL);
-	ofs << "# " << "Spiking Binam from " << std::ctime(&time) << std::endl;
+	ofs << "#"
+	    << " ________________________________________________________"
+	    << std::endl
+	    << "# "
+	    << "Spiking Binam from " << std::ctime(&time) << std::endl;
 	SpikingBinam m_SpBinam(json, ofs);
 	m_SpBinam.build().run(m_backend);
-	m_SpBinam.evaluate_csv(ofs);
+	m_SpBinam.evaluate_neat(ofs);
 }
 
 // TODO restore m_params functionality
@@ -223,6 +227,7 @@ int Experiment::run(std::ostream &out)
 			}
 
 			binam.build().run(m_backend);
+			// TODO recall if DataParams was changed
 			binam.evaluate_csv(ofs);
 			ofs << std::endl;
 			std::cout << size_t(100 * float(j + 1) / m_sweep_values[i].size())

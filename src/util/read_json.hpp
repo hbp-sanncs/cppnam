@@ -77,6 +77,4 @@ std::vector<T> read_check(std::map<std::string, T> &input,
 }
 }
 
-
-
 #endif /* CPPNAM_UTIL_READ_JSON_HPP */
