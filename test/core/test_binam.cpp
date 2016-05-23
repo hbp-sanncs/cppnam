@@ -24,6 +24,7 @@
 
 #include <core/binam.hpp>
 #include <core/entropy.hpp>
+#include <core/parameters.hpp>
 #include <util/binary_matrix.hpp>
 
 namespace nam {
@@ -119,5 +120,449 @@ TEST(BiNAM, BiNAM)
 	EXPECT_EQ(0, se2[1].fp);
 	EXPECT_EQ(2, se2[1].fn);
 	EXPECT_EQ(3, bin2.false_bits(out_test.row_vec(0), out_false.row_vec(0)).fp);
+}
+TEST(BiNAM, BiNAM2)
+{
+	BiNAM<uint8_t> binam(10, 10);
+	binam.set_bit(0, 0)
+	    .set_bit(0, 2)
+	    .set_bit(0, 3)
+	    .set_bit(1, 0)
+	    .set_bit(1, 2)
+	    .set_bit(1, 3)
+	    .set_bit(2, 0)
+	    .set_bit(2, 2)
+	    .set_bit(2, 3)
+	    .set_bit(3, 0)
+	    .set_bit(3, 2)
+	    .set_bit(3, 3)
+	    .set_bit(3, 4)
+	    .set_bit(3, 5)
+	    .set_bit(3, 6)
+	    .set_bit(4, 0)
+	    .set_bit(4, 2)
+	    .set_bit(4, 4)
+	    .set_bit(5, 3)
+	    .set_bit(5, 5)
+	    .set_bit(5, 6)
+	    .set_bit(6, 0)
+	    .set_bit(6, 2)
+	    .set_bit(6, 4)
+	    .set_bit(7, 3)
+	    .set_bit(7, 5)
+	    .set_bit(7, 6);
+
+	BinaryMatrix<uint8_t> input(6, 10);
+	input.set_bit(0, 0)
+	    .set_bit(0, 2)
+	    .set_bit(0, 3)
+	    .set_bit(1, 0)
+	    .set_bit(1, 2)
+	    .set_bit(1, 4)
+	    .set_bit(2, 3)
+	    .set_bit(2, 5)
+	    .set_bit(2, 6)
+	    .set_bit(3, 0)
+	    .set_bit(3, 2)
+	    .set_bit(3, 6)
+	    .set_bit(4, 3)
+	    .set_bit(4, 5)
+	    .set_bit(4, 4)
+	    .set_bit(5, 5)
+	    .set_bit(5, 4)
+	    .set_bit(5, 6);
+
+	BinaryMatrix<uint8_t> compare(6, 10);
+	compare.set_bit(0, 0)
+	    .set_bit(0, 1)
+	    .set_bit(0, 2)
+	    .set_bit(1, 3)
+	    .set_bit(1, 4)
+	    .set_bit(1, 6)
+	    .set_bit(2, 3)
+	    .set_bit(2, 5)
+	    .set_bit(2, 7)
+	    .set_bit(3, 0)
+	    .set_bit(3, 1)
+	    .set_bit(3, 3)
+	    .set_bit(4, 0)
+	    .set_bit(4, 1)
+	    .set_bit(4, 3)
+	    .set_bit(5, 0)
+	    .set_bit(5, 1)
+	    .set_bit(5, 2);
+
+	auto output = binam.recallMat(input);
+
+	EXPECT_EQ(1, output.get_bit(0, 0));
+	EXPECT_EQ(1, output.get_bit(0, 1));
+	EXPECT_EQ(1, output.get_bit(0, 2));
+	EXPECT_EQ(1, output.get_bit(0, 3));
+	EXPECT_EQ(0, output.get_bit(0, 4));
+	EXPECT_EQ(0, output.get_bit(0, 5));
+	EXPECT_EQ(0, output.get_bit(0, 6));
+	EXPECT_EQ(0, output.get_bit(0, 7));
+	EXPECT_EQ(0, output.get_bit(0, 8));
+	EXPECT_EQ(0, output.get_bit(0, 9));
+
+	EXPECT_EQ(0, output.get_bit(1, 0));
+	EXPECT_EQ(0, output.get_bit(1, 1));
+	EXPECT_EQ(0, output.get_bit(1, 2));
+	EXPECT_EQ(1, output.get_bit(1, 3));
+	EXPECT_EQ(1, output.get_bit(1, 4));
+	EXPECT_EQ(0, output.get_bit(1, 5));
+	EXPECT_EQ(1, output.get_bit(1, 6));
+	EXPECT_EQ(0, output.get_bit(1, 7));
+	EXPECT_EQ(0, output.get_bit(1, 8));
+	EXPECT_EQ(0, output.get_bit(1, 9));
+
+	EXPECT_EQ(0, output.get_bit(2, 0));
+	EXPECT_EQ(0, output.get_bit(2, 1));
+	EXPECT_EQ(0, output.get_bit(2, 2));
+	EXPECT_EQ(1, output.get_bit(2, 3));
+	EXPECT_EQ(0, output.get_bit(2, 4));
+	EXPECT_EQ(1, output.get_bit(2, 5));
+	EXPECT_EQ(0, output.get_bit(2, 6));
+	EXPECT_EQ(1, output.get_bit(2, 7));
+	EXPECT_EQ(0, output.get_bit(2, 8));
+	EXPECT_EQ(0, output.get_bit(2, 9));
+
+	EXPECT_EQ(0, output.get_bit(3, 0));
+	EXPECT_EQ(0, output.get_bit(3, 1));
+	EXPECT_EQ(0, output.get_bit(3, 2));
+	EXPECT_EQ(1, output.get_bit(3, 3));
+	EXPECT_EQ(0, output.get_bit(3, 4));
+	EXPECT_EQ(0, output.get_bit(3, 5));
+	EXPECT_EQ(0, output.get_bit(3, 6));
+	EXPECT_EQ(0, output.get_bit(3, 7));
+	EXPECT_EQ(0, output.get_bit(3, 8));
+	EXPECT_EQ(0, output.get_bit(3, 9));
+
+	EXPECT_EQ(0, output.get_bit(4, 0));
+	EXPECT_EQ(0, output.get_bit(4, 1));
+	EXPECT_EQ(0, output.get_bit(4, 2));
+	EXPECT_EQ(1, output.get_bit(4, 3));
+	EXPECT_EQ(0, output.get_bit(4, 4));
+	EXPECT_EQ(0, output.get_bit(4, 5));
+	EXPECT_EQ(0, output.get_bit(4, 6));
+	EXPECT_EQ(0, output.get_bit(4, 7));
+	EXPECT_EQ(0, output.get_bit(4, 8));
+	EXPECT_EQ(0, output.get_bit(4, 9));
+
+	EXPECT_EQ(0, output.get_bit(5, 0));
+	EXPECT_EQ(0, output.get_bit(5, 1));
+	EXPECT_EQ(0, output.get_bit(5, 2));
+	EXPECT_EQ(1, output.get_bit(5, 3));
+	EXPECT_EQ(0, output.get_bit(5, 4));
+	EXPECT_EQ(0, output.get_bit(5, 5));
+	EXPECT_EQ(0, output.get_bit(5, 6));
+	EXPECT_EQ(0, output.get_bit(5, 7));
+	EXPECT_EQ(0, output.get_bit(5, 8));
+	EXPECT_EQ(0, output.get_bit(5, 9));
+	DataParameters params(10, 10, 3, 3, 10);
+	BiNAM_Container<uint8_t> cont(params);
+	cont.trained_matrix(binam);
+	cont.input_matrix(input);
+	cont.output_matrix(compare);
+	cont.recall();
+	std::vector<SampleError> false_bits = cont.false_bits();
+	SampleError sum_false_bits = cont.sum_false_bits();
+	EXPECT_EQ(1, false_bits[0].fp);
+	EXPECT_EQ(0, false_bits[0].fn);
+	EXPECT_EQ(0, false_bits[1].fp);
+	EXPECT_EQ(0, false_bits[1].fn);
+	EXPECT_EQ(0, false_bits[2].fp);
+	EXPECT_EQ(0, false_bits[2].fn);
+	EXPECT_EQ(0, false_bits[3].fp);
+	EXPECT_EQ(2, false_bits[3].fn);
+	EXPECT_EQ(0, false_bits[4].fp);
+	EXPECT_EQ(2, false_bits[4].fn);
+	EXPECT_EQ(1, false_bits[5].fp);
+	EXPECT_EQ(3, false_bits[5].fn);
+
+	EXPECT_EQ(2, sum_false_bits.fp);
+	EXPECT_EQ(7, sum_false_bits.fn);
+}
+TEST(BiNAM, BiNAM3)
+{
+	BiNAM<uint8_t> binam(10, 10);
+	binam.set_bit(0, 9)
+	    .set_bit(0, 7)
+	    .set_bit(0, 6)
+	    .set_bit(1, 9)
+	    .set_bit(1, 7)
+	    .set_bit(1, 6)
+	    .set_bit(2, 9)
+	    .set_bit(2, 7)
+	    .set_bit(2, 6)
+	    .set_bit(3, 9)
+	    .set_bit(3, 7)
+	    .set_bit(3, 6)
+	    .set_bit(3, 5)
+	    .set_bit(3, 4)
+	    .set_bit(3, 3)
+	    .set_bit(4, 9)
+	    .set_bit(4, 7)
+	    .set_bit(4, 5)
+	    .set_bit(5, 6)
+	    .set_bit(5, 4)
+	    .set_bit(5, 3)
+	    .set_bit(6, 9)
+	    .set_bit(6, 7)
+	    .set_bit(6, 5)
+	    .set_bit(7, 6)
+	    .set_bit(7, 4)
+	    .set_bit(7, 3);
+
+	BinaryMatrix<uint8_t> input(6, 10);
+	input.set_bit(0, 9)
+	    .set_bit(0, 7)
+	    .set_bit(0, 6)
+	    .set_bit(1, 9)
+	    .set_bit(1, 7)
+	    .set_bit(1, 5)
+	    .set_bit(2, 6)
+	    .set_bit(2, 4)
+	    .set_bit(2, 3)
+	    .set_bit(3, 9)
+	    .set_bit(3, 7)
+	    .set_bit(3, 3)
+	    .set_bit(4, 6)
+	    .set_bit(4, 4)
+	    .set_bit(4, 5)
+	    .set_bit(5, 4)
+	    .set_bit(5, 5)
+	    .set_bit(5, 3);
+
+	BinaryMatrix<uint8_t> compare(6, 10);
+	compare.set_bit(0, 0)
+	    .set_bit(0, 1)
+	    .set_bit(0, 2)
+	    .set_bit(1, 3)
+	    .set_bit(1, 4)
+	    .set_bit(1, 6)
+	    .set_bit(2, 3)
+	    .set_bit(2, 5)
+	    .set_bit(2, 7)
+	    .set_bit(3, 0)
+	    .set_bit(3, 1)
+	    .set_bit(3, 3)
+	    .set_bit(4, 0)
+	    .set_bit(4, 1)
+	    .set_bit(4, 3)
+	    .set_bit(5, 0)
+	    .set_bit(5, 1)
+	    .set_bit(5, 2);
+
+	auto output = binam.recallMat(input);
+
+	EXPECT_EQ(1, output.get_bit(0, 0));
+	EXPECT_EQ(1, output.get_bit(0, 1));
+	EXPECT_EQ(1, output.get_bit(0, 2));
+	EXPECT_EQ(1, output.get_bit(0, 3));
+	EXPECT_EQ(0, output.get_bit(0, 4));
+	EXPECT_EQ(0, output.get_bit(0, 5));
+	EXPECT_EQ(0, output.get_bit(0, 6));
+	EXPECT_EQ(0, output.get_bit(0, 7));
+	EXPECT_EQ(0, output.get_bit(0, 8));
+	EXPECT_EQ(0, output.get_bit(0, 9));
+
+	EXPECT_EQ(0, output.get_bit(1, 0));
+	EXPECT_EQ(0, output.get_bit(1, 1));
+	EXPECT_EQ(0, output.get_bit(1, 2));
+	EXPECT_EQ(1, output.get_bit(1, 3));
+	EXPECT_EQ(1, output.get_bit(1, 4));
+	EXPECT_EQ(0, output.get_bit(1, 5));
+	EXPECT_EQ(1, output.get_bit(1, 6));
+	EXPECT_EQ(0, output.get_bit(1, 7));
+	EXPECT_EQ(0, output.get_bit(1, 8));
+	EXPECT_EQ(0, output.get_bit(1, 9));
+
+	EXPECT_EQ(0, output.get_bit(2, 0));
+	EXPECT_EQ(0, output.get_bit(2, 1));
+	EXPECT_EQ(0, output.get_bit(2, 2));
+	EXPECT_EQ(1, output.get_bit(2, 3));
+	EXPECT_EQ(0, output.get_bit(2, 4));
+	EXPECT_EQ(1, output.get_bit(2, 5));
+	EXPECT_EQ(0, output.get_bit(2, 6));
+	EXPECT_EQ(1, output.get_bit(2, 7));
+	EXPECT_EQ(0, output.get_bit(2, 8));
+	EXPECT_EQ(0, output.get_bit(2, 9));
+
+	EXPECT_EQ(0, output.get_bit(3, 0));
+	EXPECT_EQ(0, output.get_bit(3, 1));
+	EXPECT_EQ(0, output.get_bit(3, 2));
+	EXPECT_EQ(1, output.get_bit(3, 3));
+	EXPECT_EQ(0, output.get_bit(3, 4));
+	EXPECT_EQ(0, output.get_bit(3, 5));
+	EXPECT_EQ(0, output.get_bit(3, 6));
+	EXPECT_EQ(0, output.get_bit(3, 7));
+	EXPECT_EQ(0, output.get_bit(3, 8));
+	EXPECT_EQ(0, output.get_bit(3, 9));
+
+	EXPECT_EQ(0, output.get_bit(4, 0));
+	EXPECT_EQ(0, output.get_bit(4, 1));
+	EXPECT_EQ(0, output.get_bit(4, 2));
+	EXPECT_EQ(1, output.get_bit(4, 3));
+	EXPECT_EQ(0, output.get_bit(4, 4));
+	EXPECT_EQ(0, output.get_bit(4, 5));
+	EXPECT_EQ(0, output.get_bit(4, 6));
+	EXPECT_EQ(0, output.get_bit(4, 7));
+	EXPECT_EQ(0, output.get_bit(4, 8));
+	EXPECT_EQ(0, output.get_bit(4, 9));
+
+	EXPECT_EQ(0, output.get_bit(5, 0));
+	EXPECT_EQ(0, output.get_bit(5, 1));
+	EXPECT_EQ(0, output.get_bit(5, 2));
+	EXPECT_EQ(1, output.get_bit(5, 3));
+	EXPECT_EQ(0, output.get_bit(5, 4));
+	EXPECT_EQ(0, output.get_bit(5, 5));
+	EXPECT_EQ(0, output.get_bit(5, 6));
+	EXPECT_EQ(0, output.get_bit(5, 7));
+	EXPECT_EQ(0, output.get_bit(5, 8));
+	EXPECT_EQ(0, output.get_bit(5, 9));
+
+	DataParameters params(10, 10, 3, 3, 10);
+	BiNAM_Container<uint8_t> cont(params);
+	cont.trained_matrix(binam);
+	cont.input_matrix(input);
+	cont.output_matrix(compare);
+	cont.recall();
+	std::vector<SampleError> false_bits = cont.false_bits();
+	SampleError sum_false_bits = cont.sum_false_bits();
+	EXPECT_EQ(1, false_bits[0].fp);
+	EXPECT_EQ(0, false_bits[0].fn);
+	EXPECT_EQ(0, false_bits[1].fp);
+	EXPECT_EQ(0, false_bits[1].fn);
+	EXPECT_EQ(0, false_bits[2].fp);
+	EXPECT_EQ(0, false_bits[2].fn);
+	EXPECT_EQ(0, false_bits[3].fp);
+	EXPECT_EQ(2, false_bits[3].fn);
+	EXPECT_EQ(0, false_bits[4].fp);
+	EXPECT_EQ(2, false_bits[4].fn);
+	EXPECT_EQ(1, false_bits[5].fp);
+	EXPECT_EQ(3, false_bits[5].fn);
+
+	EXPECT_EQ(2, sum_false_bits.fp);
+	EXPECT_EQ(7, sum_false_bits.fn);
+}
+TEST(BiNAM, BiNAM4)
+{
+	BiNAM<uint8_t> binam(10, 10);
+	binam.set_bit(0, 9)
+	    .set_bit(0, 7)
+	    .set_bit(0, 6)
+	    .set_bit(1, 9)
+	    .set_bit(1, 7)
+	    .set_bit(1, 6)
+	    .set_bit(2, 9)
+	    .set_bit(2, 7)
+	    .set_bit(2, 6)
+	    .set_bit(3, 9)
+	    .set_bit(3, 7)
+	    .set_bit(3, 6)
+	    .set_bit(3, 5)
+	    .set_bit(3, 4)
+	    .set_bit(3, 3)
+	    .set_bit(4, 9)
+	    .set_bit(4, 7)
+	    .set_bit(4, 5)
+	    .set_bit(5, 6)
+	    .set_bit(5, 4)
+	    .set_bit(5, 3)
+	    .set_bit(6, 9)
+	    .set_bit(6, 7)
+	    .set_bit(6, 5)
+	    .set_bit(7, 6)
+	    .set_bit(7, 4)
+	    .set_bit(7, 3);
+
+	BinaryMatrix<uint8_t> input(6, 10);
+	input.set_bit(0, 9)
+	    .set_bit(0, 7)
+	    .set_bit(0, 6)
+	    .set_bit(1, 9)
+	    .set_bit(1, 7)
+	    .set_bit(1, 5)
+	    .set_bit(2, 6)
+	    .set_bit(2, 4)
+	    .set_bit(2, 3);
+
+	BinaryMatrix<uint8_t> compare(6, 10);
+	compare.set_bit(0, 0)
+	    .set_bit(0, 1)
+	    .set_bit(0, 2)
+	    .set_bit(1, 3)
+	    .set_bit(1, 4)
+	    .set_bit(1, 6)
+	    .set_bit(2, 3)
+	    .set_bit(2, 5)
+	    .set_bit(2, 7);
+	BiNAM<uint8_t> binam2(10, 10);
+	binam2.train_mat(input, compare);
+	for (size_t i = 0; i < binam.rows(); i++) {
+		for (size_t j = 0; j < binam.cols(); j++) {
+			EXPECT_EQ(binam.get_bit(i, j), binam2.get_bit(i, j));
+		}
+	}
+}
+TEST(BiNAM, binam5)
+{
+	BiNAM<uint8_t> binam(10, 10);
+	binam.set_bit(0, 9)
+	    .set_bit(0, 7)
+	    .set_bit(0, 6)
+	    .set_bit(1, 9)
+	    .set_bit(1, 7)
+	    .set_bit(1, 6)
+	    .set_bit(2, 9)
+	    .set_bit(2, 7)
+	    .set_bit(2, 6)
+	    .set_bit(3, 9)
+	    .set_bit(3, 7)
+	    .set_bit(3, 6)
+	    .set_bit(3, 5)
+	    .set_bit(3, 4)
+	    .set_bit(3, 3)
+	    .set_bit(4, 9)
+	    .set_bit(4, 7)
+	    .set_bit(4, 5)
+	    .set_bit(5, 6)
+	    .set_bit(5, 4)
+	    .set_bit(5, 3)
+	    .set_bit(6, 9)
+	    .set_bit(6, 7)
+	    .set_bit(6, 5)
+	    .set_bit(7, 6)
+	    .set_bit(7, 4)
+	    .set_bit(7, 3);
+
+	BinaryMatrix<uint8_t> input(6, 10);
+	input.set_bit(0, 9)
+	    .set_bit(0, 7)
+	    .set_bit(0, 6)
+	    .set_bit(1, 9)
+	    .set_bit(1, 7)
+	    .set_bit(1, 5)
+	    .set_bit(2, 6)
+	    .set_bit(2, 4)
+	    .set_bit(2, 3);
+	BinaryMatrix<uint8_t> compare(6, 10);
+	compare.set_bit(0, 0)
+	    .set_bit(0, 1)
+	    .set_bit(0, 2)
+	    .set_bit(1, 3)
+	    .set_bit(1, 4)
+	    .set_bit(1, 6)
+	    .set_bit(2, 3)
+	    .set_bit(2, 5)
+	    .set_bit(2, 7);
+	BiNAM<uint8_t> binam2(10, 10);
+	binam2.train_mat(input, compare);
+	for (size_t i = 0; i < binam.rows(); i++) {
+		for (size_t j = 0; j < binam.cols(); j++) {
+			EXPECT_EQ(binam.get_bit(i, j), binam2.get_bit(i, j));
+		}
+	}
 }
 }

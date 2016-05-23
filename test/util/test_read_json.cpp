@@ -53,7 +53,6 @@ TEST(ReadJSON, read_check)
 	auto res =
 	    read_check<float>(map, NetworkParameters::names,
 	                      std::vector<float>(NetworkParameters::names.size(), 0));
-	std::cout << res.size()<< res[0]<<std::endl;
 	EXPECT_NEAR(0.01, res[8],1e-8);
 	EXPECT_NEAR(1.0, res[0],1e-8);
 	EXPECT_NEAR(1.0, res[1],1e-8);
