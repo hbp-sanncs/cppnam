@@ -28,6 +28,7 @@
 
 #include <cypress/cypress.hpp>
 #include "spiking_parameters.hpp"
+#include "parameters.hpp"
 
 namespace nam {
 /**
@@ -41,6 +42,7 @@ private:
 	NeuronParameters m_neuronParams;
 	NetworkParameters m_networkParams;
 	DataParameters m_dataParams;
+	DataGenerationParameters m_datagen;
 	cypress::Network m_net;
 	std::string m_neuronType;
 	cypress::Population<cypress::SpikeSourceArray> m_pop_source;

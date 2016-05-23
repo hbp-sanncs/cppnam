@@ -23,6 +23,27 @@
 
 namespace nam {
 
+DataGenerationParameters::DataGenerationParameters(const cypress::Json &obj)
+{
+	std::map<std::string, size_t> input = json_to_map<size_t>(obj);
+	std::vector<std::string> names = {"seed", "random", "balanced", "unique"};
+	auto res =
+	    read_check<size_t>(input, names, std::vector<size_t>(names.size(), 0));
+	m_seed = res[0];
+	m_random = false;
+	m_balanced = false;
+	m_unique = false;
+	if (res[1]) {
+		m_random = true;
+	}
+	if (res[2]) {
+		m_balanced = true;
+	}
+	if (res[3]) {
+		m_unique = true;
+	}
+}
+
 DataParameters::DataParameters(const cypress::Json &obj)
 {
 	std::map<std::string, size_t> input = json_to_map<size_t>(obj);

@@ -72,7 +72,8 @@ SpikingBinam::SpikingBinam(Json &json, std::ostream &out)
 {
 	m_dataParams = DataParameters(json["data"]);
 	m_dataParams.print(out);
-	m_BiNAM_Container = BiNAM_Container<uint64_t>(m_dataParams);
+	m_BiNAM_Container = BiNAM_Container<uint64_t>(
+	    m_dataParams, DataGenerationParameters(json["data_generator"]));
 	m_neuronType = json["network"]["neuron_type"];
 	auto neuronType = detect_type(m_neuronType);
 

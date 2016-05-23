@@ -152,12 +152,7 @@ public:
 	 * @param balanced if true, bit balancing is performed.
 	 * @param unique if true, the generated bit vectors are unique.
 	 * @param seed is the random seed used for the data generation.
-	 */ /*
-	 DataGenerator(bool random = true, bool balanced = true, bool unique =
-	 true);
-
-	 DataGenerator(size_t seed, bool random = true, bool balanced = true,
-	               bool unique = true);*/
+	 */ 
 
 	DataGenerator(bool random =true , bool balance =true, bool unique=true)
 	    : m_seed(std::random_device()()),

@@ -28,6 +28,32 @@
 #include <cypress/util/json.hpp>
 
 namespace nam {
+class DataGenerationParameters {
+private:
+	size_t m_seed;
+	bool m_random, m_balanced, m_unique;
+
+public:
+	DataGenerationParameters(size_t seed, bool random, bool balanced,
+	                         bool unique)
+	    : m_seed(seed),
+	      m_random(random),
+	      m_balanced(balanced),
+	      m_unique(unique){};
+	DataGenerationParameters(const cypress::Json &obj);
+	DataGenerationParameters()
+	    : m_seed(0), m_random(true), m_balanced(true), m_unique(true){};
+
+	size_t seed() const { return m_seed; }
+	bool random() const { return m_random; }
+	bool balanced() const { return m_balanced; }
+	bool unique() const { return m_unique; }
+
+	void seed(size_t seed) { m_seed = seed; }
+	void random(size_t random) { m_random = random; }
+	void balanced(size_t balanced) { m_balanced = balanced; }
+	void unique(size_t unique) { m_unique = unique; }
+};
 
 class DataParameters {
 private:
@@ -134,7 +160,7 @@ public:
 		else if (name == "samples") {
 			m_samples = value;
 		}
-		else {  
+		else {
 			throw std::invalid_argument("Unknown parameter \"" + name + "\"");
 		}
 		return *this;

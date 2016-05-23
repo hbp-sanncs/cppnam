@@ -25,7 +25,8 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "entropy.hpp"
+#include "core/entropy.hpp"
+#include "core/parameters.hpp"
 #include "util/data.hpp"
 #include "util/binary_matrix.hpp"
 #include "util/population_count.hpp"
@@ -214,8 +215,7 @@ class BiNAM_Container {
 public:
 	BiNAM<T> m_BiNAM;
 	DataParameters m_params;
-	size_t seed;
-	bool random, balanced, unique;
+	DataGenerationParameters m_datagen;
 	BinaryMatrix<T> m_input, m_output, m_recall;
 	std::vector<SampleError> m_SampleError;
 
@@ -232,21 +232,14 @@ public:
 	 * @param balanced: activates the algorithm for balanced data generation
 	 * @param unique: Suppresses the multiple generation of the same pattern
 	 */
-	BiNAM_Container(DataParameters params, size_t seed, bool random = true,
-	                bool balanced = true, bool unique = true)
+	BiNAM_Container(DataParameters params, DataGenerationParameters datagen)
 	    : m_BiNAM(params.bits_out(), params.bits_in()),
 	      m_params(params),
-	      seed(seed),
-	      random(random),
-	      balanced(balanced),
-	      unique(unique){};
-	BiNAM_Container(DataParameters params, bool random = true,
-	                bool balanced = true, bool unique = true)
+	      m_datagen(datagen){};
+	BiNAM_Container(DataParameters params)
 	    : m_BiNAM(params.bits_out(), params.bits_in()),
 	      m_params(params),
-	      random(random),
-	      balanced(balanced),
-	      unique(unique){};
+	      m_datagen(){};
 	BiNAM_Container(){};
 
 	/**
@@ -254,6 +247,11 @@ public:
 	 */
 	BiNAM_Container<T> &set_up()
 	{
+		size_t seed = m_datagen.seed();
+		bool random = m_datagen.random();
+		bool balanced = m_datagen.balanced();
+		bool unique = m_datagen.unique();
+
 		if (seed) {
 			m_input = DataGenerator(seed, random, balanced, unique)
 			              .generate<T>(m_params.bits_in(), m_params.ones_in(),

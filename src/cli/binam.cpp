@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 	int n_samples = std::stoi(argv[3]);
 	std::cout << n_bits << " bits, " << n_ones << " ones and " << n_samples << " samples" <<std::endl;
 	DataParameters params(n_bits, n_bits, n_ones, n_ones, n_samples);
-	BiNAM_Container<uint64_t> binam(params, true, true, true);
+	BiNAM_Container<uint64_t> binam(params);
 	binam.set_up().recall().analysis();
 	// binam.print();
 	return 0;
