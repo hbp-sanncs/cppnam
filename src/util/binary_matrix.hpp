@@ -160,11 +160,15 @@ public:
 	/**
 	 * Set a bit at [row,col]
 	 */
-	BinaryMatrix<T> &set_bit(uint32_t row, uint32_t col)
+	BinaryMatrix<T> &set_bit(uint32_t row, uint32_t col, bool val = true)
 	{
 		check_range(row, col);
 		uint32_t m = col % intWidth;
-		m_mat(row, cellNumber(col)) |= (T(1) << m);
+		if (val) {
+			m_mat(row, cellNumber(col)) |= (T(1) << m);
+		} else {
+			m_mat(row, cellNumber(col)) &= ~(T(1) << m);
+		}
 		return *this;
 	}
 
