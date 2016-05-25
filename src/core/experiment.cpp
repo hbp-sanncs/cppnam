@@ -113,8 +113,8 @@ void set_parameter(SpikingBinam &binam, std::vector<std::string> names,
 		binam.NetParams(params.set(names[1], value));
 	}
 	/*else if (names[0] == "data") {
-		auto params = binam.DataParams();
-		binam.DataParams(params.set(names[1], value));
+	    auto params = binam.DataParams();
+	    binam.DataParams(params.set(names[1], value));
 	}*/
 	else {
 		throw std::invalid_argument("Unknown parameter \"" + names[0] + "\"");
@@ -133,7 +133,7 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 		     i != json["experiments"].end(); i++) {
 			// For every experiment read in all parameters and values, then
 			// append to member vectors
-			std::map<std::string, float> params;
+			std::vector<std::pair<std::string, float>> params;
 			std::vector<std::string> sweep_params;
 			std::vector<std::vector<float>> sweep_values;
 			std::string name = i.key();
@@ -144,11 +144,12 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 
 				// See if val is a number (no sweep), an array or an object
 				if (val.is_number()) {
-					params.insert(std::pair<std::string, float>(j.key(), val));
+					params.emplace_back(
+					    std::pair<std::string, float>(j.key(), val));
 				}
 				else if (val.is_array()) {
 					if (val.size() == 1) {
-						params.insert(
+						params.emplace_back(
 						    std::pair<std::string, float>(j.key(), val));
 					}
 					else {
@@ -194,11 +195,38 @@ void Experiment::run_standard()
 	m_SpBinam.evaluate_neat(ofs);
 }
 
+namespace {
+DataParameters prepare_data_params(
+    cypress::Json json, std::vector<std::vector<std::string>> &params_names,
+    std::vector<size_t> &params_indices,
+    std::vector<std::pair<std::string, float>> &parameters)
+{
+	DataParameters params(json["data"]);
+	for (size_t k = 0; k < parameters.size(); k++) {
+		params_names.emplace_back(split(parameters[k].first, '.'));
+		if (params_names[k][0] == "data") {
+			params.set(params_names[k][1], parameters[k].second);
+		}
+		else {
+			params_indices.emplace_back(k);
+		}
+	}
+	return params;
+}
+}
+
 void Experiment::run_no_data(size_t exp,
-                             std::vector<std::vector<std::string>> names,
+                             std::vector<std::vector<std::string>> &names,
                              std::ostream &ofs)
 {
-	SpikingBinam sp_binam(json);
+	std::vector<std::vector<std::string>> params_names;
+	std::vector<size_t> params_indices;
+	DataParameters data_params =
+	    prepare_data_params(json, params_names, params_indices, m_params[exp]);
+	SpikingBinam sp_binam(json, data_params);
+	for (size_t k : params_indices) {
+		set_parameter(sp_binam, params_names[k], m_params[exp][k].second);
+	}
 	for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {  // all values
 		for (size_t k = 0; k < m_sweep_values[exp][j].size();
 		     k++) {  // all parameter
@@ -216,13 +244,16 @@ void Experiment::run_no_data(size_t exp,
 }
 
 void Experiment::run_data(size_t exp,
-                          std::vector<std::vector<std::string>> names,
+                          std::vector<std::vector<std::string>> &names,
                           std::ostream &ofs)
 {
-	DataParameters data_params(json["data"]);
+	std::vector<std::vector<std::string>> params_names;
+	std::vector<size_t> params_indices;
+	DataParameters data_params =
+	    prepare_data_params(json, params_names, params_indices, m_params[exp]);
+
 	std::vector<size_t> data_indices, other_indices;
-	    for (size_t k = 0; k < names.size(); k++)
-	{
+	for (size_t k = 0; k < names.size(); k++) {
 		if (names[k][0] != "data") {
 			other_indices.emplace_back(k);
 		}
@@ -234,11 +265,14 @@ void Experiment::run_data(size_t exp,
 		for (auto k : data_indices) {
 			data_params.set(names[k][1], m_sweep_values[exp][j][k]);
 		}
-		SpikingBinam sp_binam(json,data_params);
-		for(auto k : other_indices){
+		SpikingBinam sp_binam(json, data_params);
+		for (size_t k : params_indices) {
+			set_parameter(sp_binam, params_names[k], m_params[exp][k].second);
+		}
+		for (auto k : other_indices) {
 			set_parameter(sp_binam, names[k], m_sweep_values[exp][j][k]);
 		}
-		for(size_t k=0; k< m_sweep_values[exp][j].size(); k++){
+		for (size_t k = 0; k < m_sweep_values[exp][j].size(); k++) {
 			ofs << m_sweep_values[exp][j][k] << ",";
 		}
 		sp_binam.build().run(m_backend);
@@ -247,7 +281,6 @@ void Experiment::run_data(size_t exp,
 		std::cout << size_t(100 * float(j + 1) / m_sweep_values[exp].size())
 		          << "% done from experiment " << exp + 1 << " of "
 		          << m_sweep_params.size() << std::endl;
-			
 	}
 }
 
@@ -269,8 +302,8 @@ int Experiment::run(std::ostream &out)
 			names.emplace_back(split(j, '.'));
 		}
 
-		// Check, wether DataParameters was changed to do a non-spiking recall
-		// for evaluation
+		// Check, wether DataParameters was changed. This is important for later
+		// computation
 		bool data_changed = false;
 		for (size_t k = 0; k < names.size(); k++) {
 			if (names[k][0] == "data") {
@@ -287,7 +320,7 @@ int Experiment::run(std::ostream &out)
 		if (!data_changed) {
 			run_no_data(i, names, ofs);
 		}
-		else{
+		else {
 			run_data(i, names, ofs);
 		}
 	}

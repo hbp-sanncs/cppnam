@@ -41,9 +41,9 @@ private:
 
 	/*
 	 * A vector containing all single parameters which should not be swept
-	 * over
+	 * over for every experiment
 	 */
-	std::vector<std::map<std::string, float>> m_params;
+	std::vector<std::vector<std::pair<std::string, float>>> m_params;
 
 	/*
 	 * For every experiment a vector of parameter names is stored. It should be
@@ -76,9 +76,9 @@ private:
 	 * triggerd by the boolian "standard"
 	 */
 	void run_standard();
-	void run_no_data(size_t exp, std::vector<std::vector<std::string>> names,
+	void run_no_data(size_t exp, std::vector<std::vector<std::string>> &names,
 	                 std::ostream &ofs);
-	void run_data(size_t exp, std::vector<std::vector<std::string>> names,
+	void run_data(size_t exp, std::vector<std::vector<std::string>> &names,
 	              std::ostream &ofs);
 
 public:
