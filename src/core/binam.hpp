@@ -22,8 +22,10 @@
 #define CPPNAM_UTIL_BINAM_HPP
 #include <fstream>
 #include <iostream>
+#include <random>
 #include <sstream>
 #include <stdexcept>
+#include <thread>
 
 #include "core/entropy.hpp"
 #include "core/parameters.hpp"
@@ -247,29 +249,26 @@ public:
 	 */
 	BiNAM_Container<T> &set_up()
 	{
-		size_t seed = m_datagen.seed();
-		bool random = m_datagen.random();
-		bool balanced = m_datagen.balanced();
-		bool unique = m_datagen.unique();
+		size_t seed =
+		    m_datagen.seed() ? m_datagen.seed() : std::random_device()();
 
-		if (seed) {
-			m_input = DataGenerator(seed, random, balanced, unique)
+		std::thread input_thread([this, seed]() mutable {
+			m_input = DataGenerator(seed, m_datagen.random(),
+			                        m_datagen.balanced(), m_datagen.unique())
 			              .generate<T>(m_params.bits_in(), m_params.ones_in(),
 			                           m_params.samples());
+		});
+		std::thread output_thread([this, seed]() mutable {
 			m_output =
-			    DataGenerator(seed + 5, random, balanced, unique)
+			    DataGenerator(seed + 5, m_datagen.random(),
+			                  m_datagen.balanced(), m_datagen.unique())
 			        .generate<T>(m_params.bits_out(), m_params.ones_out(),
 			                     m_params.samples());
-		}
-		else {
-			m_input = DataGenerator(random, balanced, unique)
-			              .generate<T>(m_params.bits_in(), m_params.ones_in(),
-			                           m_params.samples());
-			m_output =
-			    DataGenerator(random, balanced, unique)
-			        .generate<T>(m_params.bits_out(), m_params.ones_out(),
-			                     m_params.samples());
-		}
+		});
+
+		input_thread.join();
+		output_thread.join();
+
 		m_BiNAM.train_mat(m_input, m_output);
 		return *this;
 	};
