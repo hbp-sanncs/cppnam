@@ -35,22 +35,22 @@ int main(int argc, const char *argv[])
 		cypress::NMPI(argv[1], argc, argv);
 		return 0;
 	}
-	
+
 	std::ifstream ifs(argv[2], std::ifstream::in);
 	cypress::Json json(ifs);
 	std::ofstream ofs("data_sp_binam.txt", std::ofstream::app);
-	
+
 	auto time = std::time(NULL);
 	ofs << "Spiking Binam from " << std::ctime(&time) << std::endl;
-	SpikingBinam binam(json, ofs);
+	SpikingBinam binam(json, true, ofs);
 	binam.build();
 	std::cout << "Building complete" << std::endl;
 	binam.run(argv[1]);
 	std::cout << "Run complete" << std::endl;
 	binam.evaluate_neat(ofs);
 
-	ofs << std::endl << "____________________________________________" 
-	<< std::endl;
+	ofs << std::endl
+	    << "____________________________________________" << std::endl;
 
 	return 0;
 }

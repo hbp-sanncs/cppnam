@@ -67,10 +67,26 @@ std::vector<std::vector<float>> SpikingBinam::build_spike_times()
 	return res;
 }
 
-SpikingBinam::SpikingBinam(Json &json, std::ostream &out)
+SpikingBinam::SpikingBinam(Json &json,bool recall, std::ostream &out)
     : m_pop_source(m_net, 0), m_pop_output(m_net, 0)
 {
 	m_dataParams = DataParameters(json["data"]);
+	m_dataParams.print(out);
+	m_BiNAM_Container = BiNAM_Container<uint64_t>(
+	    m_dataParams, DataGenerationParameters(json["data_generator"]));
+	m_neuronType = json["network"]["neuron_type"];
+	auto neuronType = detect_type(m_neuronType);
+
+	m_neuronParams = NeuronParameters(neuronType, json["network"], out);
+	m_networkParams = NetworkParameters(json["network"], out);
+	if (recall){
+		m_BiNAM_Container.set_up().recall();
+	}
+}
+
+SpikingBinam::SpikingBinam(Json &json, DataParameters params, std::ostream &out)
+: m_pop_source(m_net, 0), m_pop_output(m_net, 0), m_dataParams(params)
+{
 	m_dataParams.print(out);
 	m_BiNAM_Container = BiNAM_Container<uint64_t>(
 	    m_dataParams, DataGenerationParameters(json["data_generator"]));

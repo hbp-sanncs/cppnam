@@ -76,6 +76,10 @@ private:
 	 * triggerd by the boolian "standard"
 	 */
 	void run_standard();
+	void run_no_data(size_t exp, std::vector<std::vector<std::string>> names,
+	                 std::ostream &ofs);
+	void run_data(size_t exp, std::vector<std::vector<std::string>> names,
+	              std::ostream &ofs);
 
 public:
 	Experiment(cypress::Json &json, std::string backend);

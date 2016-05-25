@@ -78,7 +78,13 @@ public:
 	 * It sets up the BiNAM_Container, runs and evaluates them (latter one for
 	 * comparison).
 	 */
-	SpikingBinam(cypress::Json &json, std::ostream &out = std::cout);
+	SpikingBinam(cypress::Json &json, bool recall= true, std::ostream &out = std::cout);
+	
+	/**
+	 * Constructor, which overwites DataParameters from JSON
+	 */
+	SpikingBinam(cypress::Json &json, DataParameters params,
+	             std::ostream &out = std::cout);
 
 	/**
 	 * Getters for the parameter structures.
@@ -93,6 +99,11 @@ public:
 	void NetParams(NetworkParameters net) { m_networkParams = net; }
 	void DataParams(DataParameters data) { m_dataParams = data; }
 	void NeuronParams(NeuronParameters params) { m_neuronParams = params; }
+
+	/**
+	 * Recall theoretical BiNAM e.g. when DataParameters have been changed
+	 */
+	void update_data() { m_BiNAM_Container.recall(); }
 
 	/**
 	 * Complete building of the spiking neural network

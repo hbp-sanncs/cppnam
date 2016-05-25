@@ -112,10 +112,10 @@ void set_parameter(SpikingBinam &binam, std::vector<std::string> names,
 		auto params = binam.NetParams();
 		binam.NetParams(params.set(names[1], value));
 	}
-	else if (names[0] == "data") {
+	/*else if (names[0] == "data") {
 		auto params = binam.DataParams();
 		binam.DataParams(params.set(names[1], value));
-	}
+	}*/
 	else {
 		throw std::invalid_argument("Unknown parameter \"" + names[0] + "\"");
 	}
@@ -189,9 +189,66 @@ void Experiment::run_standard()
 	    << std::endl
 	    << "# "
 	    << "Spiking Binam from " << std::ctime(&time) << std::endl;
-	SpikingBinam m_SpBinam(json, ofs);
+	SpikingBinam m_SpBinam(json, true, ofs);
 	m_SpBinam.build().run(m_backend);
 	m_SpBinam.evaluate_neat(ofs);
+}
+
+void Experiment::run_no_data(size_t exp,
+                             std::vector<std::vector<std::string>> names,
+                             std::ostream &ofs)
+{
+	SpikingBinam sp_binam(json);
+	for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {  // all values
+		for (size_t k = 0; k < m_sweep_values[exp][j].size();
+		     k++) {  // all parameter
+			set_parameter(sp_binam, names[k], m_sweep_values[exp][j][k]);
+			ofs << m_sweep_values[exp][j][k] << ",";
+		}
+
+		sp_binam.build().run(m_backend);
+		sp_binam.evaluate_csv(ofs);
+		ofs << std::endl;
+		std::cout << size_t(100 * float(j + 1) / m_sweep_values[exp].size())
+		          << "% done from experiment " << exp + 1 << " of "
+		          << m_sweep_params.size() << std::endl;
+	}
+}
+
+void Experiment::run_data(size_t exp,
+                          std::vector<std::vector<std::string>> names,
+                          std::ostream &ofs)
+{
+	DataParameters data_params(json["data"]);
+	std::vector<size_t> data_indices, other_indices;
+	    for (size_t k = 0; k < names.size(); k++)
+	{
+		if (names[k][0] != "data") {
+			other_indices.emplace_back(k);
+		}
+		else {
+			data_indices.emplace_back(k);
+		}
+	}
+	for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {  // all values
+		for (auto k : data_indices) {
+			data_params.set(names[k][1], m_sweep_values[exp][j][k]);
+		}
+		SpikingBinam sp_binam(json,data_params);
+		for(auto k : other_indices){
+			set_parameter(sp_binam, names[k], m_sweep_values[exp][j][k]);
+		}
+		for(size_t k=0; k< m_sweep_values[exp][j].size(); k++){
+			ofs << m_sweep_values[exp][j][k] << ",";
+		}
+		sp_binam.build().run(m_backend);
+		sp_binam.evaluate_csv(ofs);
+		ofs << std::endl;
+		std::cout << size_t(100 * float(j + 1) / m_sweep_values[exp].size())
+		          << "% done from experiment " << exp + 1 << " of "
+		          << m_sweep_params.size() << std::endl;
+			
+	}
 }
 
 // TODO restore m_params functionality
@@ -203,13 +260,22 @@ int Experiment::run(std::ostream &out)
 		run_standard();
 		return 0;
 	}
-	SpikingBinam binam(json, out);
 	for (size_t i = 0; i < m_sweep_params.size(); i++) {  // for every
 		                                                  // experiment
+
 		// Splitting names for usage
 		std::vector<std::vector<std::string>> names;
 		for (auto j : m_sweep_params[i]) {
 			names.emplace_back(split(j, '.'));
+		}
+
+		// Check, wether DataParameters was changed to do a non-spiking recall
+		// for evaluation
+		bool data_changed = false;
+		for (size_t k = 0; k < names.size(); k++) {
+			if (names[k][0] == "data") {
+				data_changed = true;
+			}
 		}
 
 		// Open file and write first line
@@ -218,21 +284,11 @@ int Experiment::run(std::ostream &out)
 		for (auto j : names)
 			ofs << j[1] << " , ";
 		ofs << "info, info_th, fp, fp_th, fn, fn_th," << std::endl;
-
-		for (size_t j = 0; j < m_sweep_values[i].size(); j++) {  // all values
-			for (size_t k = 0; k < m_sweep_values[i][j].size();
-			     k++) {  // all parameter
-				set_parameter(binam, names[k], m_sweep_values[i][j][k]);
-				ofs << m_sweep_values[i][j][k] << ",";
-			}
-
-			binam.build().run(m_backend);
-			// TODO recall if DataParams was changed
-			binam.evaluate_csv(ofs);
-			ofs << std::endl;
-			std::cout << size_t(100 * float(j + 1) / m_sweep_values[i].size())
-			          << "% done from experiment " << i + 1 << " of "
-			          << m_sweep_params.size() << std::endl;
+		if (!data_changed) {
+			run_no_data(i, names, ofs);
+		}
+		else{
+			run_data(i, names, ofs);
 		}
 	}
 	return 0;

@@ -145,19 +145,19 @@ public:
 
 	DataParameters &set(const std::string name, const size_t value)
 	{
-		if (name == "bits_in") {
+		if (name == "n_bits_in") {
 			m_bits_in = value;
 		}
-		else if (name == "bits_out") {
+		else if (name == "n_bits_out") {
 			m_bits_out = value;
 		}
-		else if (name == "ones_in") {
+		else if (name == "n_ones_in") {
 			m_ones_in = value;
 		}
-		else if (name == "ones_out") {
+		else if (name == "n_ones_out") {
 			m_ones_out = value;
 		}
-		else if (name == "samples") {
+		else if (name == "n_samples") {
 			m_samples = value;
 		}
 		else {
