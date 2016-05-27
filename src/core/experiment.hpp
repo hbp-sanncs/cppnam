@@ -64,6 +64,11 @@ private:
 	 * these entries
 	 */
 	std::vector<std::string> experiment_names;
+	
+	/**
+	 * Vector, which contains the number of repititions for every experiment
+	 */
+	std::vector<size_t> m_repetitions;
 
 	/*
 	 * A flag which is set if the constructor cannot find any experiment
@@ -83,7 +88,7 @@ private:
 
 public:
 	Experiment(cypress::Json &json, std::string backend);
-	int run(std::ostream &out = std::cout);
+	int run();
 };
 }
 #endif /* CPPNAM_UTIL_EXPERIMENT_HPP */

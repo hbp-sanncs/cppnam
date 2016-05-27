@@ -112,10 +112,6 @@ void set_parameter(SpikingBinam &binam, std::vector<std::string> names,
 		auto params = binam.NetParams();
 		binam.NetParams(params.set(names[1], value));
 	}
-	/*else if (names[0] == "data") {
-	    auto params = binam.DataParams();
-	    binam.DataParams(params.set(names[1], value));
-	}*/
 	else {
 		throw std::invalid_argument("Unknown parameter \"" + names[0] + "\"");
 	}
@@ -137,6 +133,7 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 			std::vector<std::string> sweep_params;
 			std::vector<std::vector<float>> sweep_values;
 			std::string name = i.key();
+			m_repetitions.emplace_back(1);
 
 			for (auto j = json["experiments"][name].begin();
 			     j != json["experiments"][name].end(); j++) {
@@ -144,8 +141,13 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 
 				// See if val is a number (no sweep), an array or an object
 				if (val.is_number()) {
-					params.emplace_back(
-					    std::pair<std::string, float>(j.key(), val));
+					if (j.key() == "repeat") {
+						m_repetitions.back() = val;
+					}
+					else {
+						params.emplace_back(
+						    std::pair<std::string, float>(j.key(), val));
+					}
 				}
 				else if (val.is_array()) {
 					if (val.size() == 1) {
@@ -196,6 +198,10 @@ void Experiment::run_standard()
 }
 
 namespace {
+/**
+ * Perepares data parameters if it was manually set with a single value in the
+ * JSON object
+ */
 DataParameters prepare_data_params(
     cypress::Json json, std::vector<std::vector<std::string>> &params_names,
     std::vector<size_t> &params_indices,
@@ -213,44 +219,141 @@ DataParameters prepare_data_params(
 	}
 	return params;
 }
+
+/**
+ * Checks, wether an additional parallel run will be to big, and if that is the
+ * case, perform the simulation now
+ * @param sp_binam_vec: vector of spiking_binam
+ * @param sweep_values for this experiment
+ * @param netw: the currently build network. Will be resetted after simulation
+ * @param backend: simulation platform
+ * @param results: vector containing all results for this experiment
+ * @param next_neuron_count: number of output neurons needed in the next run
+ * @param repeat_complete true if a complete run of complete was done. Only
+ * needed to check wether we are really in the last run of this experiment
+ */
+void check_run(std::vector<SpikingBinam> &sp_binam_vec,
+               const std::vector<std::vector<float>> &sweep_values,
+               cypress::Network &netw, size_t j, size_t &counter,
+               const std::string &backend,
+               std::vector<std::pair<ExpResults, ExpResults>> &results,
+               size_t next_neuron_count, bool repeat_complete)
+{
+	size_t max_neurons = 1000;  // TODO: should be taken from dict? hard coded
+	// Check wether the next run is too big or if we are in the last run of the
+	// experiment
+	if (netw.neuron_count() + next_neuron_count > max_neurons ||
+	    (j == sweep_values.size() - 1 && repeat_complete)) {
+
+		netw.run(cypress::PyNN(backend));
+
+		// Generate results
+		for (size_t k = 0; k < counter; k++) {
+			results.emplace_back(sp_binam_vec[k].evaluate_res());
+		};
+
+		// Reset variables
+		counter = 0;
+		sp_binam_vec.erase(sp_binam_vec.begin(), sp_binam_vec.end());
+		netw = cypress::Network();
+		std::cout << size_t(100 * float(j + 1) / sweep_values.size())
+		          << "% done" << std::endl;
+	}
+}
+
+/**
+ * Prints out the results
+ */
+void output(const std::vector<std::vector<float>> &sweep_values,
+            const std::vector<std::pair<ExpResults, ExpResults>> &results,
+            size_t repeat, std::ostream &ofs, std::vector<std::string> &names)
+{
+	size_t result_counter = 0;
+	for (size_t j = 0; j < sweep_values.size(); j++) {         // all values
+		for (size_t k = 0; k < sweep_values[j].size(); k++) {  // all parameter
+			if (names[k] == "data") {
+				ofs << size_t(sweep_values[j][k]) << ",";
+			}
+			else {
+				ofs << sweep_values[j][k] << ",";
+			}
+		}
+
+		// Averaging if repeat is >1
+		ExpResults mean(0, 0, 0);
+		for (size_t k = 0; k < repeat; k++) {
+			mean.Info += results[result_counter].second.Info / float(repeat);
+			mean.fp += results[result_counter].second.fp / float(repeat);
+			mean.fn += results[result_counter].second.fn / float(repeat);
+			result_counter++;
+		}
+		ofs << mean.Info << "," << results[result_counter - 1].first.Info << ","
+		    << mean.fp << "," << results[result_counter - 1].first.fp << ","
+		    << mean.fn << "," << results[result_counter - 1].first.fn << ",";
+		ofs << std::endl;
+	}
+}
 }
 
 void Experiment::run_no_data(size_t exp,
                              std::vector<std::vector<std::string>> &names,
                              std::ostream &ofs)
 {
+	std::vector<std::pair<ExpResults, ExpResults>> results;
 	std::vector<std::vector<std::string>> params_names;
 	std::vector<size_t> params_indices;
 	DataParameters data_params =
 	    prepare_data_params(json, params_names, params_indices, m_params[exp]);
-	SpikingBinam sp_binam(json, data_params);
+	size_t counter = 0;  // for the number of parallel networks
+	std::ofstream out;   // suppress output
+	SpikingBinam sp_binam(json, data_params, out);  // Standard binam
+	std::vector<SpikingBinam>
+	    sp_binam_vec;       // Emplace binam network for every parameter run
+	cypress::Network netw;  // shared network
+	size_t neuron_count =
+	    data_params.bits_out();  // number of neurons in next run
+
+	// Single parameter settings
 	for (size_t k : params_indices) {
 		set_parameter(sp_binam, params_names[k], m_params[exp][k].second);
 	}
-	for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {  // all values
-		for (size_t k = 0; k < m_sweep_values[exp][j].size();
-		     k++) {  // all parameter
-			set_parameter(sp_binam, names[k], m_sweep_values[exp][j][k]);
-			ofs << m_sweep_values[exp][j][k] << ",";
-		}
 
-		sp_binam.build().run(m_backend);
-		sp_binam.evaluate_csv(ofs);
-		ofs << std::endl;
-		std::cout << size_t(100 * float(j + 1) / m_sweep_values[exp].size())
-		          << "% done from experiment " << exp + 1 << " of "
-		          << m_sweep_params.size() << std::endl;
+	for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {  // all values
+		for (size_t repeat_counter = 0; repeat_counter < m_repetitions[exp];
+		     repeat_counter++) {
+
+			sp_binam_vec.push_back(sp_binam);
+
+			for (size_t k = 0; k < m_sweep_values[exp][j].size(); k++) {
+				set_parameter(sp_binam_vec[counter], names[k],
+				              m_sweep_values[exp][j][k]);
+			}
+
+			sp_binam_vec[counter].build(netw);
+			counter++;
+			check_run(sp_binam_vec, m_sweep_values[exp], netw, j, counter,
+			          m_backend, results, neuron_count,
+			          repeat_counter + 1 == m_repetitions[exp]);
+		}
 	}
+	output(m_sweep_values[exp], results, m_repetitions[exp], ofs, names[0]);
 }
 
 void Experiment::run_data(size_t exp,
                           std::vector<std::vector<std::string>> &names,
                           std::ostream &ofs)
 {
+	std::vector<std::pair<ExpResults, ExpResults>> results;
 	std::vector<std::vector<std::string>> params_names;
 	std::vector<size_t> params_indices;
 	DataParameters data_params =
 	    prepare_data_params(json, params_names, params_indices, m_params[exp]);
+	size_t counter = 0;  // for the number of parallel networks
+	std::ofstream out;   // suppress output
+	std::vector<SpikingBinam>
+	    sp_binam_vec;       // Emplace binam network for every parameter run
+	cypress::Network netw;  // shared network
+	int bits_out_index = -1; // if bits_out are change, this is the index
 
 	std::vector<size_t> data_indices, other_indices;
 	for (size_t k = 0; k < names.size(); k++) {
@@ -260,34 +363,49 @@ void Experiment::run_data(size_t exp,
 		else {
 			data_indices.emplace_back(k);
 		}
+		if (names[k][1] == "n_bits_out") {
+			bits_out_index = k;
+		}
 	}
+
 	for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {  // all values
 		for (auto k : data_indices) {
 			data_params.set(names[k][1], m_sweep_values[exp][j][k]);
 		}
-		SpikingBinam sp_binam(json, data_params);
+		SpikingBinam sp_binam(json, data_params, out);
 		for (size_t k : params_indices) {
 			set_parameter(sp_binam, params_names[k], m_params[exp][k].second);
 		}
 		for (auto k : other_indices) {
 			set_parameter(sp_binam, names[k], m_sweep_values[exp][j][k]);
 		}
-		for (size_t k = 0; k < m_sweep_values[exp][j].size(); k++) {
-			ofs << m_sweep_values[exp][j][k] << ",";
+
+		for (size_t repeat_counter = 0; repeat_counter < m_repetitions[exp];
+		     repeat_counter++) {
+			sp_binam_vec.emplace_back(sp_binam);
+			sp_binam_vec[counter].build(netw);
+			counter++;
+			size_t neuron_count = 0;
+			if (repeat_counter < m_repetitions[exp] - 2) {
+				neuron_count = data_params.ones_out();
+			}
+			else {
+				if (j + 1 < m_sweep_values.size() && bits_out_index >=0) {
+					neuron_count = m_sweep_values[exp][j + 1][bits_out_index];
+				}
+				else {
+					neuron_count = data_params.ones_out();
+				}
+			}
+			check_run(sp_binam_vec, m_sweep_values[exp], netw, j, counter,
+			          m_backend, results, neuron_count,
+			          repeat_counter + 1 == m_repetitions[exp]);
 		}
-		sp_binam.build().run(m_backend);
-		sp_binam.evaluate_csv(ofs);
-		ofs << std::endl;
-		std::cout << size_t(100 * float(j + 1) / m_sweep_values[exp].size())
-		          << "% done from experiment " << exp + 1 << " of "
-		          << m_sweep_params.size() << std::endl;
 	}
+	output(m_sweep_values[exp], results, m_repetitions[exp], ofs, names[0]);
 }
 
-// TODO restore m_params functionality
-// TODO run several experiments on the hardware
-// TODO repeat + average
-int Experiment::run(std::ostream &out)
+int Experiment::run()
 {
 	if (standard) {
 		run_standard();
@@ -302,8 +420,8 @@ int Experiment::run(std::ostream &out)
 			names.emplace_back(split(j, '.'));
 		}
 
-		// Check, wether DataParameters was changed. This is important for later
-		// computation
+		// Check, wether DataParameters was changed. This is important
+		// for later computation
 		bool data_changed = false;
 		for (size_t k = 0; k < names.size(); k++) {
 			if (names[k][0] == "data") {
@@ -312,7 +430,7 @@ int Experiment::run(std::ostream &out)
 		}
 
 		// Open file and write first line
-		std::ofstream ofs(experiment_names[i] + ".txt", std::ofstream::out);
+		std::ofstream ofs(experiment_names[i] + ".csv", std::ofstream::out);
 		ofs << "# ";
 		for (auto j : names)
 			ofs << j[1] << " , ";
