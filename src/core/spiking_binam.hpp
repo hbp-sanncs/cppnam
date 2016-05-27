@@ -22,6 +22,7 @@
 #define CPPNAM_UTIL_SPIKING_BINAM_HPP
 
 #include <array>
+#include <memory>
 #include <string>
 
 #include "binam.hpp"
@@ -38,27 +39,28 @@ namespace nam {
  */
 class SpikingBinam {
 private:
-	BiNAM_Container<uint64_t> m_BiNAM_Container;
-	NeuronParameters m_neuronParams;
-	NetworkParameters m_networkParams;
-	DataParameters m_dataParams;
-	DataGenerationParameters m_datagen;
 	cypress::Network m_net;
-	std::string m_neuronType;
 	cypress::Population<cypress::SpikeSourceArray> m_pop_source;
 	cypress::PopulationBase m_pop_output;
+	DataParameters m_dataParams;
+	NeuronParameters m_neuronParams;
+	NetworkParameters m_networkParams;
+	std::shared_ptr<BiNAM_Container<uint64_t>> m_BiNAM_Container;
+
+	std::string m_neuronType;
 
 	/**
 	 * Creates a population of type @param T and adds them to m_net
 	 */
 	template <typename T>
-	cypress::PopulationBase add_typed_population();
+	cypress::PopulationBase add_typed_population(cypress::Network &network);
 
 	/**
 	 * Runs add_typed_population, but gets a string containing the neuron type
 	 * instead of a template argument
 	 */
-	cypress::PopulationBase add_population(std::string neuron_type_str);
+	cypress::PopulationBase add_population(std::string neuron_type_str,
+	                                       cypress::Network &network);
 
 	/**
 	 * Build the spike times for the spike source array using the input matrix
@@ -103,12 +105,13 @@ public:
 	/**
 	 * Recall theoretical BiNAM e.g. when DataParameters have been changed
 	 */
-	void update_data() { m_BiNAM_Container.recall(); }
+	void update_data() { m_BiNAM_Container->recall(); }
 
 	/**
 	 * Complete building of the spiking neural network
 	 */
 	SpikingBinam &build();
+	SpikingBinam &build(cypress::Network &network);
 
 	/**
 	 * Execution on hardware or software platform
@@ -126,6 +129,7 @@ public:
 	 */
 	void evaluate_neat(std::ostream &output = std::cout);
 	void evaluate_csv(std::ostream &output);
+	std::pair<ExpResults, ExpResults> evaluate_res();
 };
 }
 
