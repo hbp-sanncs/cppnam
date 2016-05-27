@@ -32,7 +32,8 @@ TEST(SpikingBinam, SpikingBinam)
 {
 	std::ifstream ifs("test.json", std::ifstream::in);
 	cypress::Json json(ifs);
-	auto binam = SpikingBinam(json);
+	std::ofstream out;
+	auto binam = SpikingBinam(json, out);
 	DataParameters data = binam.DataParams();
 	EXPECT_EQ(100, data.bits_in());
 	EXPECT_EQ(100, data.bits_out());

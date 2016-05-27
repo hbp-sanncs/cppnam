@@ -31,7 +31,8 @@ TEST(SpikingParameters, NeuronParameters)
 	std::ifstream ifs("test.json", std::ifstream::in);
 	cypress::Json json(ifs);
 	cypress::IfCondExp neurontype = cypress::IfCondExp::inst();
-	auto params = NeuronParameters(neurontype, json["network"]);
+	std::ofstream out;
+	auto params = NeuronParameters(neurontype, json["network"], out);
 	std::vector<float> parameter = params.parameter();
 	EXPECT_NEAR(float(0.2), parameter[0], 1e-8);
 	EXPECT_NEAR(float(50), parameter[1], 1e-8);
@@ -50,7 +51,8 @@ TEST(SpikingParameters, NetworkParameters)
 {
 	std::ifstream ifs("test.json", std::ifstream::in);
 	cypress::Json json(ifs);
-	auto params = NetworkParameters(json["network"]);
+	std::ofstream out;
+	auto params = NetworkParameters(json["network"], out);
 	EXPECT_NEAR(1, params.input_burst_size(), 1e-8);
 	EXPECT_NEAR(1, params.output_burst_size(), 1e-8);
 	EXPECT_NEAR(100, params.time_window(), 1e-8);
@@ -61,7 +63,4 @@ TEST(SpikingParameters, NetworkParameters)
 	EXPECT_NEAR(0, params.p1(), 1e-8);
 	EXPECT_NEAR(0.01, params.weight(), 1e-8);
 }
-
-
-
 }
