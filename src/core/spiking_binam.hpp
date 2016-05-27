@@ -78,8 +78,8 @@ public:
 	 * It sets up the BiNAM_Container, runs and evaluates them (latter one for
 	 * comparison).
 	 */
-	SpikingBinam(cypress::Json &json, bool recall= true, std::ostream &out = std::cout);
-	
+	SpikingBinam(cypress::Json &json, std::ostream &out = std::cout);
+
 	/**
 	 * Constructor, which overwites DataParameters from JSON
 	 */
