@@ -51,7 +51,7 @@ public:
 	 */
 	NeuronParameters(const cypress::NeuronType &type, const cypress::Json &json,
 	                 std::ostream &out = std::cout);
-	
+
 	NeuronParameters(){};
 
 	const std::vector<float> &parameter() const { return m_params; };
@@ -78,6 +78,11 @@ private:
 public:
 	static const std::vector<std::string> names;
 
+	/**
+	 * Default values
+	 */
+	static const std::vector<float> defaults;
+
 	NAMED_PARAMETER(input_burst_size, 0);
 	NAMED_PARAMETER(output_burst_size, 1);
 	NAMED_PARAMETER(time_window, 2);
@@ -88,17 +93,17 @@ public:
 	NAMED_PARAMETER(p1, 7);
 	NAMED_PARAMETER(weight, 8);
 	NAMED_PARAMETER(general_offset, 9);
-	
+
 	/**
 	 * Construct from Json, give out parameters to @param out
 	 */
 	NetworkParameters(const cypress::Json &json, std::ostream &out = std::cout);
-	
+
 	/**
 	 * Empty constructor
 	 */
 	NetworkParameters() : arr{0, 0, 0, 0, 0, 0, 0, 0, 0, 0} {};
-	
+
 	/**
 	 * Set parameter with name @param name to @param value
 	 */

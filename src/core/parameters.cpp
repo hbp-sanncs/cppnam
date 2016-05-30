@@ -27,8 +27,9 @@ DataGenerationParameters::DataGenerationParameters(const cypress::Json &obj)
 {
 	std::map<std::string, size_t> input = json_to_map<size_t>(obj);
 	std::vector<std::string> names = {"seed", "random", "balanced", "unique"};
+	std::vector<size_t> default_vals({0,1,1,1});
 	auto res =
-	    read_check<size_t>(input, names, std::vector<size_t>(names.size(), 0));
+	    read_check<size_t>(input, names, default_vals);
 	m_seed = res[0];
 	m_random = false;
 	m_balanced = false;

@@ -27,7 +27,6 @@
 #include "util/binary_matrix.hpp"
 #include "util/read_json.hpp"
 
-
 namespace nam {
 namespace {
 
@@ -57,12 +56,15 @@ const std::vector<std::string> NetworkParameters::names = {
     "sigma_t",          "sigma_offs",        "p0",          "p1",
     "weight",           "general_offset"};
 
+const std::vector<float> NetworkParameters::defaults{1, 1, 100, 1,   0,
+                                                     0, 0, 0,   0.1, 100};
+
 NetworkParameters::NetworkParameters(const cypress::Json &obj,
                                      std::ostream &out)
 {
 	out << "# NetworkParameters: " << std::endl;
 	std::map<std::string, float> input = json_to_map<float>(obj);
-	arr = read_check<float>(input, names, std::vector<float>(names.size(), 0));
+	arr = read_check<float>(input, names, defaults);
 
 	for (size_t i = 0; i < names.size(); i++) {
 		out << names[i] << ": " << arr[i] << std::endl;
