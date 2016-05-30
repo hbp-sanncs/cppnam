@@ -67,7 +67,7 @@ std::vector<std::vector<float>> SpikingBinam::build_spike_times()
 	return res;
 }
 
-SpikingBinam::SpikingBinam(Json &json, std::ostream &out)
+SpikingBinam::SpikingBinam(Json &json, std::ostream &out, bool recall)
     : m_pop_source(m_net, 0), m_pop_output(m_net, 0)
 {
 	m_dataParams = DataParameters(json["data"]);
@@ -79,10 +79,14 @@ SpikingBinam::SpikingBinam(Json &json, std::ostream &out)
 
 	m_neuronParams = NeuronParameters(neuronType, json["network"], out);
 	m_networkParams = NetworkParameters(json["network"], out);
-	m_BiNAM_Container->set_up().recall();
+	m_BiNAM_Container->set_up();
+	if (recall) {
+		m_BiNAM_Container->recall();
+	}
 }
 
-SpikingBinam::SpikingBinam(Json &json, DataParameters params, std::ostream &out)
+SpikingBinam::SpikingBinam(Json &json, DataParameters params, std::ostream &out,
+                           bool recall)
     : m_pop_source(m_net, 0), m_pop_output(m_net, 0), m_dataParams(params)
 {
 	m_dataParams.print(out);
@@ -93,7 +97,10 @@ SpikingBinam::SpikingBinam(Json &json, DataParameters params, std::ostream &out)
 
 	m_neuronParams = NeuronParameters(neuronType, json["network"], out);
 	m_networkParams = NetworkParameters(json["network"], out);
-	m_BiNAM_Container->set_up().recall();
+	m_BiNAM_Container->set_up();
+	if (recall) {
+		m_BiNAM_Container->recall();
+	}
 }
 
 template <typename T>

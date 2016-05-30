@@ -19,8 +19,10 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <thread>
 #include <vector>
 
+#include <cypress/cypress.hpp>
 #include "experiment.hpp"
 #include "spiking_binam.hpp"
 #include "util/read_json.hpp"
@@ -192,9 +194,16 @@ void Experiment::run_standard()
 	    << std::endl
 	    << "# "
 	    << "Spiking Binam from " << std::ctime(&time) << std::endl;
-	SpikingBinam m_SpBinam(json, true, ofs);
-	m_SpBinam.build().run(m_backend);
-	m_SpBinam.evaluate_neat(ofs);
+	cypress::Network netw;
+	SpikingBinam SpBinam(json, ofs, true);
+	SpBinam.build(netw);
+	std::thread spiking_network(
+	    [netw, this]() mutable { netw.run(cypress::PyNN(m_backend)); });
+	std::thread recall([SpBinam]() mutable { SpBinam.recall(); });
+	recall.join();
+	spiking_network.join();
+
+	SpBinam.evaluate_neat(ofs);
 }
 
 namespace {
@@ -351,9 +360,9 @@ void Experiment::run_data(size_t exp,
 	size_t counter = 0;  // for the number of parallel networks
 	std::ofstream out;   // suppress output
 	std::vector<SpikingBinam>
-	    sp_binam_vec;       // Emplace binam network for every parameter run
-	cypress::Network netw;  // shared network
-	int bits_out_index = -1; // if bits_out are change, this is the index
+	    sp_binam_vec;         // Emplace binam network for every parameter run
+	cypress::Network netw;    // shared network
+	int bits_out_index = -1;  // if bits_out are change, this is the index
 
 	std::vector<size_t> data_indices, other_indices;
 	for (size_t k = 0; k < names.size(); k++) {
@@ -390,7 +399,7 @@ void Experiment::run_data(size_t exp,
 				neuron_count = data_params.ones_out();
 			}
 			else {
-				if (j + 1 < m_sweep_values.size() && bits_out_index >=0) {
+				if (j + 1 < m_sweep_values.size() && bits_out_index >= 0) {
 					neuron_count = m_sweep_values[exp][j + 1][bits_out_index];
 				}
 				else {

@@ -17,6 +17,7 @@
  */
 #include <fstream>
 #include <string>
+#include <thread>
 
 #include "cypress/cypress.hpp"
 #include "core/spiking_binam.hpp"
@@ -42,10 +43,15 @@ int main(int argc, const char *argv[])
 
 	auto time = std::time(NULL);
 	ofs << "Spiking Binam from " << std::ctime(&time) << std::endl;
-	SpikingBinam binam(json, true, ofs);
-	binam.build();
+	SpikingBinam binam(json, ofs, false);
+	cypress::Network netw;
+	binam.build(netw);
 	std::cout << "Building complete" << std::endl;
-	binam.run(argv[1]);
+	std::thread spiking_network(
+	    [netw, argv]() mutable { netw.run(cypress::PyNN(argv[1])); });
+	std::thread recall([binam]() mutable { binam.recall(); });
+	recall.join();
+	spiking_network.join();
 	std::cout << "Run complete" << std::endl;
 	binam.evaluate_neat(ofs);
 
