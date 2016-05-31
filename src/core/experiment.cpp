@@ -16,6 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <chrono>
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -196,6 +197,8 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 
 void Experiment::run_standard()
 {
+	using namespace std::chrono;
+	system_clock::time_point t1, t2, t3, t4, t5, t6;
 	std::ofstream ofs("data_single_run.txt", std::ofstream::app);
 	auto time = std::time(NULL);
 	ofs << "#"
@@ -205,14 +208,31 @@ void Experiment::run_standard()
 	    << "Spiking Binam from " << std::ctime(&time) << std::endl;
 	cypress::Network netw;
 	SpikingBinam SpBinam(json, ofs, true);
+	t1 = system_clock::now();
 	SpBinam.build(netw);
-	std::thread spiking_network(
-	    [netw, this]() mutable { netw.run(cypress::PyNN(m_backend)); });
-	std::thread recall([SpBinam]() mutable { SpBinam.recall(); });
+	t2 = system_clock::now();
+	std::thread spiking_network([&netw, this, &t3, &t4]() mutable {
+		t3 = system_clock::now();
+		netw.run(cypress::PyNN(m_backend));
+		t4 = system_clock::now();
+	});
+	std::thread recall([&SpBinam, &t5, &t6]() mutable {
+		t5 = system_clock::now();
+		SpBinam.recall();
+		t6 = system_clock::now();
+	});
 	recall.join();
 	spiking_network.join();
 
 	SpBinam.evaluate_neat(ofs);
+	ofs << std::endl << "Time in milliseconds:"<< std::endl;
+	auto time_span = duration_cast<milliseconds>(t2 - t1);
+	ofs << "Building spiking neural network took:\t" << time_span.count()
+	    << std::endl;
+	time_span = duration_cast<milliseconds>(t6 - t5);
+	ofs << "Classical recall took:\t\t\t\t\t" << time_span.count() << std::endl;
+	time_span = duration_cast<milliseconds>(t4 - t3);
+	ofs << "Simulation took:\t\t\t\t\t\t" << time_span.count() << std::endl;
 }
 
 namespace {
