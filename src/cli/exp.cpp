@@ -30,6 +30,11 @@ int main(int argc, const char *argv[])
 		          << std::endl;
 		return 1;
 	}
+	if (argc == 4 && std::string(argv[3]) == "NMPI" &&
+	    !cypress::NMPI::check_args(argc, argv)) {
+		cypress::NMPI(argv[1], argc, argv);
+		return 0;
+	}
 	
 	
 	std::ifstream ifs(argv[2], std::ifstream::in);
