@@ -176,7 +176,7 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 					auto range = read_check<float>(map, names,
 					                               std::vector<float>{0, 0, 0});
 					std::vector<float> values;
-					double step = (range[1] - range[0]) / range[2];
+					double step = (range[1] - range[0]) / (range[2] - 1.0);
 					for (size_t k = 0; k < range[2]; k++) {
 						values.emplace_back<float>(range[0] + float(k) * step);
 					}
