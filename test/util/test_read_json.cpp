@@ -32,16 +32,16 @@ TEST(ReadJSON, json_to_map)
 	cypress::Json json(ifs);
 	auto map = json_to_map<float>(json["network"]);
 	EXPECT_EQ(map.end(), map.find("neuron_type"));
-	EXPECT_NEAR(0.01, map.find("weight")->second,1e-8);
-	EXPECT_NEAR(1.0, map.find("input_burst_size")->second,1e-8);
-	EXPECT_NEAR(1.0, map.find("output_burst_size")->second,1e-8);
-	EXPECT_NEAR(100.0, map.find("time_window")->second,1e-8);
-	EXPECT_NEAR(2.0, map.find("isi")->second,1e-8);
-	EXPECT_NEAR(2.0, map.find("sigma_t")->second,1e-8);
-	EXPECT_NEAR(0.0, map.find("sigma_offs")->second,1e-8);
-	EXPECT_NEAR(0.0, map.find("p0")->second,1e-8);
-	EXPECT_NEAR(0.0, map.find("p1")->second,1e-8);
-	EXPECT_NEAR(100.0, map.find("general_offset")->second,1e-8);
+	EXPECT_NEAR(0.01, map.find("weight")->second, 1e-8);
+	EXPECT_NEAR(1.0, map.find("input_burst_size")->second, 1e-8);
+	EXPECT_NEAR(1.0, map.find("output_burst_size")->second, 1e-8);
+	EXPECT_NEAR(100.0, map.find("time_window")->second, 1e-8);
+	EXPECT_NEAR(2.0, map.find("isi")->second, 1e-8);
+	EXPECT_NEAR(2.0, map.find("sigma_t")->second, 1e-8);
+	EXPECT_NEAR(0.0, map.find("sigma_offs")->second, 1e-8);
+	EXPECT_NEAR(0.0, map.find("p0")->second, 1e-8);
+	EXPECT_NEAR(0.0, map.find("p1")->second, 1e-8);
+	EXPECT_NEAR(100.0, map.find("general_offset")->second, 1e-8);
 }
 
 TEST(ReadJSON, read_check)
@@ -50,20 +50,21 @@ TEST(ReadJSON, read_check)
 	cypress::Json json(ifs);
 	auto map = json_to_map<float>(json["network"]);
 
-	auto res =
-	    read_check<float>(map, NetworkParameters::names,
-	                      std::vector<float>(NetworkParameters::names.size(), 0));
-	EXPECT_NEAR(0.01, res[8],1e-8);
-	EXPECT_NEAR(1.0, res[0],1e-8);
-	EXPECT_NEAR(1.0, res[1],1e-8);
-	EXPECT_NEAR(100.0, res[2],1e-8);
-	EXPECT_NEAR(2.0, res[3],1e-8);
-	EXPECT_NEAR(2.0, res[4],1e-8);
-	EXPECT_NEAR(0.0, res[5],1e-8);
-	EXPECT_NEAR(0.0, res[6],1e-8);
-	EXPECT_NEAR(0.0, res[7],1e-8);
-	EXPECT_NEAR(100.0, res[9],1e-8);
-	
+	auto res = read_check<float>(
+	    map, NetworkParameters::names,
+	    std::vector<float>(NetworkParameters::names.size(), 0));
+	EXPECT_NEAR(0.01, res[8], 1e-8);
+	EXPECT_NEAR(1.0, res[0], 1e-8);
+	EXPECT_NEAR(1.0, res[1], 1e-8);
+	EXPECT_NEAR(100.0, res[2], 1e-8);
+	EXPECT_NEAR(2.0, res[3], 1e-8);
+	EXPECT_NEAR(2.0, res[4], 1e-8);
+	EXPECT_NEAR(0.0, res[5], 1e-8);
+	EXPECT_NEAR(0.0, res[6], 1e-8);
+	EXPECT_NEAR(0.0, res[7], 1e-8);
+	EXPECT_NEAR(0.0, res[9], 1e-8);
+	EXPECT_NEAR(100.0, res[10], 1e-8);
+
 	map = json_to_map<float>(json["network"]);
 	EXPECT_ANY_THROW(
 	    read_check<float>(map, std::vector<std::string>({"input_burst_size"}),

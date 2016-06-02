@@ -51,13 +51,20 @@ NeuronParameters::NeuronParameters(const cypress::NeuronType &type,
 	out << std::endl;
 }
 
-const std::vector<std::string> NetworkParameters::names = {
-    "input_burst_size", "output_burst_size", "time_window", "isi",
-    "sigma_t",          "sigma_offs",        "p0",          "p1",
-    "weight",           "general_offset"};
+const std::vector<std::string> NetworkParameters::names = {"input_burst_size",
+                                                           "output_burst_size",
+                                                           "time_window",
+                                                           "isi",
+                                                           "sigma_t",
+                                                           "sigma_offs",
+                                                           "p0",
+                                                           "p1",
+                                                           "weight",
+                                                           "multiplicity",
+                                                           "general_offset"};
 
-const std::vector<float> NetworkParameters::defaults{1, 1, 100, 1,   0,
-                                                     0, 0, 0,   0.1, 100};
+const std::vector<float> NetworkParameters::defaults{1, 1, 100, 1, 0,  0,
+                                                     0, 0, 0.1, 1, 100};
 
 NetworkParameters::NetworkParameters(const cypress::Json &obj,
                                      std::ostream &out)

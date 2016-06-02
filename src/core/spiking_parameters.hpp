@@ -92,7 +92,8 @@ public:
 	NAMED_PARAMETER(p0, 6);
 	NAMED_PARAMETER(p1, 7);
 	NAMED_PARAMETER(weight, 8);
-	NAMED_PARAMETER(general_offset, 9);
+	NAMED_PARAMETER(multiplicity,9);
+	NAMED_PARAMETER(general_offset, 10);
 
 	/**
 	 * Construct from Json, give out parameters to @param out
@@ -102,7 +103,7 @@ public:
 	/**
 	 * Empty constructor
 	 */
-	NetworkParameters() : arr{0, 0, 0, 0, 0, 0, 0, 0, 0, 0} {};
+	NetworkParameters() : arr{0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0} {};
 
 	/**
 	 * Set parameter with name @param name to @param value

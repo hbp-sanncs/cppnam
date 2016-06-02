@@ -50,6 +50,8 @@ TEST(spiketrain, spikes_to_vector)
 	params.input_burst_size(5.0);
 	params.output_burst_size(1.0);
 	params.time_window(100);
+	params.multiplicity(1);
+	params.general_offset(0);
 	using namespace cypress;
 	Vector<float> spike_vec(
 	    {0.1, 303, 709, 710, 711, 903, 904, 905, 906, 907, 10000});
