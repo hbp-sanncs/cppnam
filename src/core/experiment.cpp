@@ -199,7 +199,8 @@ void Experiment::run_standard()
 {
 	using namespace std::chrono;
 	system_clock::time_point t1, t2, t3, t4, t5, t6;
-	std::ofstream ofs("data_single_run.txt", std::ofstream::app);
+	std::ofstream ofs("data_single_run_" + m_backend + ".txt",
+	                  std::ofstream::app);
 	auto time = std::time(NULL);
 	ofs << "#"
 	    << " ________________________________________________________"
