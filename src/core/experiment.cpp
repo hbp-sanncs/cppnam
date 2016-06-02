@@ -223,16 +223,19 @@ void Experiment::run_standard()
 	});
 	recall.join();
 	spiking_network.join();
+	auto runtime = netw.runtime();
 
 	SpBinam.evaluate_neat(ofs);
-	ofs << std::endl << "Time in milliseconds:"<< std::endl;
+	ofs << std::endl << "Time in milliseconds:" << std::endl;
 	auto time_span = duration_cast<milliseconds>(t2 - t1);
 	ofs << "Building spiking neural network took:\t" << time_span.count()
 	    << std::endl;
+	ofs << "Building in PyNN took:\t\t\t\t" << runtime.initialize << std::endl;
+	time_span = duration_cast<milliseconds>(t4 - t3);
+	ofs << "Cypress run took:\t\t\t\t\t" << time_span.count() << std::endl;
+	ofs << "Simulation took:\t\t\t\t\t" << runtime.sim << std::endl;
 	time_span = duration_cast<milliseconds>(t6 - t5);
 	ofs << "Classical recall took:\t\t\t\t\t" << time_span.count() << std::endl;
-	time_span = duration_cast<milliseconds>(t4 - t3);
-	ofs << "Simulation took:\t\t\t\t\t\t" << time_span.count() << std::endl;
 }
 
 namespace {
