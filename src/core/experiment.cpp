@@ -348,9 +348,23 @@ void Experiment::run_no_data(size_t exp,
 		set_parameter(sp_binam, params_names[k], m_params[exp][k].second);
 	}
 
+	// If there are no sweep values
+	if (m_sweep_values[exp].size() == 0) {
+		for (size_t repeat_counter = 0; repeat_counter < m_repetitions[exp];
+		     repeat_counter++) {  // do all repetitions
+			sp_binam.build().run(m_backend);
+			std::pair<ExpResults, ExpResults> res = sp_binam.evaluate_res();
+			ofs << res.second.Info << "," << res.first.Info << ","
+			    << res.second.Info / res.first.Info << "," << res.second.fp
+			    << "," << res.first.fp << "," << res.second.fn << ","
+			    << res.first.fn;
+			ofs << std::endl;
+		}
+	}
+
 	for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {  // all values
 		for (size_t repeat_counter = 0; repeat_counter < m_repetitions[exp];
-		     repeat_counter++) {
+		     repeat_counter++) {  // do all repetitions
 
 			sp_binam_vec.push_back(sp_binam);
 
@@ -358,7 +372,6 @@ void Experiment::run_no_data(size_t exp,
 				set_parameter(sp_binam_vec[counter], names[k],
 				              m_sweep_values[exp][j][k]);
 			}
-
 			sp_binam_vec[counter].build(netw);
 			counter++;
 			check_run(sp_binam_vec, m_sweep_values[exp], netw, j, counter,
@@ -366,7 +379,7 @@ void Experiment::run_no_data(size_t exp,
 			          repeat_counter + 1 == m_repetitions[exp]);
 		}
 	}
-	output(m_sweep_values[exp], results, m_repetitions[exp], ofs, names[0]);
+	output(m_sweep_values[exp], results, ofs, names[0]);
 }
 
 void Experiment::run_data(size_t exp,
