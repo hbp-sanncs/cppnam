@@ -255,6 +255,9 @@ DataParameters prepare_data_params(
 	return params;
 }
 
+static const std::map<std::string, size_t> neuron_numbers{
+    {"spikey", 512}, {"spinnaker", 1000}, {"nmmc1", 1e5}, {"nest", 1e3}};
+
 /**
  * Checks, wether an additional parallel run will be to big, and if that is the
  * case, perform the simulation now
@@ -274,7 +277,7 @@ void check_run(std::vector<SpikingBinam> &sp_binam_vec,
                std::vector<std::pair<ExpResults, ExpResults>> &results,
                size_t next_neuron_count, bool repeat_complete)
 {
-	size_t max_neurons = 1000;  // TODO: should be taken from dict? hard coded
+	size_t max_neurons = neuron_numbers.find(backend)->second;
 	// Check wether the next run is too big or if we are in the last run of the
 	// experiment
 	if (netw.neuron_count() + next_neuron_count > max_neurons ||
