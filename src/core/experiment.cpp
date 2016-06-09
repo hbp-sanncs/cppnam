@@ -396,7 +396,7 @@ void Experiment::run_data(size_t exp,
 	std::vector<SpikingBinam>
 	    sp_binam_vec;         // Emplace binam network for every parameter run
 	cypress::Network netw;    // shared network
-	int bits_out_index = -1;  // if bits_out are change, this is the index
+	int bits_out_index = -1;  // if bits_out are changed, this is the index
 
 	std::vector<size_t> data_indices, other_indices;
 	for (size_t k = 0; k < names.size(); k++) {

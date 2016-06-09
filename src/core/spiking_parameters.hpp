@@ -69,6 +69,16 @@ public:
 		}
 		throw std::invalid_argument("Unknown neuron parameter" + name);
 	}
+	
+	float get(std::string name)
+	{
+		for (size_t i = 0; i < m_parameter_names.size(); i++) {
+			if (m_parameter_names[i] == name) {
+				return m_params[i];
+			}
+		}
+		throw std::invalid_argument("Unknown neuron parameter" + name);
+	}
 };
 
 class NetworkParameters {
