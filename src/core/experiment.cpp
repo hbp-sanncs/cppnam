@@ -473,11 +473,13 @@ int Experiment::run()
 		}
 
 		// Open file and write first line
-		std::ofstream ofs(experiment_names[i] + ".csv", std::ofstream::out);
+		std::ofstream ofs(experiment_names[i] + "_" + m_backend + ".csv",
+		                  std::ofstream::out);
 		ofs << "# ";
-		for (auto j : names)
-			ofs << j[1] << " , ";
-		ofs << "info, info_th, fp, fp_th, fn, fn_th," << std::endl;
+		for (size_t j = 0; j < names.size(); j++) {
+			ofs << names[j][1] << ", ";
+		}
+		ofs << "info, info_th,info_n, fp, fp_th, fn, fn_th" << std::endl;
 		if (!data_changed) {
 			run_no_data(i, names, ofs);
 		}
