@@ -41,6 +41,6 @@ int main(int argc, const char *argv[])
 	cypress::Json json(ifs);
 	
 	Experiment exp(json, argv[1]);
-	exp.run();
+	exp.run(argv[2]);
 	return 0;
 }

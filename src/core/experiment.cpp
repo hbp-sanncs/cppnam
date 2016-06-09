@@ -185,18 +185,20 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 	}
 }
 
-void Experiment::run_standard()
+void Experiment::run_standard(std::string file_name)
 {
 	using namespace std::chrono;
 	system_clock::time_point t1, t2, t3, t4, t5, t6;
-	std::ofstream ofs("data_single_run_" + m_backend + ".txt",
-	                  std::ofstream::app);
+	std::ofstream ofs;
+	ofs =
+	    std::ofstream(file_name + "_" + m_backend + ".txt", std::ofstream::app);
 	auto time = std::time(NULL);
 	ofs << "#"
 	    << " ________________________________________________________"
 	    << std::endl
 	    << "# "
-	    << "Spiking Binam from " << std::ctime(&time) << std::endl;
+	    << "Spiking Binam from " << std::ctime(&time) << std::endl
+	    << "# Simulator : " << m_backend << std::endl;
 	cypress::Network netw;
 	SpikingBinam SpBinam(json, ofs, true);
 	t1 = system_clock::now();
