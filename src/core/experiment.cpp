@@ -445,13 +445,13 @@ void Experiment::run_data(size_t exp,
 			          repeat_counter + 1 == m_repetitions[exp]);
 		}
 	}
-	output(m_sweep_values[exp], results, m_repetitions[exp], ofs, names[0]);
+	output(m_sweep_values[exp], results, ofs, names[0]);
 }
 
-int Experiment::run()
+int Experiment::run(std::string file_name)
 {
 	if (standard) {
-		run_standard();
+		run_standard(file_name);
 		return 0;
 	}
 	for (size_t i = 0; i < m_sweep_params.size(); i++) {  // for every
