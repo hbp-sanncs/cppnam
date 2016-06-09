@@ -304,10 +304,9 @@ void check_run(std::vector<SpikingBinam> &sp_binam_vec,
  */
 void output(const std::vector<std::vector<float>> &sweep_values,
             const std::vector<std::pair<ExpResults, ExpResults>> &results,
-            size_t repeat, std::ostream &ofs, std::vector<std::string> &names)
+            std::ostream &ofs, std::vector<std::string> &names)
 {
-	size_t result_counter = 0;
-	for (size_t j = 0; j < sweep_values.size(); j++) {         // all values
+	for (size_t j = 0; j < results.size(); j++) {              // all values
 		for (size_t k = 0; k < sweep_values[j].size(); k++) {  // all parameter
 			if (names[k] == "data") {
 				ofs << size_t(sweep_values[j][k]) << ",";
@@ -317,17 +316,10 @@ void output(const std::vector<std::vector<float>> &sweep_values,
 			}
 		}
 
-		// Averaging if repeat is >1
-		ExpResults mean(0, 0, 0);
-		for (size_t k = 0; k < repeat; k++) {
-			mean.Info += results[result_counter].second.Info / float(repeat);
-			mean.fp += results[result_counter].second.fp / float(repeat);
-			mean.fn += results[result_counter].second.fn / float(repeat);
-			result_counter++;
-		}
-		ofs << mean.Info << "," << results[result_counter - 1].first.Info << ","
-		    << mean.fp << "," << results[result_counter - 1].first.fp << ","
-		    << mean.fn << "," << results[result_counter - 1].first.fn << ",";
+		ofs << results[j].second.Info << "," << results[j].first.Info << ","
+		    << results[j].second.Info / results[j].first.Info << ","
+		    << results[j].second.fp << "," << results[j].first.fp << ","
+		    << results[j].second.fn << "," << results[j].first.fn;
 		ofs << std::endl;
 	}
 }
