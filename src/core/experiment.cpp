@@ -286,7 +286,7 @@ void check_run(std::vector<SpikingBinam> &sp_binam_vec,
 		netw.run(cypress::PyNN(backend));
 
 		// Generate results
-		for (size_t k = 0; k < counter; k++) {
+		for (size_t k = 0; k < sp_binam_vec.size(); k++) {
 			results.emplace_back(sp_binam_vec[k].evaluate_res());
 		};
 
