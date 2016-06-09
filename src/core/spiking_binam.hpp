@@ -66,7 +66,7 @@ private:
 	 * Build the spike times for the spike source array using the input matrix
 	 * in BiNAM_Container and the corresponding parameters
 	 */
-	std::vector<std::vector<float>> build_spike_times();
+	std::vector<std::vector<float>> build_spike_times(int seed = -1);
 
 	/**
 	 * Converts the spike times to an output matrix which can be compared to the

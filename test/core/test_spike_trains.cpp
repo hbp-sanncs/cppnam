@@ -55,7 +55,7 @@ TEST(spiketrain, spikes_to_vector)
 	using namespace cypress;
 	Vector<float> spike_vec(
 	    {0.1, 303, 709, 710, 711, 903, 904, 905, 906, 907, 10000});
-	auto res = spikes_to_vector(spike_vec, 15, params);
+	auto res = spikes_to_vector_tresh(spike_vec, 15, params);
 	EXPECT_EQ(1, res[0]);
 	EXPECT_EQ(0, res[1]);
 	EXPECT_EQ(0, res[2]);
@@ -70,7 +70,7 @@ TEST(spiketrain, spikes_to_vector)
 	
 	params.output_burst_size(3);
 	
-	res = spikes_to_vector(spike_vec, 15, params);
+	res = spikes_to_vector_tresh(spike_vec, 15, params);
 	EXPECT_EQ(0, res[0]);
 	EXPECT_EQ(0, res[1]);
 	EXPECT_EQ(0, res[2]);

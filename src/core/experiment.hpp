@@ -80,7 +80,7 @@ private:
 	 * Internal function to start the "normal" execution of a single BiNAM
 	 * triggerd by the boolian "standard"
 	 */
-	void run_standard();
+	void run_standard(std::string file_name);
 	void run_no_data(size_t exp, std::vector<std::vector<std::string>> &names,
 	                 std::ostream &ofs);
 	void run_data(size_t exp, std::vector<std::vector<std::string>> &names,
@@ -88,7 +88,7 @@ private:
 
 public:
 	Experiment(cypress::Json &json, std::string backend);
-	int run();
+	int run(std::string file_name);
 };
 }
 #endif /* CPPNAM_UTIL_EXPERIMENT_HPP */

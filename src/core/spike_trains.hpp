@@ -34,7 +34,8 @@ namespace nam {
  * @param return: a vector of variable length containing spike times
  */
 std::vector<float> build_spike_train(NetworkParameters net_params,
-                                     bool value = true, float offs = 0.0);
+                                     bool value = true, float offs = 0.0,
+                                     int seed = -1);
 
 /**
  * Uses the output of a neuron to calculate the output pattern.
@@ -44,6 +45,9 @@ std::vector<float> build_spike_train(NetworkParameters net_params,
  */
 Vector<uint8_t> spikes_to_vector(Matrix<float> spikes, size_t samples,
                                  const NetworkParameters params);
+
+Vector<uint8_t> spikes_to_vector_tresh(Matrix<float> spikes, size_t samples,
+                                       const NetworkParameters params);
 }
 
 #endif /* CPPNAM_UTIL_SPIKE_TRAINS_HPP */

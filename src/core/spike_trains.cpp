@@ -27,17 +27,18 @@
 #include "util/binary_matrix.hpp"
 
 namespace nam {
-std::vector<float> build_spike_train(NetworkParameters net_params,
-                                     bool value, float offs)
+std::vector<float> build_spike_train(NetworkParameters net_params, bool value,
+                                     float offs, int seed)
 {
 	std::vector<float> res;
 	float p;
-	std::default_random_engine generator;
+	std::default_random_engine generator(seed == -1 ? std::random_device()()
+	                                                : seed);
 
 	// Draw actual spike offset
 	float offset;
 	if (net_params.sigma_offs() > 0) {
-		std::normal_distribution<> distribution(0, net_params.sigma_offs());
+		std::normal_distribution<float> distribution(0, net_params.sigma_offs());
 		offset = offs + distribution(generator);
 	}
 	else {
@@ -70,17 +71,28 @@ Vector<uint8_t> spikes_to_vector(Matrix<float> spikes, size_t samples,
 {
 	Vector<uint8_t> output(samples, cypress::MatrixFlags::ZEROS);
 	for (size_t i = 0; i < samples; i++) {
-		size_t count = 0;
 		for (float j : spikes) {
-			if (params.general_offset() + params.time_window() * i <= j &&
+			if (params.general_offset() + params.time_window() * i<= j &&
 			    j < params.general_offset() + params.time_window() * (i + 1)) {
-				count += 1;
+				output[i] += 1;
 			}
-		}
-		if (count >= params.output_burst_size()) {
-			output[i] = 1;
 		}
 	}
 	return output;
+}
+
+Vector<uint8_t> spikes_to_vector_tresh(Matrix<float> spikes, size_t samples,
+                                       const NetworkParameters params)
+{
+	Vector<uint8_t> vec = spikes_to_vector(spikes, samples, params);
+	for (size_t i = 0; i < vec.size(); i++) {
+		if (vec[i] >= params.output_burst_size()) {
+			vec[i] = 1;
+		}
+		else {
+			vec[i] = 0;
+		}
+	}
+	return vec;
 }
 }
