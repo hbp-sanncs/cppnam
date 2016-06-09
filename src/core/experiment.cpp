@@ -71,7 +71,7 @@ static void add_sweep_parameter(const std::string &key,
                                 std::vector<std::vector<float>> &sweep_elems)
 {
 	// Add the sweep key
-	sweep_params.emplace_back(key);
+	sweep_params.insert(sweep_params.begin(), key);
 
 	// Copy the old sweep elements
 	const std::vector<std::vector<float>> old_sweep_elems = sweep_elems;
@@ -87,16 +87,6 @@ static void add_sweep_parameter(const std::string &key,
 	std::fill(sweep_elems.begin(), sweep_elems.end(),
 	          std::vector<float>(n_dim));
 
-	// Copy the old sweep elements, insert the value for the last column
-	/*for (size_t i = 0; i < values.size(); i++) {
-	    for (size_t j = 0; j < n_elems_old; j++) {
-	        std::copy(old_sweep_elems[j].begin(), old_sweep_elems[j].end(),
-	                  sweep_elems[i * n_elems_old + j].begin());
-	    }
-	    for (size_t j = 0; j < n_elems_old_p1; j++) {
-	        sweep_elems[i * n_elems_old_p1 + j][n_dim - 1] = values[i];
-	    }
-	}*/
 	for (size_t i = 0; i < values.size(); i++) {
 		for (size_t j = 0; j < n_elems_old; j++) {
 			std::copy(old_sweep_elems[j].begin(), old_sweep_elems[j].end(),
