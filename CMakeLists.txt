@@ -1,12 +1,38 @@
+#  CppNAM -- C++ Neural Associative Memory Simulator
+#  Copyright (C) 2016  Christoph Jenzen, Andreas Stöckel
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 # CMake version and project metadata
 cmake_minimum_required (VERSION 3.3)
 project (cppnam)
+
+# Link statically
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+set(BUILD_SHARED_LIBRARIES OFF)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -s")
 
 # Add the local "cmake" directory to the search path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 # Automatically download and compile Google-Test and the JSON library
 include(gtest_external)
+
+# Include the Cypress library
+find_package(Cypress REQUIRED)
+include_directories(${CYPRESS_INCLUDE_DIR})
 
 # Enable C++14 support
 set(CMAKE_CXX_STANDARD 14)
@@ -29,15 +55,13 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-# Link statically
-SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-SET(BUILD_SHARED_LIBRARIES OFF)
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
-SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -s")
-
 enable_testing()
 
 include_directories(src/)
+
+#
+# CppNAM libraries
+#
 
 add_library(cppnam_core
 	src/core/binam
@@ -49,6 +73,12 @@ add_library(cppnam_core
 	src/core/spiking_parameters
 )
 
+target_link_libraries(cppnam_core
+	${CYPRESS_LIBRARIES}
+	cppnam_util
+	-pthread
+)
+
 add_library(cppnam_util
 	src/util/binary_matrix
 	src/util/data
@@ -58,21 +88,14 @@ add_library(cppnam_util
 	src/util/read_json
 )
 
-target_link_libraries(cppnam_core
-	cppnam_util
-)
-
-target_link_libraries(cppnam_core
-	/usr/local/lib/libcypress.a
-#	~/.local/lib/libcypress.a
-	-pthread
-)
-
 target_link_libraries(cppnam_util
-	/usr/local/lib/libcypress.a
-#	~/.local/lib/libcypress.a
+	${CYPRESS_LIBRARIES}
 	-pthread
 )
+
+#
+# CppNAM executables
+#
 
 add_executable(data_generator
 	src/cli/data_generator
@@ -109,9 +132,6 @@ target_link_libraries(exp
 	cppnam_util
 )
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/test/util/test.json 
-	DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
 #
 # Unit tests -- only enable if gtest is present
 #
@@ -132,13 +152,15 @@ if(${GTEST_FOUND})
 		test/util/test_population_count
 		test/util/test_read_json
 	)
-	
+
+	add_dependencies(cppnam_test_core googletest)
+	add_dependencies(cppnam_test_util googletest)
+
 	target_link_libraries(cppnam_test_core
 		cppnam_util
 		cppnam_core
 		${GTEST_LIBRARIES}
 	)
-
 	target_link_libraries(cppnam_test_util
 		cppnam_util
 		cppnam_core
@@ -147,4 +169,7 @@ if(${GTEST_FOUND})
 
 	add_test(cppnam_test_core cppnam_test_core)
 	add_test(cppnam_test_util cppnam_test_util)
+
+	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/test/util/test.json
+		DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 endif()
