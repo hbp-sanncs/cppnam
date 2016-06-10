@@ -194,7 +194,7 @@ BinaryMatrix<uint64_t> SpikingBinam::spikes_to_matrix()
 {
 	BinaryMatrix<uint64_t> res(
 	    m_dataParams.samples(),
-	    m_dataParams.bits_out() * m_networkParams.multiplicity());
+	    m_dataParams.bits_out());
 	size_t multi =m_networkParams.multiplicity();
 	for(size_t i=0; i<m_dataParams.bits_out();i++)
 	{
@@ -210,12 +210,9 @@ BinaryMatrix<uint64_t> SpikingBinam::spikes_to_matrix()
 		for(size_t k=0; k< spike_vec.size();k++){
 			if(spike_vec[k]>=m_networkParams.output_burst_size()*multi)
 			{
-				spike_vec[k]=1;
-			}else{
-				spike_vec[k]=0;
+				res.set_bit(k,i);
 			}
 		}
-		res.write_col_vec(i,spike_vec);
 	}
 		
 	/*for (auto neuron : m_pop_output) {
