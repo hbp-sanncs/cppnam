@@ -18,7 +18,7 @@
 
 #include "gtest/gtest.h"
 
-#include <fstream>
+#include <sstream>
 #include <vector>
 
 #include <cypress/cypress.hpp>
@@ -27,11 +27,47 @@
 #include "core/spiking_parameters.hpp"
 
 namespace nam {
+	
+static const std::string test_json =
+    "{\n"
+    "\t\"data\": {\n"
+    "\t\t\"n_bits_in\": 100,\n"
+    "\t\t\"n_bits_out\": 100,\n"
+    "\t\t\"n_ones_in\": 4,\n"
+    "\t\t\"n_ones_out\": 4,\n"
+    "\t\t\"n_samples\" : 1000\n"
+    "\t},\n"
+    "\n"
+    "\t\"network\": {\n"
+    "\t\t\"params\": {\n"
+    "\t\t\t\"e_rev_E\": 0.0,\n"
+    "\t\t\t\"v_rest\": -70.0,\n"
+    "\t\t\t\"v_reset\": -80.0,\n"
+    "\t\t\t\"v_thresh\": -57.0,\n"
+    "\t\t\t\"tau_syn_E\": 2.0,\n"
+    "\t\t\t\"tau_refrac\": 0.0,\n"
+    "\t\t\t\"tau_m\": 50.0,\n"
+    "\t\t\t\"cm\": 0.2\n"
+    "\t\t},\n"
+    "\t\t\"neuron_type\": \"IF_cond_exp\",\n"
+    "\t\t\"weight\": 0.01,\n"
+    "\t\t\"input_burst_size\": 1,\n"
+    "\t\t\"output_burst_size\": 1,\n"
+    "\t\t\"time_window\": 100.0,\n"
+    "\t\t\"isi\": 2.0,\n"
+    "\t\t\"sigma_t\": 2.0,\n"
+    "\t\t\"sigma_offs\": 0.0,\n"
+    "\t\t\"p0\": 0.0,\n"
+    "\t\t\"p1\": 0.0,\n"
+    "\t\t\"general_offset\" : 100\n"
+    "\t}\n"
+    "}\n"
+    "";
 
 TEST(SpikingBinam, SpikingBinam)
 {
-	std::ifstream ifs("test.json", std::ifstream::in);
-	cypress::Json json(ifs);
+	std::stringstream ss(test_json);
+	cypress::Json json(ss);
 	std::ofstream out;
 	auto binam = SpikingBinam(json, out);
 	DataParameters data = binam.DataParams();
