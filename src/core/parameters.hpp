@@ -53,6 +53,15 @@ public:
 	void random(size_t random) { m_random = random; }
 	void balanced(size_t balanced) { m_balanced = balanced; }
 	void unique(size_t unique) { m_unique = unique; }
+
+	void print(std::ostream &out = std::cout)
+	{
+		out << "# Data Generation Parameters" << std::endl;
+		out << "Seed: " << m_seed << std::endl
+		    << "Random: " << m_random << std::endl
+		    << "Balanced: " << m_balanced << std::endl
+		    << "Unique: " << m_unique << std::endl;
+	}
 };
 
 class DataParameters {

@@ -69,7 +69,7 @@ public:
 		}
 		throw std::invalid_argument("Unknown neuron parameter" + name);
 	}
-	
+
 	float get(std::string name)
 	{
 		for (size_t i = 0; i < m_parameter_names.size(); i++) {
@@ -78,6 +78,13 @@ public:
 			}
 		}
 		throw std::invalid_argument("Unknown neuron parameter" + name);
+	}
+	void print(std::ostream &out = std::cout)
+	{
+		out << "# Neuron Parameters: " << std::endl;
+		for (size_t i = 0; i < m_params.size(); i++) {
+			out << m_parameter_names[i] << ": " << m_params[i] << std::endl;
+		}
 	}
 };
 
@@ -102,7 +109,7 @@ public:
 	NAMED_PARAMETER(p0, 6);
 	NAMED_PARAMETER(p1, 7);
 	NAMED_PARAMETER(weight, 8);
-	NAMED_PARAMETER(multiplicity,9);
+	NAMED_PARAMETER(multiplicity, 9);
 	NAMED_PARAMETER(general_offset, 10);
 
 	/**
@@ -113,7 +120,7 @@ public:
 	/**
 	 * Empty constructor
 	 */
-	NetworkParameters() : arr{0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0} {};
+	NetworkParameters() : arr{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} {};
 
 	/**
 	 * Set parameter with name @param name to @param value
@@ -127,6 +134,14 @@ public:
 			}
 		}
 		throw std::invalid_argument("Unknown neuron parameter" + name);
+	}
+	
+	void print(std::ostream &out = std::cout)
+	{
+		out << "# Network Parameters: " << std::endl;
+		for (size_t i = 0; i < names.size(); i++) {
+			out << names[i] << ": " << arr[i] << std::endl;
+		}
 	}
 };
 }

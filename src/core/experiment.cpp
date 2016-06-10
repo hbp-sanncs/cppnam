@@ -118,6 +118,62 @@ void set_parameter(SpikingBinam &binam, std::vector<std::string> names,
 		throw std::invalid_argument("Unknown parameter \"" + names[0] + "\"");
 	}
 }
+
+void run_standard_neat_output(SpikingBinam &SpBinam, std::ostream &ofs,
+                              std::string backend, bool print_params = false)
+{
+	using namespace std::chrono;
+	system_clock::time_point t1, t2, t3, t4, t5, t6;
+	auto time = std::time(NULL);
+	ofs << "#"
+	    << " ________________________________________________________"
+	    << std::endl
+	    << "# "
+	    << "Spiking Binam from " << std::ctime(&time) << std::endl
+	    << "# Simulator : " << backend << std::endl;
+	if (print_params) {
+		ofs << std::endl;
+		auto params = SpBinam.DataParams();
+		params.print(ofs);
+		ofs << std::endl;
+		auto params2 = SpBinam.NetParams();
+		params2.print(ofs);
+		ofs << std::endl;
+		auto params3 = SpBinam.NeuronParams();
+		params3.print(ofs);
+		ofs << std::endl;
+	}
+	cypress::Network netw;
+	t1 = system_clock::now();
+	SpBinam.build(netw);
+	t2 = system_clock::now();
+	std::thread spiking_network([&netw, backend, &t3, &t4]() mutable {
+		t3 = system_clock::now();
+		netw.run(cypress::PyNN(backend));
+		t4 = system_clock::now();
+	});
+	std::thread recall([&SpBinam, &t5, &t6]() mutable {
+		t5 = system_clock::now();
+		SpBinam.recall();
+		t6 = system_clock::now();
+	});
+	recall.join();
+	spiking_network.join();
+	auto runtime = netw.runtime();
+
+	SpBinam.evaluate_neat(ofs);
+	ofs << std::endl << "Time in milliseconds:" << std::endl;
+	auto time_span = duration_cast<milliseconds>(t2 - t1);
+	ofs << "Building spiking neural network took:\t" << time_span.count()
+	    << std::endl;
+	ofs << "Building in PyNN took:\t\t\t\t" << runtime.initialize * 1e3
+	    << std::endl;
+	time_span = duration_cast<milliseconds>(t4 - t3);
+	ofs << "Cypress run took:\t\t\t\t\t" << time_span.count() << std::endl;
+	ofs << "Simulation took:\t\t\t\t\t" << runtime.sim * 1e3 << std::endl;
+	time_span = duration_cast<milliseconds>(t6 - t5);
+	ofs << "Classical recall took:\t\t\t\t\t" << time_span.count() << std::endl;
+}
 }
 Experiment::Experiment(cypress::Json &json, std::string backend)
     : m_backend(backend), json(json)
@@ -187,49 +243,13 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 
 void Experiment::run_standard(std::string file_name)
 {
-	using namespace std::chrono;
-	system_clock::time_point t1, t2, t3, t4, t5, t6;
-	std::ofstream ofs;
+
+	std::ofstream ofs, null;
 	ofs =
 	    std::ofstream(file_name + "_" + m_backend + ".txt", std::ofstream::app);
-	auto time = std::time(NULL);
-	ofs << "#"
-	    << " ________________________________________________________"
-	    << std::endl
-	    << "# "
-	    << "Spiking Binam from " << std::ctime(&time) << std::endl
-	    << "# Simulator : " << m_backend << std::endl;
-	cypress::Network netw;
-	SpikingBinam SpBinam(json, ofs, true);
-	t1 = system_clock::now();
-	SpBinam.build(netw);
-	t2 = system_clock::now();
-	std::thread spiking_network([&netw, this, &t3, &t4]() mutable {
-		t3 = system_clock::now();
-		netw.run(cypress::PyNN(m_backend));
-		t4 = system_clock::now();
-	});
-	std::thread recall([&SpBinam, &t5, &t6]() mutable {
-		t5 = system_clock::now();
-		SpBinam.recall();
-		t6 = system_clock::now();
-	});
-	recall.join();
-	spiking_network.join();
-	auto runtime = netw.runtime();
 
-	SpBinam.evaluate_neat(ofs);
-	ofs << std::endl << "Time in milliseconds:" << std::endl;
-	auto time_span = duration_cast<milliseconds>(t2 - t1);
-	ofs << "Building spiking neural network took:\t" << time_span.count()
-	    << std::endl;
-	ofs << "Building in PyNN took:\t\t\t\t" << runtime.initialize * 1e3
-	    << std::endl;
-	time_span = duration_cast<milliseconds>(t4 - t3);
-	ofs << "Cypress run took:\t\t\t\t\t" << time_span.count() << std::endl;
-	ofs << "Simulation took:\t\t\t\t\t" << runtime.sim * 1e3 << std::endl;
-	time_span = duration_cast<milliseconds>(t6 - t5);
-	ofs << "Classical recall took:\t\t\t\t\t" << time_span.count() << std::endl;
+	SpikingBinam SpBinam(json, null, true);
+	run_standard_neat_output(SpBinam, ofs, m_backend, true);
 }
 
 namespace {
@@ -352,34 +372,42 @@ void Experiment::run_no_data(size_t exp,
 	if (m_sweep_values[exp].size() == 0) {
 		for (size_t repeat_counter = 0; repeat_counter < m_repetitions[exp];
 		     repeat_counter++) {  // do all repetitions
-			sp_binam.build().run(m_backend);
+			/*sp_binam.build().run(m_backend);
 			std::pair<ExpResults, ExpResults> res = sp_binam.evaluate_res();
 			ofs << res.second.Info << "," << res.first.Info << ","
 			    << res.second.Info / res.first.Info << "," << res.second.fp
 			    << "," << res.first.fp << "," << res.second.fn << ","
 			    << res.first.fn;
-			ofs << std::endl;
+			ofs << std::endl;*/
+			run_standard_neat_output(sp_binam, ofs, m_backend, true);
 		}
 	}
+	else {
+		ofs << "# ";
+		for (size_t j = 0; j < names.size(); j++) {
+			ofs << names[j][1] << ", ";
+		}
+		ofs << "info, info_th,info_n, fp, fp_th, fn, fn_th" << std::endl;
 
-	for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {  // all values
-		for (size_t repeat_counter = 0; repeat_counter < m_repetitions[exp];
-		     repeat_counter++) {  // do all repetitions
+		for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {  // all values
+			for (size_t repeat_counter = 0; repeat_counter < m_repetitions[exp];
+			     repeat_counter++) {  // do all repetitions
 
-			sp_binam_vec.push_back(sp_binam);
+				sp_binam_vec.push_back(sp_binam);
 
-			for (size_t k = 0; k < m_sweep_values[exp][j].size(); k++) {
-				set_parameter(sp_binam_vec[counter], names[k],
-				              m_sweep_values[exp][j][k]);
+				for (size_t k = 0; k < m_sweep_values[exp][j].size(); k++) {
+					set_parameter(sp_binam_vec[counter], names[k],
+					              m_sweep_values[exp][j][k]);
+				}
+				sp_binam_vec[counter].build(netw);
+				counter++;
+				check_run(sp_binam_vec, m_sweep_values[exp], netw, j, counter,
+				          m_backend, results, neuron_count,
+				          repeat_counter + 1 == m_repetitions[exp]);
 			}
-			sp_binam_vec[counter].build(netw);
-			counter++;
-			check_run(sp_binam_vec, m_sweep_values[exp], netw, j, counter,
-			          m_backend, results, neuron_count,
-			          repeat_counter + 1 == m_repetitions[exp]);
 		}
+		output(m_sweep_values[exp], results, ofs, names[0]);
 	}
-	output(m_sweep_values[exp], results, ofs, names[0]);
 }
 
 void Experiment::run_data(size_t exp,
@@ -410,6 +438,12 @@ void Experiment::run_data(size_t exp,
 			bits_out_index = k;
 		}
 	}
+
+	ofs << "# ";
+	for (size_t j = 0; j < names.size(); j++) {
+		ofs << names[j][1] << ", ";
+	}
+	ofs << "info, info_th,info_n, fp, fp_th, fn, fn_th" << std::endl;
 
 	for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {  // all values
 		for (auto k : data_indices) {
@@ -475,11 +509,7 @@ int Experiment::run(std::string file_name)
 		// Open file and write first line
 		std::ofstream ofs(experiment_names[i] + "_" + m_backend + ".csv",
 		                  std::ofstream::out);
-		ofs << "# ";
-		for (size_t j = 0; j < names.size(); j++) {
-			ofs << names[j][1] << ", ";
-		}
-		ofs << "info, info_th,info_n, fp, fp_th, fn, fn_th" << std::endl;
+
 		if (!data_changed) {
 			run_no_data(i, names, ofs);
 		}
