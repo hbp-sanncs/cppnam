@@ -15,8 +15,8 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # CMake version and project metadata
-cmake_minimum_required (VERSION 3.3)
-project (cppnam)
+cmake_minimum_required (VERSION 3.2)
+project(cppnam)
 
 # Link statically
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
@@ -136,37 +136,5 @@ target_link_libraries(exp
 # Unit tests -- only enable if gtest is present
 #
 if(${GTEST_FOUND})
-	include_directories(${GTEST_INCLUDE_DIR})
-
-	add_executable(cppnam_test_core
-		test/core/test_binam
-		test/core/test_entropy
-		test/core/test_parameters
-		test/core/test_spike_trains
-		test/core/test_spiking_binam
-		test/core/test_spiking_parameters
-	)
-	add_executable(cppnam_test_util
-		test/util/test_binary_matrix
-		test/util/test_ncr
-		test/util/test_population_count
-		test/util/test_read_json
-	)
-
-	add_dependencies(cppnam_test_core googletest)
-	add_dependencies(cppnam_test_util googletest)
-
-	target_link_libraries(cppnam_test_core
-		cppnam_util
-		cppnam_core
-		${GTEST_LIBRARIES}
-	)
-	target_link_libraries(cppnam_test_util
-		cppnam_util
-		cppnam_core
-		${GTEST_LIBRARIES}
-	)
-
-	add_test(cppnam_test_core cppnam_test_core)
-	add_test(cppnam_test_util cppnam_test_util)
+	add_subdirectory(test)
 endif()
