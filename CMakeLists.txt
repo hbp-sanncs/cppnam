@@ -169,7 +169,4 @@ if(${GTEST_FOUND})
 
 	add_test(cppnam_test_core cppnam_test_core)
 	add_test(cppnam_test_util cppnam_test_util)
-
-	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/test/util/test.json
-		DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 endif()
