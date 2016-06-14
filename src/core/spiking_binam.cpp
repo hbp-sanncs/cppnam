@@ -60,7 +60,7 @@ std::vector<std::vector<float>> SpikingBinam::build_spike_times(int seed)
 				    build_spike_train(m_networkParams, mat.get_bit(j, i),
 				                      m_networkParams.general_offset() +
 				                          j * m_networkParams.time_window(),
-										  seed++);
+				                      seed++);
 				vec.insert(vec.end(), vec2.begin(), vec2.end());
 			}
 			res.emplace_back(vec);
@@ -148,8 +148,7 @@ SpikingBinam &SpikingBinam::build()
 	m_pop_output = add_population(m_neuronType, m_net);
 
 	const auto &mat = m_BiNAM_Container->trained_matrix();
-	
-			
+
 	m_pop_source.connect_to(
 	    m_pop_output, Connector::functor([&](NeuronIndex src, NeuronIndex tar) {
 		    size_t mult = m_networkParams.multiplicity();
@@ -164,7 +163,6 @@ SpikingBinam &SpikingBinam::build(cypress::Network &network)
 	size_t multi = m_networkParams.multiplicity();
 	m_pop_source = network.create_population<SpikeSourceArray>(
 	    m_dataParams.bits_in() * multi);
-
 	auto input_spike_times = build_spike_times(1234);
 
 	for (size_t i = 0; i < m_dataParams.bits_in(); i++) {
@@ -177,11 +175,12 @@ SpikingBinam &SpikingBinam::build(cypress::Network &network)
 	m_pop_output = add_population(m_neuronType, network);
 
 	const auto &mat = m_BiNAM_Container->trained_matrix();
-	
+
 	size_t mult = m_networkParams.multiplicity();
 	m_pop_source.connect_to(
-	    m_pop_output, Connector::functor([&, mult](NeuronIndex src, NeuronIndex tar) {
-		    //size_t mult = m_networkParams.multiplicity();
+	    m_pop_output,
+	    Connector::functor([&, mult](NeuronIndex src, NeuronIndex tar) {
+		    // size_t mult = m_networkParams.multiplicity();
 		    return mat.get_bit(std::floor(float(tar) / float(mult)),
 		                       std::floor(float(src) / float(mult)));
 		}, m_networkParams.weight()));
@@ -192,37 +191,25 @@ void SpikingBinam::run(std::string backend) { m_net.run(PyNN(backend)); }
 
 BinaryMatrix<uint64_t> SpikingBinam::spikes_to_matrix()
 {
-	BinaryMatrix<uint64_t> res(
-	    m_dataParams.samples(),
-	    m_dataParams.bits_out());
-	size_t multi =m_networkParams.multiplicity();
-	for(size_t i=0; i<m_dataParams.bits_out();i++)
-	{
-		Vector<uint8_t> spike_vec(m_dataParams.samples(), cypress::MatrixFlags::ZEROS);
-		for(size_t j =0;j< multi;j++){
-			auto spikes = m_pop_output[i*multi +j].signals().data(0);
+	BinaryMatrix<uint64_t> res(m_dataParams.samples(), m_dataParams.bits_out());
+	size_t multi = m_networkParams.multiplicity();
+	for (size_t i = 0; i < m_dataParams.bits_out(); i++) {
+		Vector<uint8_t> spike_vec(m_dataParams.samples(),
+		                          cypress::MatrixFlags::ZEROS);
+		for (size_t j = 0; j < multi; j++) {
+			auto spikes = m_pop_output[i * multi + j].signals().data(0);
 			auto temp_vec = spikes_to_vector(spikes, m_dataParams.samples(),
-		                                   m_networkParams);
-			for(size_t k=0; k< temp_vec.size();k++){
-				spike_vec[k] +=temp_vec[k];
+			                                 m_networkParams);
+			for (size_t k = 0; k < temp_vec.size(); k++) {
+				spike_vec[k] += temp_vec[k];
 			}
 		}
-		for(size_t k=0; k< spike_vec.size();k++){
-			if(spike_vec[k]>=m_networkParams.output_burst_size()*multi)
-			{
-				res.set_bit(k,i);
+		for (size_t k = 0; k < spike_vec.size(); k++) {
+			if (spike_vec[k] >= m_networkParams.output_burst_size() * multi) {
+				res.set_bit(k, i);
 			}
 		}
 	}
-		
-	/*for (auto neuron : m_pop_output) {
-		auto spikes = neuron.signals().data(
-		    0);  // Get the data for signal zero (the spikes)
-		res.write_col_vec(counter,
-		                  spikes_to_vector(spikes, m_dataParams.samples(),
-		                                   m_networkParams));  // neuron.nid()
-		counter++;
-	}*/
 	return res;
 }
 
@@ -244,7 +231,8 @@ void SpikingBinam::evaluate_csv(std::ostream &out)
 	BinaryMatrix<uint64_t> output = spikes_to_matrix();
 	ExpResults res_spike = m_BiNAM_Container->analysis(output);
 	ExpResults res_theo = m_BiNAM_Container->analysis();
-	out << res_spike.Info << "," << res_theo.Info << "," << res_spike.fp << ","
+	out << res_spike.Info << "," << res_theo.Info << ","
+	    << res_spike.Info / res_theo.Info << "," << res_spike.fp << ","
 	    << res_theo.fp << "," << res_spike.fn << "," << res_theo.fn;
 }
 std::pair<ExpResults, ExpResults> SpikingBinam::evaluate_res()

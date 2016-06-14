@@ -16,8 +16,10 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <chrono>
 #include <fstream>
+#include <random>
 #include <string>
 #include <sstream>
 #include <thread>
@@ -120,18 +122,20 @@ void set_parameter(SpikingBinam &binam, std::vector<std::string> names,
 }
 
 void run_standard_neat_output(SpikingBinam &SpBinam, std::ostream &ofs,
-                              std::string backend, bool print_params = false)
+                              std::string backend, bool print_params = false,
+                              bool neat = true, bool times = true)
 {
 	using namespace std::chrono;
 	system_clock::time_point t1, t2, t3, t4, t5, t6;
 	auto time = std::time(NULL);
-	ofs << "#"
-	    << " ________________________________________________________"
-	    << std::endl
-	    << "# "
-	    << "Spiking Binam from " << std::ctime(&time) << std::endl
-	    << "# Simulator : " << backend << std::endl;
+
 	if (print_params) {
+		ofs << "#"
+		    << " ________________________________________________________"
+		    << std::endl
+		    << "# "
+		    << "Spiking Binam from " << std::ctime(&time) << std::endl
+		    << "# Simulator : " << backend << std::endl;
 		ofs << std::endl;
 		auto params = SpBinam.DataParams();
 		params.print(ofs);
@@ -160,19 +164,30 @@ void run_standard_neat_output(SpikingBinam &SpBinam, std::ostream &ofs,
 	recall.join();
 	spiking_network.join();
 	auto runtime = netw.runtime();
-
-	SpBinam.evaluate_neat(ofs);
-	ofs << std::endl << "Time in milliseconds:" << std::endl;
-	auto time_span = duration_cast<milliseconds>(t2 - t1);
-	ofs << "Building spiking neural network took:\t" << time_span.count()
-	    << std::endl;
-	ofs << "Building in PyNN took:\t\t\t\t" << runtime.initialize * 1e3
-	    << std::endl;
-	time_span = duration_cast<milliseconds>(t4 - t3);
-	ofs << "Cypress run took:\t\t\t\t\t" << time_span.count() << std::endl;
-	ofs << "Simulation took:\t\t\t\t\t" << runtime.sim * 1e3 << std::endl;
-	time_span = duration_cast<milliseconds>(t6 - t5);
-	ofs << "Classical recall took:\t\t\t\t\t" << time_span.count() << std::endl;
+	if (neat) {
+		SpBinam.evaluate_neat(ofs);
+	}
+	else {
+		if (print_params) {
+			ofs << "info, info_th,info_n, fp, fp_th, fn, fn_th" << std::endl;
+		}
+		SpBinam.evaluate_csv(ofs);
+		ofs << std::endl;
+	}
+	if (times) {
+		ofs << std::endl << "Time in milliseconds:" << std::endl;
+		auto time_span = duration_cast<milliseconds>(t2 - t1);
+		ofs << "Building spiking neural network took:\t" << time_span.count()
+		    << std::endl;
+		ofs << "Building in PyNN took:\t\t\t\t" << runtime.initialize * 1e3
+		    << std::endl;
+		time_span = duration_cast<milliseconds>(t4 - t3);
+		ofs << "Cypress run took:\t\t\t\t\t" << time_span.count() << std::endl;
+		ofs << "Simulation took:\t\t\t\t\t" << runtime.sim * 1e3 << std::endl;
+		time_span = duration_cast<milliseconds>(t6 - t5);
+		ofs << "Classical recall took:\t\t\t\t\t" << time_span.count()
+		    << std::endl;
+	}
 }
 }
 Experiment::Experiment(cypress::Json &json, std::string backend)
@@ -292,7 +307,7 @@ static const std::map<std::string, size_t> neuron_numbers{
  */
 void check_run(std::vector<SpikingBinam> &sp_binam_vec,
                const std::vector<std::vector<float>> &sweep_values,
-               cypress::Network &netw, size_t j, size_t &counter,
+               cypress::Network &netw, size_t j, std::vector<size_t> &counter,
                const std::string &backend,
                std::vector<std::pair<ExpResults, ExpResults>> &results,
                size_t next_neuron_count, bool repeat_complete)
@@ -307,11 +322,12 @@ void check_run(std::vector<SpikingBinam> &sp_binam_vec,
 
 		// Generate results
 		for (size_t k = 0; k < sp_binam_vec.size(); k++) {
-			results.emplace_back(sp_binam_vec[k].evaluate_res());
-		};
+			results[counter[k]] = sp_binam_vec[k].evaluate_res();
+		}
 
 		// Reset variables
-		counter = 0;
+		// counter.erase(counter.begin(), counter.end());
+		counter = std::vector<size_t>();
 		sp_binam_vec.erase(sp_binam_vec.begin(), sp_binam_vec.end());
 		netw = cypress::Network();
 		std::cout << size_t(100 * float(j + 1) / sweep_values.size())
@@ -335,7 +351,6 @@ void output(const std::vector<std::vector<float>> &sweep_values,
 				ofs << sweep_values[j][k] << ",";
 			}
 		}
-
 		ofs << results[j].second.Info << "," << results[j].first.Info << ","
 		    << results[j].second.Info / results[j].first.Info << ","
 		    << results[j].second.fp << "," << results[j].first.fp << ","
@@ -349,13 +364,14 @@ void Experiment::run_no_data(size_t exp,
                              std::vector<std::vector<std::string>> &names,
                              std::ostream &ofs)
 {
-	std::vector<std::pair<ExpResults, ExpResults>> results;
+	std::vector<std::pair<ExpResults, ExpResults>> results(
+	    m_sweep_values[exp].size(), std::pair<ExpResults, ExpResults>());
 	std::vector<std::vector<std::string>> params_names;
 	std::vector<size_t> params_indices;
 	DataParameters data_params =
 	    prepare_data_params(json, params_names, params_indices, m_params[exp]);
-	size_t counter = 0;  // for the number of parallel networks
-	std::ofstream out;   // suppress output
+	std::vector<size_t> counter;  // for the number of parallel networks
+	std::ofstream out;            // suppress output
 	SpikingBinam sp_binam(json, data_params, out);  // Standard binam
 	std::vector<SpikingBinam>
 	    sp_binam_vec;       // Emplace binam network for every parameter run
@@ -370,18 +386,23 @@ void Experiment::run_no_data(size_t exp,
 
 	// If there are no sweep values
 	if (m_sweep_values[exp].size() == 0) {
-		for (size_t repeat_counter = 0; repeat_counter < m_repetitions[exp];
-		     repeat_counter++) {  // do all repetitions
-			/*sp_binam.build().run(m_backend);
-			std::pair<ExpResults, ExpResults> res = sp_binam.evaluate_res();
-			ofs << res.second.Info << "," << res.first.Info << ","
-			    << res.second.Info / res.first.Info << "," << res.second.fp
-			    << "," << res.first.fp << "," << res.second.fn << ","
-			    << res.first.fn;
-			ofs << std::endl;*/
+		if (m_repetitions[exp] == 1) {
 			run_standard_neat_output(sp_binam, ofs, m_backend, true);
 		}
+		else {
+			run_standard_neat_output(sp_binam, ofs, m_backend, true, false,
+			                         false);
+			for (size_t repeat_counter = 0;
+			     repeat_counter < m_repetitions[exp] - 2;
+			     repeat_counter++) {  // do all repetitions
+				run_standard_neat_output(sp_binam, ofs, m_backend, false, false,
+				                         false);
+			}
+			run_standard_neat_output(sp_binam, ofs, m_backend, false, false,
+			                         true);
+		}
 	}
+
 	else {
 		ofs << "# ";
 		for (size_t j = 0; j < names.size(); j++) {
@@ -389,18 +410,29 @@ void Experiment::run_no_data(size_t exp,
 		}
 		ofs << "info, info_th,info_n, fp, fp_th, fn, fn_th" << std::endl;
 
+		std::default_random_engine generator(1010);
+		std::vector<size_t> indices(m_sweep_values[exp].size());
+		for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {
+			indices[j] = j;
+		}
+		std::shuffle(indices.begin(), indices.end(), generator);
 		for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {  // all values
+			// std::uniform_int_distribution<int> distribution(0,
+			//                                                indices.size() -
+			//                                                1);
+			// size_t indices_index = distribution(generator);
+			size_t index = indices[j];
+			// indices.erase(indices.begin() + indices_index);
 			for (size_t repeat_counter = 0; repeat_counter < m_repetitions[exp];
 			     repeat_counter++) {  // do all repetitions
 
 				sp_binam_vec.push_back(sp_binam);
-
-				for (size_t k = 0; k < m_sweep_values[exp][j].size(); k++) {
-					set_parameter(sp_binam_vec[counter], names[k],
-					              m_sweep_values[exp][j][k]);
+				for (size_t k = 0; k < m_sweep_values[exp][index].size(); k++) {
+					set_parameter(sp_binam_vec[counter.size()], names[k],
+					              m_sweep_values[exp][index][k]);
 				}
-				sp_binam_vec[counter].build(netw);
-				counter++;
+				sp_binam_vec[counter.size()].build(netw);
+				counter.emplace_back(index);
 				check_run(sp_binam_vec, m_sweep_values[exp], netw, j, counter,
 				          m_backend, results, neuron_count,
 				          repeat_counter + 1 == m_repetitions[exp]);
@@ -414,13 +446,14 @@ void Experiment::run_data(size_t exp,
                           std::vector<std::vector<std::string>> &names,
                           std::ostream &ofs)
 {
-	std::vector<std::pair<ExpResults, ExpResults>> results;
+	std::vector<std::pair<ExpResults, ExpResults>> results(
+	    m_sweep_values[exp].size(), std::pair<ExpResults, ExpResults>());
 	std::vector<std::vector<std::string>> params_names;
 	std::vector<size_t> params_indices;
 	DataParameters data_params =
 	    prepare_data_params(json, params_names, params_indices, m_params[exp]);
-	size_t counter = 0;  // for the number of parallel networks
-	std::ofstream out;   // suppress output
+	std::vector<size_t> counter;  // for the number of parallel networks
+	std::ofstream out;            // suppress output
 	std::vector<SpikingBinam>
 	    sp_binam_vec;         // Emplace binam network for every parameter run
 	cypress::Network netw;    // shared network
@@ -445,30 +478,39 @@ void Experiment::run_data(size_t exp,
 	}
 	ofs << "info, info_th,info_n, fp, fp_th, fn, fn_th" << std::endl;
 
+	std::default_random_engine generator(1010);
+	std::vector<size_t> indices(m_sweep_values[exp].size());
+	for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {
+		indices[j] = j;
+	}
+	std::shuffle(indices.begin(), indices.end(), generator);
+
 	for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {  // all values
+		size_t index = indices[j];
 		for (auto k : data_indices) {
-			data_params.set(names[k][1], m_sweep_values[exp][j][k]);
+			data_params.set(names[k][1], m_sweep_values[exp][index][k]);
 		}
 		SpikingBinam sp_binam(json, data_params, out);
 		for (size_t k : params_indices) {
 			set_parameter(sp_binam, params_names[k], m_params[exp][k].second);
 		}
 		for (auto k : other_indices) {
-			set_parameter(sp_binam, names[k], m_sweep_values[exp][j][k]);
+			set_parameter(sp_binam, names[k], m_sweep_values[exp][index][k]);
 		}
 
 		for (size_t repeat_counter = 0; repeat_counter < m_repetitions[exp];
 		     repeat_counter++) {
 			sp_binam_vec.emplace_back(sp_binam);
-			sp_binam_vec[counter].build(netw);
-			counter++;
+			sp_binam_vec[counter.size()].build(netw);
+			counter.emplace_back(index);
 			size_t neuron_count = 0;
 			if (repeat_counter < m_repetitions[exp] - 2) {
 				neuron_count = data_params.ones_out();
 			}
 			else {
 				if (j + 1 < m_sweep_values.size() && bits_out_index >= 0) {
-					neuron_count = m_sweep_values[exp][j + 1][bits_out_index];
+					neuron_count =
+					    m_sweep_values[exp][indices[j + 1]][bits_out_index];
 				}
 				else {
 					neuron_count = data_params.ones_out();

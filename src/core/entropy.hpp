@@ -71,6 +71,7 @@ struct ExpResults {
 	    : Info(Info), fp(fp), fn(fn){};
 	ExpResults(double Info, SampleError se)
 	    : Info(Info), fp(se.fp), fn(se.fn){};
+	ExpResults(){};
 };
 
 /**
