@@ -276,7 +276,7 @@ DataParameters prepare_data_params(
 }
 
 static const std::map<std::string, size_t> neuron_numbers{
-    {"spikey", 512}, {"spinnaker", 1000}, {"nmmc1", 1e5}, {"nest", 1e3}};
+    {"spikey", 0}, {"spinnaker", 1000}, {"nmmc1", 1e5}, {"nest", 1e3}};
 
 /**
  * Checks, wether an additional parallel run will be to big, and if that is the
