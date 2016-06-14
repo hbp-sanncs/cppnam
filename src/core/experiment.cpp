@@ -70,7 +70,8 @@ std::vector<std::string> split(const std::string &s, char delim)
 static void add_sweep_parameter(const std::string &key,
                                 const std::vector<float> &values,
                                 std::vector<std::string> &sweep_params,
-                                std::vector<std::vector<float>> &sweep_elems)
+                                std::vector<std::vector<float>> &sweep_elems,
+                                size_t repeat = 1)
 {
 	// Add the sweep key
 	sweep_params.insert(sweep_params.begin(), key);
@@ -80,22 +81,34 @@ static void add_sweep_parameter(const std::string &key,
 
 	// Fetch some constants
 	const size_t n_elems_old = old_sweep_elems.size();
-	const size_t n_elems_old_p1 = std::max<size_t>(1, n_elems_old);
-	const size_t n_elems = n_elems_old_p1 * values.size();
+	const size_t n_elems = n_elems_old * values.size();
 	const size_t n_dim = sweep_params.size();
 
-	// Resize the elements matrix
-	sweep_elems.resize(n_elems);
-	std::fill(sweep_elems.begin(), sweep_elems.end(),
-	          std::vector<float>(n_dim));
-
-	for (size_t i = 0; i < values.size(); i++) {
-		for (size_t j = 0; j < n_elems_old; j++) {
-			std::copy(old_sweep_elems[j].begin(), old_sweep_elems[j].end(),
-			          sweep_elems[i * n_elems_old + j].begin() + 1);
+	if (n_elems_old == 0) {
+		sweep_elems.resize(repeat * values.size());
+		std::fill(sweep_elems.begin(), sweep_elems.end(),
+		          std::vector<float>(n_dim));
+		for (size_t i = 0; i < values.size(); i++) {
+			for (size_t j = 0; j < repeat; j++) {
+				sweep_elems[i * repeat + j][0] = values[i];
+			}
 		}
-		for (size_t j = 0; j < n_elems_old_p1; j++) {
-			sweep_elems[i * n_elems_old_p1 + j][0] = values[i];
+	}
+	else {
+		// Resize the elements matrix
+		sweep_elems.resize(n_elems);
+		std::fill(sweep_elems.begin(), sweep_elems.end(),
+		          std::vector<float>(n_dim));
+
+		for (size_t i = 0; i < values.size(); i++) {
+
+			for (size_t k = 0; k < n_elems_old; k++) {
+				std::copy(old_sweep_elems[k].begin(), old_sweep_elems[k].end(),
+				          sweep_elems[i * n_elems_old + k].begin() + 1);
+			}
+			for (size_t k = 0; k < n_elems_old; k++) {
+				sweep_elems[i * n_elems_old + k][0] = values[i];
+			}
 		}
 	}
 }
@@ -206,7 +219,12 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 			std::vector<std::string> sweep_params;
 			std::vector<std::vector<float>> sweep_values;
 			std::string name = i.key();
-			m_repetitions.emplace_back(1);
+			if (i.value().find("repeat") != i.value().end()) {
+				m_repetitions.emplace_back(i.value()["repeat"]);
+			}
+			else {
+				m_repetitions.emplace_back(1);
+			}
 
 			for (auto j = json["experiments"][name].begin();
 			     j != json["experiments"][name].end(); j++) {
@@ -215,7 +233,7 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 				// See if val is a number (no sweep), an array or an object
 				if (val.is_number()) {
 					if (j.key() == "repeat") {
-						m_repetitions.back() = val;
+						continue;
 					}
 					else {
 						params.emplace_back(
@@ -229,7 +247,7 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 					}
 					else {
 						add_sweep_parameter(j.key(), val, sweep_params,
-						                    sweep_values);
+						                    sweep_values, m_repetitions.back());
 					}
 				}
 				else if (val.is_object()) {
@@ -242,7 +260,7 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 						values.emplace_back<float>(range[0] + float(k) * step);
 					}
 					add_sweep_parameter(j.key(), values, sweep_params,
-					                    sweep_values);
+					                    sweep_values, m_repetitions.back());
 				}
 				else {
 					throw std::invalid_argument("Unknown Json value!");
@@ -302,21 +320,19 @@ static const std::map<std::string, size_t> neuron_numbers{
  * @param backend: simulation platform
  * @param results: vector containing all results for this experiment
  * @param next_neuron_count: number of output neurons needed in the next run
- * @param repeat_complete true if a complete run of complete was done. Only
- * needed to check wether we are really in the last run of this experiment
  */
 void check_run(std::vector<SpikingBinam> &sp_binam_vec,
                const std::vector<std::vector<float>> &sweep_values,
                cypress::Network &netw, size_t j, std::vector<size_t> &counter,
                const std::string &backend,
                std::vector<std::pair<ExpResults, ExpResults>> &results,
-               size_t next_neuron_count, bool repeat_complete)
+               size_t next_neuron_count)
 {
 	size_t max_neurons = neuron_numbers.find(backend)->second;
 	// Check wether the next run is too big or if we are in the last run of the
 	// experiment
 	if (netw.neuron_count() + next_neuron_count > max_neurons ||
-	    (j == sweep_values.size() - 1 && repeat_complete)) {
+	    j == sweep_values.size() - 1) {
 
 		netw.run(cypress::PyNN(backend));
 
@@ -423,20 +439,16 @@ void Experiment::run_no_data(size_t exp,
 			// size_t indices_index = distribution(generator);
 			size_t index = indices[j];
 			// indices.erase(indices.begin() + indices_index);
-			for (size_t repeat_counter = 0; repeat_counter < m_repetitions[exp];
-			     repeat_counter++) {  // do all repetitions
 
-				sp_binam_vec.push_back(sp_binam);
-				for (size_t k = 0; k < m_sweep_values[exp][index].size(); k++) {
-					set_parameter(sp_binam_vec[counter.size()], names[k],
-					              m_sweep_values[exp][index][k]);
-				}
-				sp_binam_vec[counter.size()].build(netw);
-				counter.emplace_back(index);
-				check_run(sp_binam_vec, m_sweep_values[exp], netw, j, counter,
-				          m_backend, results, neuron_count,
-				          repeat_counter + 1 == m_repetitions[exp]);
+			sp_binam_vec.push_back(sp_binam);
+			for (size_t k = 0; k < m_sweep_values[exp][index].size(); k++) {
+				set_parameter(sp_binam_vec[counter.size()], names[k],
+				              m_sweep_values[exp][index][k]);
 			}
+			sp_binam_vec[counter.size()].build(netw);
+			counter.emplace_back(index);
+			check_run(sp_binam_vec, m_sweep_values[exp], netw, j, counter,
+			          m_backend, results, neuron_count);
 		}
 		output(m_sweep_values[exp], results, ofs, names[0]);
 	}
@@ -498,28 +510,20 @@ void Experiment::run_data(size_t exp,
 			set_parameter(sp_binam, names[k], m_sweep_values[exp][index][k]);
 		}
 
-		for (size_t repeat_counter = 0; repeat_counter < m_repetitions[exp];
-		     repeat_counter++) {
-			sp_binam_vec.emplace_back(sp_binam);
-			sp_binam_vec[counter.size()].build(netw);
-			counter.emplace_back(index);
-			size_t neuron_count = 0;
-			if (repeat_counter < m_repetitions[exp] - 2) {
-				neuron_count = data_params.ones_out();
-			}
-			else {
-				if (j + 1 < m_sweep_values.size() && bits_out_index >= 0) {
-					neuron_count =
-					    m_sweep_values[exp][indices[j + 1]][bits_out_index];
-				}
-				else {
-					neuron_count = data_params.ones_out();
-				}
-			}
-			check_run(sp_binam_vec, m_sweep_values[exp], netw, j, counter,
-			          m_backend, results, neuron_count,
-			          repeat_counter + 1 == m_repetitions[exp]);
+		sp_binam_vec.emplace_back(sp_binam);
+		sp_binam_vec[counter.size()].build(netw);
+		counter.emplace_back(index);
+		size_t neuron_count = 0;
+
+		if (j + 1 < m_sweep_values.size() && bits_out_index >= 0) {
+			neuron_count = m_sweep_values[exp][indices[j + 1]][bits_out_index];
 		}
+		else {
+			neuron_count = data_params.ones_out();
+		}
+
+		check_run(sp_binam_vec, m_sweep_values[exp], netw, j, counter,
+		          m_backend, results, neuron_count);
 	}
 	output(m_sweep_values[exp], results, ofs, names[0]);
 }
