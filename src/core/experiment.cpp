@@ -84,6 +84,7 @@ static void add_sweep_parameter(const std::string &key,
 	const size_t n_elems = n_elems_old * values.size();
 	const size_t n_dim = sweep_params.size();
 
+	// Special case if n_elems_old is zero, repeat values
 	if (n_elems_old == 0) {
 		sweep_elems.resize(repeat * values.size());
 		std::fill(sweep_elems.begin(), sweep_elems.end(),
@@ -101,11 +102,12 @@ static void add_sweep_parameter(const std::string &key,
 		          std::vector<float>(n_dim));
 
 		for (size_t i = 0; i < values.size(); i++) {
-
+			// Copy old values, leave first entry empty
 			for (size_t k = 0; k < n_elems_old; k++) {
 				std::copy(old_sweep_elems[k].begin(), old_sweep_elems[k].end(),
 				          sweep_elems[i * n_elems_old + k].begin() + 1);
 			}
+			// Now put in new values at the beginning of eacht entry
 			for (size_t k = 0; k < n_elems_old; k++) {
 				sweep_elems[i * n_elems_old + k][0] = values[i];
 			}
@@ -134,6 +136,10 @@ void set_parameter(SpikingBinam &binam, std::vector<std::string> names,
 	}
 }
 
+/**
+ * This function does a normal run when no parameter is swept over. Booleans can
+ * be set to vary the form of the output
+ */
 void run_standard_neat_output(SpikingBinam &SpBinam, std::ostream &ofs,
                               std::string backend, bool print_params = false,
                               bool neat = true, bool times = true)
@@ -202,7 +208,101 @@ void run_standard_neat_output(SpikingBinam &SpBinam, std::ostream &ofs,
 		    << std::endl;
 	}
 }
+
+/**
+ * Perepares data parameters if it was manually set with a single value in the
+ * JSON object
+ */
+DataParameters prepare_data_params(
+    cypress::Json json, std::vector<std::vector<std::string>> &params_names,
+    std::vector<size_t> &params_indices,
+    std::vector<std::pair<std::string, float>> &parameters)
+{
+	DataParameters params(json["data"]);
+	for (size_t k = 0; k < parameters.size(); k++) {
+		params_names.emplace_back(split(parameters[k].first, '.'));
+		if (params_names[k][0] == "data") {
+			params.set(params_names[k][1], parameters[k].second);
+		}
+		else {
+			params_indices.emplace_back(k);
+		}
+	}
+	return params;
 }
+
+/**
+ * Hard coded numbers of maximal neuron count for every plattform. Should be
+ * improved -> TODO
+ */
+static const std::map<std::string, size_t> neuron_numbers{
+    {"spikey", 0}, {"spinnaker", 1000}, {"nmmc1", 1e5}, {"nest", 1e3}};
+
+/**
+ * Checks, wether an additional parallel run will be to big, and if that is the
+ * case, perform the simulation now
+ * @param sp_binam_vec: vector of spiking_binam
+ * @param sweep_values for this experiment
+ * @param netw: the currently build network. Will be resetted after simulation
+ * @param backend: simulation platform
+ * @param results: vector containing all results for this experiment
+ * @param next_neuron_count: number of output neurons needed in the next run
+ */
+void check_run(std::vector<SpikingBinam> &sp_binam_vec,
+               const std::vector<std::vector<float>> &sweep_values,
+               cypress::Network &netw, size_t j, std::vector<size_t> &counter,
+               const std::string &backend,
+               std::vector<std::pair<ExpResults, ExpResults>> &results,
+               size_t next_neuron_count)
+{
+	size_t max_neurons = neuron_numbers.find(backend)->second;
+	// Check wether the next run is too big or if we are in the last run of the
+	// experiment
+	if (netw.neuron_count() + next_neuron_count > max_neurons ||
+	    j == sweep_values.size() - 1) {
+
+		netw.run(cypress::PyNN(backend));
+
+		// Generate results
+		for (size_t k = 0; k < sp_binam_vec.size(); k++) {
+			results[counter[k]] = sp_binam_vec[k].evaluate_res();
+		}
+
+		// Reset variables
+		// counter.erase(counter.begin(), counter.end());
+		counter = std::vector<size_t>();
+		sp_binam_vec.erase(sp_binam_vec.begin(), sp_binam_vec.end());
+		netw = cypress::Network();
+		std::cout << size_t(100 * float(j + 1) / sweep_values.size())
+		          << "% done" << std::endl;
+	}
+}
+
+/**
+ * Prints out the results, sweep version
+ */
+void output(const std::vector<std::vector<float>> &sweep_values,
+            const std::vector<std::pair<ExpResults, ExpResults>> &results,
+            std::ostream &ofs, std::vector<std::string> &names)
+{
+	for (size_t j = 0; j < results.size(); j++) {              // all values
+		for (size_t k = 0; k < sweep_values[j].size(); k++) {  // all parameter
+			if (names[k] == "data") {
+				ofs << size_t(sweep_values[j][k]) << ",";
+			}
+			else {
+				ofs << sweep_values[j][k] << ",";
+			}
+		}
+		ofs << results[j].second.Info << "," << results[j].first.Info << ","
+		    << results[j].second.Info / results[j].first.Info << ","
+		    << results[j].second.fp << "," << results[j].first.fp << ","
+		    << results[j].second.fn << "," << results[j].first.fn;
+		ofs << std::endl;
+	}
+}
+}
+
 Experiment::Experiment(cypress::Json &json, std::string backend)
     : m_backend(backend), json(json)
 {
@@ -283,97 +383,6 @@ void Experiment::run_standard(std::string file_name)
 
 	SpikingBinam SpBinam(json, null, true);
 	run_standard_neat_output(SpBinam, ofs, m_backend, true);
-}
-
-namespace {
-/**
- * Perepares data parameters if it was manually set with a single value in the
- * JSON object
- */
-DataParameters prepare_data_params(
-    cypress::Json json, std::vector<std::vector<std::string>> &params_names,
-    std::vector<size_t> &params_indices,
-    std::vector<std::pair<std::string, float>> &parameters)
-{
-	DataParameters params(json["data"]);
-	for (size_t k = 0; k < parameters.size(); k++) {
-		params_names.emplace_back(split(parameters[k].first, '.'));
-		if (params_names[k][0] == "data") {
-			params.set(params_names[k][1], parameters[k].second);
-		}
-		else {
-			params_indices.emplace_back(k);
-		}
-	}
-	return params;
-}
-
-static const std::map<std::string, size_t> neuron_numbers{
-    {"spikey", 0}, {"spinnaker", 1000}, {"nmmc1", 1e5}, {"nest", 1e3}};
-
-/**
- * Checks, wether an additional parallel run will be to big, and if that is the
- * case, perform the simulation now
- * @param sp_binam_vec: vector of spiking_binam
- * @param sweep_values for this experiment
- * @param netw: the currently build network. Will be resetted after simulation
- * @param backend: simulation platform
- * @param results: vector containing all results for this experiment
- * @param next_neuron_count: number of output neurons needed in the next run
- */
-void check_run(std::vector<SpikingBinam> &sp_binam_vec,
-               const std::vector<std::vector<float>> &sweep_values,
-               cypress::Network &netw, size_t j, std::vector<size_t> &counter,
-               const std::string &backend,
-               std::vector<std::pair<ExpResults, ExpResults>> &results,
-               size_t next_neuron_count)
-{
-	size_t max_neurons = neuron_numbers.find(backend)->second;
-	// Check wether the next run is too big or if we are in the last run of the
-	// experiment
-	if (netw.neuron_count() + next_neuron_count > max_neurons ||
-	    j == sweep_values.size() - 1) {
-
-		netw.run(cypress::PyNN(backend));
-
-		// Generate results
-		for (size_t k = 0; k < sp_binam_vec.size(); k++) {
-			results[counter[k]] = sp_binam_vec[k].evaluate_res();
-		}
-
-		// Reset variables
-		// counter.erase(counter.begin(), counter.end());
-		counter = std::vector<size_t>();
-		sp_binam_vec.erase(sp_binam_vec.begin(), sp_binam_vec.end());
-		netw = cypress::Network();
-		std::cout << size_t(100 * float(j + 1) / sweep_values.size())
-		          << "% done" << std::endl;
-	}
-}
-
-/**
- * Prints out the results
- */
-void output(const std::vector<std::vector<float>> &sweep_values,
-            const std::vector<std::pair<ExpResults, ExpResults>> &results,
-            std::ostream &ofs, std::vector<std::string> &names)
-{
-	for (size_t j = 0; j < results.size(); j++) {              // all values
-		for (size_t k = 0; k < sweep_values[j].size(); k++) {  // all parameter
-			if (names[k] == "data") {
-				ofs << size_t(sweep_values[j][k]) << ",";
-			}
-			else {
-				ofs << sweep_values[j][k] << ",";
-			}
-		}
-		ofs << results[j].second.Info << "," << results[j].first.Info << ","
-		    << results[j].second.Info / results[j].first.Info << ","
-		    << results[j].second.fp << "," << results[j].first.fp << ","
-		    << results[j].second.fn << "," << results[j].first.fn;
-		ofs << std::endl;
-	}
-}
 }
 
 void Experiment::run_no_data(size_t exp,
