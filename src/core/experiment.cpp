@@ -326,7 +326,7 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 				m_repetitions.emplace_back(1);
 			}
 			if (i.value().find("optimal_sample_count") != i.value().end()) {
-				m_optimal_sample.emplace_back(true);
+				m_optimal_sample.emplace_back(i.value()["optimal_sample_count"]);
 			}
 			else {
 				m_optimal_sample.emplace_back(false);
