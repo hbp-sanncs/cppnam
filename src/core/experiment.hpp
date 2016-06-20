@@ -75,6 +75,11 @@ private:
 	 * description which will trigger a "normal" execution of one BiNAM
 	 */
 	bool standard = false;
+	
+	/*
+	 *  Flag for using the optimal number of samples
+	 */
+	std::vector<bool> m_optimal_sample;
 
 	/*
 	 * Internal function to start the "normal" execution of a single BiNAM

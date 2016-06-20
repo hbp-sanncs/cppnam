@@ -325,6 +325,12 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 			else {
 				m_repetitions.emplace_back(1);
 			}
+			if (i.value().find("optimal_sample_count") != i.value().end()) {
+				m_optimal_sample.emplace_back(true);
+			}
+			else {
+				m_optimal_sample.emplace_back(false);
+			}
 
 			for (auto j = json["experiments"][name].begin();
 			     j != json["experiments"][name].end(); j++) {
@@ -395,6 +401,9 @@ void Experiment::run_no_data(size_t exp,
 	std::vector<size_t> params_indices;
 	DataParameters data_params =
 	    prepare_data_params(json, params_names, params_indices, m_params[exp]);
+	if (m_optimal_sample[exp]) {
+		data_params.optimal_sample_count();
+	}
 	std::vector<size_t> counter;  // for the number of parallel networks
 	std::ofstream out;            // suppress output
 	SpikingBinam sp_binam(json, data_params, out);  // Standard binam
@@ -510,6 +519,9 @@ void Experiment::run_data(size_t exp,
 		size_t index = indices[j];
 		for (auto k : data_indices) {
 			data_params.set(names[k][1], m_sweep_values[exp][index][k]);
+		}
+		if (m_optimal_sample[exp]) {
+			data_params.optimal_sample_count();
 		}
 		sp_binam_vec.emplace_back(SpikingBinam(json, data_params, out));
 		for (size_t k : params_indices) {
