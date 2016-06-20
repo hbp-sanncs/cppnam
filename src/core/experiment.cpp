@@ -511,16 +511,18 @@ void Experiment::run_data(size_t exp,
 		for (auto k : data_indices) {
 			data_params.set(names[k][1], m_sweep_values[exp][index][k]);
 		}
-		SpikingBinam sp_binam(json, data_params, out);
+		sp_binam_vec.emplace_back(SpikingBinam(json, data_params, out));
 		for (size_t k : params_indices) {
-			set_parameter(sp_binam, params_names[k], m_params[exp][k].second);
+			set_parameter(sp_binam_vec.back(), params_names[k],
+			              m_params[exp][k].second);
 		}
 		for (auto k : other_indices) {
-			set_parameter(sp_binam, names[k], m_sweep_values[exp][index][k]);
+			set_parameter(sp_binam_vec.back(), names[k],
+			              m_sweep_values[exp][index][k]);
 		}
 
-		sp_binam_vec.emplace_back(sp_binam);
-		sp_binam_vec[counter.size()].build(netw);
+		// sp_binam_vec.emplace_back(sp_binam);
+		sp_binam_vec.back().build(netw);
 		counter.emplace_back(index);
 		size_t neuron_count = 0;
 
