@@ -64,7 +64,7 @@ private:
 	 * these entries
 	 */
 	std::vector<std::string> experiment_names;
-	
+
 	/**
 	 * Vector, which contains the number of repititions for every experiment
 	 */
@@ -75,7 +75,7 @@ private:
 	 * description which will trigger a "normal" execution of one BiNAM
 	 */
 	bool standard = false;
-	
+
 	/*
 	 *  Flag for using the optimal number of samples
 	 */
@@ -86,10 +86,9 @@ private:
 	 * triggerd by the boolian "standard"
 	 */
 	void run_standard(std::string file_name);
-	void run_no_data(size_t exp, std::vector<std::vector<std::string>> &names,
-	                 std::ostream &ofs);
-	void run_data(size_t exp, std::vector<std::vector<std::string>> &names,
-	              std::ostream &ofs);
+	size_t run_experiment(size_t exp,
+	                      std::vector<std::vector<std::string>> &names,
+	                      std::ostream &ofs);
 
 public:
 	Experiment(cypress::Json &json, std::string backend);
