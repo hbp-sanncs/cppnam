@@ -615,25 +615,11 @@ int Experiment::run(std::string file_name)
 			names.emplace_back(split(j, '.'));
 		}
 
-		// Check, wether DataParameters was changed. This is important
-		// for later computation
-		/*bool data_changed = false;
-		for (size_t k = 0; k < names.size(); k++) {
-		    if (names[k][0] == "data") {
-		        data_changed = true;
-		    }
-		}*/
-
 		// Open file and write first line
 		std::ofstream ofs(experiment_names[i] + "_" + m_backend + ".csv",
 		                  std::ofstream::out);
 
-		// if (!data_changed) {
-		//	run_no_data(i, names, ofs);
-		//}
-		// else {
 		run_experiment(i, names, ofs);
-		//}
 	}
 	return 0;
 }
