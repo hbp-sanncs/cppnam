@@ -538,7 +538,6 @@ size_t Experiment::run_experiment(size_t exp,
 							               m_sweep_values[exp][index][k]);
 						}
 					}
-					gen_params.print();
 					if (m_optimal_sample[exp]) {
 						data_params.optimal_sample_count();
 					}
