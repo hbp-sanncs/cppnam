@@ -70,7 +70,7 @@ std::vector<std::vector<float>> SpikingBinam::build_spike_times(int seed)
 }
 
 SpikingBinam::SpikingBinam(Json &json, std::ostream &out, bool recall)
-    : m_pop_source(m_net, 0), m_pop_output(m_net, 0)
+    : m_pop_source(cypress::PopulationBase(m_net, 0)), m_pop_output(m_net, 0)
 {
 	m_dataParams = DataParameters(json["data"]);
 	m_dataParams.print(out);
@@ -89,11 +89,30 @@ SpikingBinam::SpikingBinam(Json &json, std::ostream &out, bool recall)
 
 SpikingBinam::SpikingBinam(Json &json, DataParameters params, std::ostream &out,
                            bool recall)
-    : m_pop_source(m_net, 0), m_pop_output(m_net, 0), m_dataParams(params)
+    : m_pop_source(cypress::PopulationBase(m_net, 0)), m_pop_output(m_net, 0), m_dataParams(params)
 {
 	m_dataParams.print(out);
 	m_BiNAM_Container = std::make_shared<BiNAM_Container<uint64_t>>(
 	    m_dataParams, DataGenerationParameters(json["data_generator"]));
+	m_neuronType = json["network"]["neuron_type"];
+	auto neuronType = detect_type(m_neuronType);
+
+	m_neuronParams = NeuronParameters(neuronType, json["network"], out);
+	m_networkParams = NetworkParameters(json["network"], out);
+	m_BiNAM_Container->set_up();
+	if (recall) {
+		m_BiNAM_Container->recall();
+	}
+}
+
+SpikingBinam::SpikingBinam(Json &json, DataParameters params,
+                           DataGenerationParameters gen_params,
+                           std::ostream &out, bool recall)
+: m_pop_source(cypress::PopulationBase(m_net, 0)), m_pop_output(m_net, 0), m_dataParams(params)
+{
+	m_dataParams.print(out);
+	m_BiNAM_Container = std::make_shared<BiNAM_Container<uint64_t>>(
+	    m_dataParams,gen_params);
 	m_neuronType = json["network"]["neuron_type"];
 	auto neuronType = detect_type(m_neuronType);
 

@@ -62,6 +62,26 @@ public:
 		    << "Balanced: " << m_balanced << std::endl
 		    << "Unique: " << m_unique << std::endl;
 	}
+	
+	DataGenerationParameters &set(const std::string name, const size_t value)
+	{
+		if (name == "seed") {
+			m_seed = value;
+		}
+		else if (name == "random") {
+			m_random = value;
+		}
+		else if (name == "balanced") {
+			m_balanced = value;
+		}
+		else if (name == "unique") {
+			m_unique = value;
+		}
+		else {
+			throw std::invalid_argument("Unknown parameter \"" + name + "\"");
+		}
+		return *this;
+	}
 };
 
 class DataParameters {
@@ -175,7 +195,7 @@ public:
 		return *this;
 	}
 
-	void print(std::ostream &out = std::cout)
+	void print(std::ostream &out = std::cout) const
 	{
 		out << "# Data Parameters: " << std::endl
 		    << "Input Bits: " << m_bits_in << std::endl
