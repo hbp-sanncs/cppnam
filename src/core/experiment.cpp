@@ -527,7 +527,7 @@ size_t Experiment::run_experiment(size_t exp,
 				}
 				else {
 					// Preparation of data_params and generation params
-					DataGenerationParameters gen_params(json["data_generator"]);
+					DataGenerationParameters gen_params(json["data_generator"], false);
 					for (auto k : data_indices) {
 						if (names[k][0] == "data") {
 							data_params.set(names[k][1],
@@ -543,7 +543,7 @@ size_t Experiment::run_experiment(size_t exp,
 					}
 
 					sp_binam_vec.emplace_back(
-					    SpikingBinam(json, data_params, gen_params, out, true));
+					    SpikingBinam(json, data_params, gen_params, out, true, false));
 
 					for (size_t k : param_indices) {
 						set_parameter(sp_binam_vec.back(), params_names[k],

@@ -107,7 +107,7 @@ SpikingBinam::SpikingBinam(Json &json, DataParameters params, std::ostream &out,
 
 SpikingBinam::SpikingBinam(Json &json, DataParameters params,
                            DataGenerationParameters gen_params,
-                           std::ostream &out, bool recall)
+                           std::ostream &out, bool recall, bool warn)
 : m_pop_source(cypress::PopulationBase(m_net, 0)), m_pop_output(m_net, 0), m_dataParams(params)
 {
 	m_dataParams.print(out);
@@ -116,8 +116,8 @@ SpikingBinam::SpikingBinam(Json &json, DataParameters params,
 	m_neuronType = json["network"]["neuron_type"];
 	auto neuronType = detect_type(m_neuronType);
 
-	m_neuronParams = NeuronParameters(neuronType, json["network"], out);
-	m_networkParams = NetworkParameters(json["network"], out);
+	m_neuronParams = NeuronParameters(neuronType, json["network"], out, warn);
+	m_networkParams = NetworkParameters(json["network"], out, warn);
 	m_BiNAM_Container->set_up();
 	if (recall) {
 		m_BiNAM_Container->recall();
