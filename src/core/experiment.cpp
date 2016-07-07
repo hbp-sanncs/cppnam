@@ -275,7 +275,7 @@ void check_run(std::vector<SpikingBinam> &sp_binam_vec,
 	// Check wether the next run is too big or if we are in the last run of the
 	// experiment
 	if ((netw.neuron_count() + next_neuron_count > max_neurons ||
-	     j == sweep_values.size() - 1) &&
+	     j >= sweep_values.size() - 1) &&
 	    sp_binam_vec.size() > 0) {
 
 		netw.run(cypress::PyNN(backend));
