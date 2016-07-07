@@ -335,21 +335,30 @@ public:
 					{
 						double ncr = std::numeric_limits<uint32_t>::max();
 						for (size_t k = size_t(node->max()); k < idx; k++) {
-							total += ncr;
+							total += selected[k] ? ncr : 0;
 							ncr *= (k + 1.0) / (k - node->remaining());
 						}
 					}
 
 					// Normalise the weights for the small values
 					double inv_total = 1.0 / total;
+					total = 0.0;
 					for (size_t k = 0; k < size_t(node->max()); k++) {
 						weights[k] = weights[k] * inv_total;
+						total += weights[k];
 					}
 
-					// Approximate the remaining weights
+					// Approximate and normalise the remaining weights
 					for (size_t k = node->max(); k < idx; k++) {
 						weights[k] =
-						    approximate_weight(k, node->remaining(), idx);
+						    selected[k]
+						        ? approximate_weight(k, node->remaining(), idx)
+						        : 0;
+						total += weights[k];
+					}
+					inv_total = 1.0 / total;
+					for (size_t k = node->max(); k < idx; k++) {
+						weights[k] *= inv_total;
 					}
 
 					// Select the indices
