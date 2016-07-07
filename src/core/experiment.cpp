@@ -486,8 +486,9 @@ size_t Experiment::run_experiment(size_t exp,
 
 	// Create n_threads working on the experiments (when using NEST)
 	const size_t n_threads =
-	    m_backend != "nest" ? 1 : std::max<size_t>(
-	                                  1, std::thread::hardware_concurrency());
+	    (m_backend != "nest" && m_backend != "ess")
+	        ? 1
+	        : std::max<size_t>(1, std::thread::hardware_concurrency());
 	std::vector<std::thread> threads;
 	if (!data_changed) {
 		sp_binam.recall();
