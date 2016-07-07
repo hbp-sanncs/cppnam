@@ -184,6 +184,7 @@ void run_standard_neat_output(SpikingBinam &SpBinam, std::ostream &ofs,
 	t1 = system_clock::now();
 	SpBinam.build(netw);
 	t2 = system_clock::now();
+	std::cout << "simulation ... " << std::endl;
 	std::thread spiking_network([&netw, backend, &t3, &t4]() mutable {
 		t3 = system_clock::now();
 		netw.run(cypress::PyNN(backend));
@@ -196,6 +197,7 @@ void run_standard_neat_output(SpikingBinam &SpBinam, std::ostream &ofs,
 	});
 	recall.join();
 	spiking_network.join();
+	std::cout << "\t ... done" << std::endl;
 	auto runtime = netw.runtime();
 	if (neat) {
 		SpBinam.evaluate_neat(ofs);
