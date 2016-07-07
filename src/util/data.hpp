@@ -123,7 +123,7 @@ public:
 		}
 
 		if (m_total > 1) {
-			if (m_min >= idx) {
+			if (idx >= m_min) {
 				m_permutations[idx - m_min]--;
 				m_total--;
 			}
