@@ -265,7 +265,7 @@ public:
 	/**
 	 * Print the matrix for testing purposes
 	 */
-	void print()
+	void print() const
 	{
 		for (size_t i = 0; i < m_rows; i++) {
 			for (size_t j = 0; j < m_cols; j++) {

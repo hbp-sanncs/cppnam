@@ -90,6 +90,14 @@ public:
 	             std::ostream &out = std::cout, bool recall = true);
 
 	/**
+	 * Constructor, which overwites DataParameters from JSON and uses external
+	 * DataGenerationParameters
+	 */
+	SpikingBinam(cypress::Json &json, DataParameters params,
+	             DataGenerationParameters gen_params,
+	             std::ostream &out = std::cout, bool recall = true, bool warn =false);
+
+	/**
 	 * Getters for the parameter structures.
 	 */
 	const NetworkParameters &NetParams() const { return m_networkParams; }
