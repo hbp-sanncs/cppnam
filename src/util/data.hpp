@@ -336,7 +336,7 @@ public:
 						double ncr = std::numeric_limits<uint32_t>::max();
 						for (size_t k = size_t(node->max()); k < idx; k++) {
 							total += selected[k] ? ncr : 0;
-							ncr *= (k + 1.0) / (k - node->remaining());
+							ncr *= (k + 1.0) / (k - node->remaining() + 2.0);
 						}
 					}
 
