@@ -29,9 +29,6 @@
 #include <random>
 
 #include "binary_matrix.hpp"
-#include "ncr.hpp"
-
-#include <cypress/util/matrix.hpp>
 
 namespace nam {
 namespace {
@@ -45,6 +42,7 @@ private:
 
 	int m_idx;
 	int m_remaining;
+	int m_min;
 	int m_max;
 	uint64_t m_total;
 	std::vector<uint32_t> m_permutations;
@@ -55,30 +53,26 @@ private:
 	 */
 	void initialize_permutations()
 	{
-		// Binary search for the point at which ncr(n, rem - 1) = MAX_PERMS
-		int min = 0;
-		int max = m_idx - 1;
-		while (max - min > 10) {  // Accuracy is not imporant here
-			uint32_t n = (min + max) / 2;
-			uint32_t res = ncr_clamped32(n, m_remaining - 1);
-			if (res < MAX_PERMS) {
-				min = n;
-			}
-			else {
-				max = n;
-			}
-		}
-
 		// Initialize the m_permutations list
-		m_permutations = std::vector<uint32_t>(max + 1);
-		m_max = max + 1;
-		for (int i = 0; i <= max; i++) {
-			if (i > 0 && m_permutations[i - 1] == MAX_PERMS) {
-				m_permutations[i] = MAX_PERMS;
-				m_max = std::min(i, m_max);
+		m_children.clear();
+		m_permutations.clear();
+		m_min = 0;
+		m_max = m_idx;
+		for (int i = 0; i < m_max; i++) {
+			if (i < m_remaining - 1 || m_remaining == 0) {
+				++m_min;
+			}
+			else if (i == m_remaining - 1) {
+				m_permutations.push_back(1);
 			}
 			else {
-				m_permutations[i] = ncr_clamped32(i, m_remaining - 1);
+				uint64_t n = (uint64_t(m_permutations.back()) * uint64_t(i)) /
+				             uint64_t(i - m_remaining + 1);
+				if (n >= MAX_PERMS) {
+					m_max = i;
+					break;
+				}
+				m_permutations.push_back(n);
 			}
 		}
 		m_total =
@@ -95,7 +89,7 @@ public:
 
 	int idx() const { return m_idx; }
 	int remaining() const { return m_remaining; }
-	int total() const { return m_total; }
+	uint64_t total() const { return m_total; }
 	int max() const { return m_max; }
 	PermutationTrieNode &fetch(int idx)
 	{
@@ -110,15 +104,15 @@ public:
 
 	bool has_permutation(int idx)
 	{
-		return idx >= m_max ? true : m_permutations[idx] > 0;
+		return idx < m_min
+		           ? false
+		           : (idx >= m_max ? true : m_permutations[idx - m_min] > 0);
 	}
 
 	uint32_t permutation_count(int idx)
 	{
-		if (idx >= m_max) {
-			return MAX_PERMS;
-		}
-		return m_permutations[idx];
+		return idx < m_min ? 0 : (idx >= m_max ? MAX_PERMS
+		                                       : m_permutations[idx - m_min]);
 	}
 
 	bool decrement_permutation(int idx)
@@ -129,8 +123,10 @@ public:
 		}
 
 		if (m_total > 1) {
-			m_permutations[idx]--;
-			m_total--;
+			if (m_min >= idx) {
+				m_permutations[idx - m_min]--;
+				m_total--;
+			}
 			return true;
 		}
 
