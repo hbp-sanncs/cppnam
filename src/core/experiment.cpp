@@ -536,7 +536,6 @@ size_t Experiment::run_experiment(size_t exp,
 						else if (names[k][0] == "data_generator") {
 							gen_params.set(names[k][1],
 							               m_sweep_values[exp][index][k]);
-							gen_params.print();
 						}
 					}
 					gen_params.print();
