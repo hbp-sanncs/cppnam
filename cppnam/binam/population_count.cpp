@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "population_count.hpp"
+#include <cppnam/binam/population_count.hpp>
 
 namespace nam {
 // Do nothing here, just make sure the header compiles

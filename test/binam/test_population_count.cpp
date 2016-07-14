@@ -18,31 +18,15 @@
 
 #include "gtest/gtest.h"
 
-#include <cstdint>
-#include <limits>
-
-#include <util/ncr.hpp>
+#include <cppnam/binam/population_count.hpp>
 
 namespace nam {
 
-TEST(ncr, ncr) {
-	EXPECT_EQ(0, ncr(0, -1));
-	EXPECT_EQ(10, ncr(5, 2));
-}
-
-TEST(ncr, ncr_clamped32) {
-	EXPECT_EQ(0, ncr_clamped32(0, -1));
-	EXPECT_EQ(10, ncr_clamped32(5, 2));
-	EXPECT_EQ(49995000, ncr_clamped32(10000, 2));
-	EXPECT_EQ(std::numeric_limits<uint32_t>::max(), ncr_clamped32(10000, 3));
-}
-
-TEST(ncr, ncr_clamped64) {
-	EXPECT_EQ(0, ncr_clamped64(0, -1));
-	EXPECT_EQ(10, ncr_clamped64(5, 2));
-	EXPECT_EQ(49995000, ncr_clamped64(10000, 2));
-	EXPECT_EQ(166616670001, ncr_clamped64(10000, 3));
-	EXPECT_EQ(std::numeric_limits<uint64_t>::max(), ncr_clamped64(10000, 6));
+TEST(population_count, basic) {
+	EXPECT_EQ(5, population_count<int8_t>(0x1F));
+	EXPECT_EQ(1, population_count<int8_t>(0x1));
+	EXPECT_EQ(1, population_count<uint64_t>(0x1));
+	EXPECT_EQ(1, population_count<uint64_t>(0x1L << 63));
 }
 
 }

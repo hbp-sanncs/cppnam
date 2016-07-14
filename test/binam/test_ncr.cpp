@@ -18,15 +18,40 @@
 
 #include "gtest/gtest.h"
 
-#include <util/population_count.hpp>
+#include <cstdint>
+#include <limits>
+
+#include <cppnam/binam/ncr.hpp>
 
 namespace nam {
 
-TEST(population_count, basic) {
-	EXPECT_EQ(5, population_count<int8_t>(0x1F));
-	EXPECT_EQ(1, population_count<int8_t>(0x1));
-	EXPECT_EQ(1, population_count<uint64_t>(0x1));
-	EXPECT_EQ(1, population_count<uint64_t>(0x1L << 63));
+TEST(ncr, ncr)
+{
+	EXPECT_EQ(0, ncr(0, -1));
+	EXPECT_EQ(10, ncr(5, 2));
 }
 
+TEST(ncr, ncr_clamped32)
+{
+	EXPECT_EQ(0, ncr_clamped32(0, -1));
+	EXPECT_EQ(10, ncr_clamped32(5, 2));
+	EXPECT_EQ(49995000, ncr_clamped32(10000, 2));
+	EXPECT_EQ(std::numeric_limits<uint32_t>::max(), ncr_clamped32(10000, 3));
+}
+
+TEST(ncr, ncr_clamped64)
+{
+	EXPECT_EQ(0, ncr_clamped64(0, -1));
+	EXPECT_EQ(10, ncr_clamped64(5, 2));
+	EXPECT_EQ(49995000, ncr_clamped64(10000, 2));
+	EXPECT_EQ(166616670001, ncr_clamped64(10000, 3));
+	EXPECT_EQ(std::numeric_limits<uint64_t>::max(), ncr_clamped64(10000, 6));
+}
+
+TEST(ncr, lnncrr)
+{
+	EXPECT_NEAR(2.302585093, lnncrr(5, 2), 1e-6);
+	EXPECT_NEAR(17.727433558, lnncrr(10000, 2), 1e-6);
+	EXPECT_NEAR(25.838961622, lnncrr(10000, 3), 1e-6);
+}
 }

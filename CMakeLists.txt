@@ -19,10 +19,10 @@ cmake_minimum_required (VERSION 3.2)
 project(cppnam)
 
 # Link statically
-set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-set(BUILD_SHARED_LIBRARIES OFF)
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -s")
+#set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+#set(BUILD_SHARED_LIBRARIES OFF)
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+#set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -s")
 
 # Add the local "cmake" directory to the search path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
@@ -56,81 +56,76 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 enable_testing()
-
-include_directories(src/)
+include_directories(${CMAKE_SOURCE_DIR})
 
 #
 # CppNAM libraries
 #
 
-add_library(cppnam_core
-	src/core/binam
-	src/core/entropy
-	src/core/experiment
-	src/core/parameters
-	src/core/spike_trains
-	src/core/spiking_binam
-	src/core/spiking_parameters
+add_library(cppnam_binam
+	cppnam/binam/binam
+	cppnam/binam/binary_matrix
+	cppnam/binam/data_generator
+	cppnam/binam/ncr
 )
-
-target_link_libraries(cppnam_core
-	${CYPRESS_LIBRARIES}
-	cppnam_util
-	-pthread
-)
-
-add_library(cppnam_util
-	src/util/binary_matrix
-	src/util/data
-	src/util/ncr
-	src/util/optimisation
-	src/util/population_count
-	src/util/read_json
-)
-
-target_link_libraries(cppnam_util
+target_link_libraries(cppnam_binam
 	${CYPRESS_LIBRARIES}
 	-pthread
 )
+
+#add_library(cppnam_util
+#	src/util/binary_matrix
+#	src/util/data
+#	src/util/ncr
+#	src/util/optimisation
+#	src/util/population_count
+#	src/util/read_json
+#)
+
+#target_link_libraries(cppnam_util
+#	${CYPRESS_LIBRARIES}
+#	-pthread
+#)
 
 #
 # CppNAM executables
 #
 
+# Create the "data_generator" executable. As it has few dependencies, link those
+# in directly
 add_executable(data_generator
-	src/cli/data_generator
+	cppnam/binam/binary_matrix
+	cppnam/binam/data_generator
+	cppnam/binam/ncr
+	cppnam/cli/data_generator_cli
 )
 
-target_link_libraries(data_generator
-	cppnam_util
-)
+#add_executable(binam
+#	src/cli/binam
+#)
 
-add_executable(binam
-	src/cli/binam
-)
+#target_link_libraries(binam
+#	cppnam_core
+#	cppnam_util
+#)
 
-target_link_libraries(binam
-	cppnam_core
-	cppnam_util
-)
+#add_executable(sp_binam
+#	src/cli/sp_binam
+#)
 
-add_executable(sp_binam
-	src/cli/sp_binam
-)
+#target_link_libraries(sp_binam
+#	cppnam_core
+#	cppnam_util
+#)
 
-target_link_libraries(sp_binam
-	cppnam_core
-	cppnam_util
-)
+#add_executable(exp
+#	src/cli/exp
+#)
 
-add_executable(exp
-	src/cli/exp
-)
-
-target_link_libraries(exp
-	cppnam_core
-	cppnam_util
-)
+#target_link_libraries(exp
+#	cppnam_core
+#	cppnam_util
+#)
 
 #
 # Unit tests -- only enable if gtest is present

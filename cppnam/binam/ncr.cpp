@@ -19,7 +19,7 @@
 #include <cmath>
 #include <limits>
 
-#include "ncr.hpp"
+#include <cppnam/binam/ncr.hpp>
 
 namespace nam {
 

@@ -22,6 +22,33 @@
 #include "parameters.hpp"
 
 namespace nam {
+/**
+* Implementation of Golden section search
+* https://en.wikipedia.org/wiki/Golden_section_search
+*/
+template <typename Function>
+static double find_minimum_unimodal(Function f, double a, double b,
+                                    double tolerance = 1.0)
+{
+	static const double gr = 0.5 * (std::sqrt(5.0) - 1.0);
+	double c = b - gr * (b - a);
+	double d = a + gr * (b - a);
+	while (std::abs(c - d) > tolerance) {
+		const double fc = f(c);
+		const double fd = f(d);
+		if (fc < fd) {
+			b = d;
+			d = c;
+			c = b - gr * (b - a);
+		}
+		else {
+			a = c;
+			c = d;
+			d = a + gr * (b - a);
+		}
+	}
+	return (b + a) / 2.0;
+}
 
 DataGenerationParameters::DataGenerationParameters(const cypress::Json &obj)
 {
@@ -98,7 +125,6 @@ DataParameters DataParameters::optimal(const size_t bits, const size_t samples)
 
 size_t DataParameters::optimal_sample_count(const DataParameters &params)
 {
-
 	double p = 1.0 -
 	           double(params.ones_in() * params.ones_out()) /
 	               double(params.bits_in() * params.bits_out());

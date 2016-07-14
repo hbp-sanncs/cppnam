@@ -21,8 +21,7 @@
 #include <iostream>
 #include <string>
 
-#include <util/data.hpp>
-#include <util/binary_matrix.hpp>
+#include <cppnam/binam/data_generator.hpp>
 
 using namespace nam;
 
@@ -90,14 +89,13 @@ int main(int argc, char *argv[])
 	// Generate the requested data
 	std::cerr << "Generating data..." << std::endl;
 	DataGenerator empty;
-	auto data =
-	    empty.generate<uint8_t>(n_bits, n_ones, n_samples, show_progress);
+	auto data = empty.generate(n_bits, n_ones, n_samples, show_progress);
 	std::cerr << std::endl;
 
 	// Print a non-sparse version of the matrix to std::cout
 	for (size_t i = 0; i < data.rows(); i++) {
-		for (size_t j = 0; j < data.cols(); j++) {
-			std::cout << (int)(data.get_bit(i, j));
+		for (auto it = data.begin_row(i); it < data.end_row(i); it++) {
+			std::cout << (int)(*it);
 		}
 		std::cout << std::endl;
 	}

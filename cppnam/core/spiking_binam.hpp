@@ -32,6 +32,15 @@
 #include "parameters.hpp"
 
 namespace nam {
+struct ExpResults {
+	double Info, fp, fn;
+
+	ExpResults(double Info, double fp, double fn)
+	    : Info(Info), fp(fp), fn(fn){};
+	ExpResults(double Info, SampleError se)
+	    : Info(Info), fp(se.fp), fn(se.fn){};
+};
+
 /**
  * This is the class implementation of the spiking binam. Containing all
  * necessary parameter structures, it is building, executing and evaluating

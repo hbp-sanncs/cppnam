@@ -17,9 +17,11 @@
  */
 
 /**
- * Implementations of the binomial coefficient.
- *
  * @file ncr.hpp
+ *
+ * Implementations of the binomial coefficient used in the data generator and
+ * for the entropy calculations.
+ *
  * @author Andreas Stöckel
  */
 

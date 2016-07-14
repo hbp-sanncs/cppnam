@@ -16,6 +16,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file population_count.hpp
+ *
+ * Contains the population_count template which can be used to calculate the
+ * number of bits set to one in a given integer.
+ *
+ * @author Andreas Stöckel
+ */
+
 #pragma once
 
 #ifndef CPPNAM_POPULATION_COUNT_HPP
@@ -26,11 +35,16 @@
 #include <cstdint>
 
 namespace nam {
-
+/**
+ * Calculates the number of bits set to one in an instance of the given integral
+ * type T.
+ *
+ * @param i is the integer for which the population count should be calculated.
+ */
 template <typename T>
 size_t population_count(T i)
 {
-	size_t res;
+	size_t res = 0;
 	for (size_t j = 0; j < sizeof(T) * 8; j++) {
 		res += (i & (T(1) << j)) ? 1 : 0;
 	}

@@ -20,34 +20,47 @@ project(cppnam)
 
 include_directories(PRIVATE ${GTEST_INCLUDE_DIR})
 
-add_executable(cppnam_test_core
-	core/test_binam
-	core/test_entropy
-	core/test_parameters
-	core/test_spike_trains
-	core/test_spiking_binam
-	core/test_spiking_parameters
+add_executable(cppnam_test_binam
+	binam/test_binary_matrix
+	binam/test_binam
+	binam/test_data_generator
+	binam/test_ncr
+	binam/test_population_count
 )
-add_executable(cppnam_test_util
-	util/test_binary_matrix
-	util/test_ncr
-	util/test_population_count
-	util/test_read_json
-)
-
-add_dependencies(cppnam_test_core googletest)
-add_dependencies(cppnam_test_util googletest)
-
-target_link_libraries(cppnam_test_core
-	cppnam_util
-	cppnam_core
+target_link_libraries(cppnam_test_binam
 	${GTEST_LIBRARIES}
+	cppnam_binam
 )
-target_link_libraries(cppnam_test_util
-	cppnam_util
-	cppnam_core
-	${GTEST_LIBRARIES}
-)
+#set_target_properties(cppnam_test_binam PROPERTIES LINK_SEARCH_START_STATIC 1)
+#set_target_properties(cppnam_test_binam PROPERTIES LINK_SEARCH_END_STATIC 1)
+add_test(cppnam_test_binam cppnam_test_binam)
 
-add_test(cppnam_test_core cppnam_test_core)
-add_test(cppnam_test_util cppnam_test_util)
+#add_executable(cppnam_test_util
+#	util/test_population_count
+#)
+
+#add_executable(cppnam_test_core
+#	core/test_binam
+#	core/test_entropy
+#	core/test_parameters
+#	core/test_spike_trains
+#	core/test_spiking_binam
+#	core/test_spiking_parameters
+#)
+
+
+#add_dependencies(cppnam_test_core googletest)
+#add_dependencies(cppnam_test_util googletest)
+
+#target_link_libraries(cppnam_test_core
+#	cppnam_util
+#	cppnam_core
+#	${GTEST_LIBRARIES}
+#)
+#target_link_libraries(cppnam_test_util
+#	cppnam_util
+#	${GTEST_LIBRARIES}
+#)
+
+#add_test(cppnam_test_core cppnam_test_core)
+#add_test(cppnam_test_util cppnam_test_util)
