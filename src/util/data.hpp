@@ -341,23 +341,26 @@ public:
 
 					// Normalise the weights for the small values
 					double inv_total = 1.0 / total;
-					total = 0.0;
+					double sum1 = 0.0;
 					for (size_t k = 0; k < size_t(node->max()); k++) {
 						weights[k] = weights[k] * inv_total;
-						total += weights[k];
+						sum1 += weights[k];
 					}
 
 					// Approximate and normalise the remaining weights
+					double sum2 = 0.0;
 					for (size_t k = node->max(); k < idx; k++) {
 						weights[k] =
 						    selected[k]
 						        ? approximate_weight(k, node->remaining(), idx)
 						        : 0;
-						total += weights[k];
+						sum2 += weights[k];
 					}
-					inv_total = 1.0 / total;
-					for (size_t k = node->max(); k < idx; k++) {
-						weights[k] *= inv_total;
+					if (sum2 > 0.0) {
+						inv_total = (1.0 - sum1) / sum2;
+						for (size_t k = node->max(); k < idx; k++) {
+							weights[k] *= inv_total;
+						}
 					}
 
 					// Select the indices
