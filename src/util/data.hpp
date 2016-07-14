@@ -54,7 +54,6 @@ private:
 	void initialize_permutations()
 	{
 		// Initialize the m_permutations list
-		m_children.clear();
 		m_permutations.clear();
 		m_min = 0;
 		m_max = m_idx;
