@@ -369,8 +369,12 @@ public:
 					double w_sum = 0.0;
 					for (size_t k = 0; k < idx; k++) {
 						w_sum += weights[k];
+						if (selected[k]) {
+							chosen_idx =
+							    k;  // Ensures sensible selection if sum
+							        // weights[k] < 1.0
+						}
 						if (w_sum >= rnd) {
-							chosen_idx = k;
 							break;
 						}
 					}
