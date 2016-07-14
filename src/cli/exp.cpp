@@ -15,6 +15,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include <csignal>
 #include <fstream>
 #include <string>
 
@@ -36,6 +38,7 @@ int main(int argc, const char *argv[])
 		return 0;
 	}
 	
+	signal(SIGINT, int_handler);
 	
 	std::ifstream ifs(argv[2], std::ifstream::in);
 	cypress::Json json(ifs);
