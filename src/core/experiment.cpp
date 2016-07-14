@@ -17,11 +17,11 @@
  */
 
 #include <algorithm>
-#include <atomic>
 #include <chrono>
 #include <fstream>
 #include <mutex>
 #include <random>
+#include <shared_mutex>
 #include <string>
 #include <sstream>
 #include <thread>
@@ -264,12 +264,12 @@ static const std::map<std::string, size_t> neuron_numbers{
  * @param results: vector containing all results for this experiment
  * @param next_neuron_count: number of output neurons needed in the next run
  */
-void check_run(std::vector<SpikingBinam> &sp_binam_vec,
-               const std::vector<std::vector<float>> &sweep_values,
-               cypress::Network &netw, size_t j, std::vector<size_t> &counter,
-               const std::string &backend,
-               std::vector<std::pair<ExpResults, ExpResults>> &results,
-               size_t &next_neuron_count)
+std::vector<size_t> check_run(
+    std::vector<SpikingBinam> &sp_binam_vec,
+    const std::vector<std::vector<float>> &sweep_values, cypress::Network &netw,
+    size_t j, std::vector<size_t> &counter, const std::string &backend,
+    std::vector<std::pair<ExpResults, ExpResults>> &results,
+    size_t &next_neuron_count, std::shared_timed_mutex &mutex)
 {
 	size_t max_neurons = neuron_numbers.find(backend)->second;
 	// Check wether the next run is too big or if we are in the last run of the
@@ -280,15 +280,19 @@ void check_run(std::vector<SpikingBinam> &sp_binam_vec,
 
 		netw.run(cypress::PyNN(backend));
 		// Generate results
+		std::shared_lock<std::shared_timed_mutex> lock(mutex);
 		for (size_t k = 0; k < sp_binam_vec.size(); k++) {
 			results[counter[k]] = sp_binam_vec[k].evaluate_res();
 		}
 
 		// Reset variables
+		auto done = counter;
 		counter = std::vector<size_t>();
 		sp_binam_vec.erase(sp_binam_vec.begin(), sp_binam_vec.end());
 		netw = cypress::Network();
+		return done;
 	}
+	return std::vector<size_t>();
 }
 
 /**
@@ -409,8 +413,10 @@ size_t Experiment::run_experiment(size_t exp,
                                   std::vector<std::vector<std::string>> &names,
                                   std::ostream &ofs)
 {
-	std::vector<std::pair<ExpResults, ExpResults>> results(
-	    m_sweep_values[exp].size(), std::pair<ExpResults, ExpResults>());
+	using Results = std::vector<std::pair<ExpResults, ExpResults>>;
+	Results results(m_sweep_values[exp].size(),
+	                std::pair<ExpResults, ExpResults>());
+	std::shared_timed_mutex res_mutex;
 	std::vector<std::vector<std::string>> params_names;
 
 	// param_indices contains all indices of single parameters NOT changing the
@@ -485,6 +491,8 @@ size_t Experiment::run_experiment(size_t exp,
 	// Global state variables, guarded by the idx_mutex
 	size_t current_job_idx = 0;
 	std::mutex idx_mutex;
+	std::vector<size_t> jobs_done;
+	std::mutex done_mutex;
 
 	// Create n_threads working on the experiments (when using NEST)
 	const size_t n_threads =
@@ -495,6 +503,22 @@ size_t Experiment::run_experiment(size_t exp,
 	if (!data_changed) {
 		sp_binam.recall();
 	}
+
+	// Check if last simulation broke down, recover state if backup is there
+	std::fstream ss(experiment_names[exp] + "_" + m_backend + "_bak.dat",
+	                std::fstream::in);
+	bool resume = ss.good();
+	if (resume) {
+		ss.read((char *)indices.data(), indices.size() * sizeof(size_t));
+		ss.read((char *)results.data(),
+		        results.size() * sizeof(Results::value_type));
+		size_t length = 0;
+		ss.read((char *)&length, sizeof(length));
+		jobs_done.resize(length);
+		ss.read((char *)jobs_done.data(), length * sizeof(size_t));
+		ss.close();
+	}
+
 	for (size_t i = 0; i < n_threads; i++) {
 		threads.emplace_back([&, data_params]() mutable {
 			size_t index, this_idx;
@@ -508,6 +532,7 @@ size_t Experiment::run_experiment(size_t exp,
 				if (cancel) {
 					exit(1);
 				}
+				
 				// Fetch index, if already done, finish with last simulation if
 				// network is not empty
 				{
@@ -515,7 +540,7 @@ size_t Experiment::run_experiment(size_t exp,
 					if (current_job_idx >= results.size()) {
 						check_run(sp_binam_vec, m_sweep_values[exp], netw,
 						          m_sweep_values[exp].size() - 1, counter,
-						          m_backend, results, neuron_count);
+						          m_backend, results, neuron_count, res_mutex);
 						return;
 					}
 					this_idx = current_job_idx++;
@@ -524,13 +549,23 @@ size_t Experiment::run_experiment(size_t exp,
 				// Shuffeld index
 				index = indices[this_idx];
 
+				// Check if job has already been done in backup
+				if (resume) {
+					std::lock_guard<std::mutex> lock(done_mutex);
+					if (std::find(jobs_done.begin(), jobs_done.end(), index) !=
+					    jobs_done.end()) {
+						continue;
+					}
+				}
+
 				// Special preparations if data changed
 				if (!data_changed) {
 					sp_binam_vec.emplace_back(sp_binam);
 				}
 				else {
 					// Preparation of data_params and generation params
-					DataGenerationParameters gen_params(json["data_generator"], false);
+					DataGenerationParameters gen_params(json["data_generator"],
+					                                    false);
 					for (auto k : data_indices) {
 						if (names[k][0] == "data") {
 							data_params.set(names[k][1],
@@ -545,8 +580,8 @@ size_t Experiment::run_experiment(size_t exp,
 						data_params.optimal_sample_count();
 					}
 
-					sp_binam_vec.emplace_back(
-					    SpikingBinam(json, data_params, gen_params, out, true, false));
+					sp_binam_vec.emplace_back(SpikingBinam(
+					    json, data_params, gen_params, out, true, false));
 
 					for (size_t k : param_indices) {
 						set_parameter(sp_binam_vec.back(), params_names[k],
@@ -573,13 +608,21 @@ size_t Experiment::run_experiment(size_t exp,
 				// Build last network and save index for writing results
 				sp_binam_vec.back().build(netw);
 				counter.emplace_back(index);
-				check_run(sp_binam_vec, m_sweep_values[exp], netw, this_idx,
-				          counter, m_backend, results, neuron_count);
+				auto done = check_run(sp_binam_vec, m_sweep_values[exp], netw,
+				                      this_idx, counter, m_backend, results,
+				                      neuron_count, res_mutex);
+				// Emplace all indices with complete jobs
+				if (done.size() > 0) {
+					std::lock_guard<std::mutex> lock(done_mutex);
+					jobs_done.insert(jobs_done.end(), done.begin(), done.end());
+				}
 			}
 		});
 	}
 	// Wait for all threads to be done, periodically call the progress
-	// callback
+	// callback, do a backup
+	using namespace std::chrono;
+	system_clock::time_point t = system_clock::now();
 	while (true) {
 		{
 			std::lock_guard<std::mutex> lock(idx_mutex);
@@ -588,15 +631,36 @@ size_t Experiment::run_experiment(size_t exp,
 				std::cerr << std::endl;
 				break;
 			}
+			// Every 100 seconds backup the sweep state
+			if (duration_cast<seconds>(system_clock::now() - t).count() > 100 &&
+			    jobs_done.size() > 0) {
+				std::lock_guard<std::mutex> lock2(done_mutex);
+
+				std::unique_lock<std::shared_timed_mutex> lock3(res_mutex);
+				ss.open(experiment_names[exp] + "_" + m_backend + "_bak.dat",
+				        std::fstream::out);
+				ss.write((char *)indices.data(),
+				         indices.size() * sizeof(size_t));
+				ss.write((char *)results.data(),
+				         results.size() * sizeof(Results::value_type));
+				size_t length = jobs_done.size();
+				ss.write((char *)&length, sizeof(length));
+				ss.write((char *)jobs_done.data(), length * sizeof(size_t));
+				t = system_clock::now();
+				ss.close();
+			}
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
-
 	// Wait for all threads to finish
 	for (size_t i = 0; i < threads.size(); i++) {
 		threads[i].join();
 	}
 	output(m_sweep_values[exp], results, ofs, names[0]);
+
+	auto file = experiment_names[exp] + "_" + m_backend + "_bak.dat";
+	// char *tmp = &file[0];
+	remove(file.c_str());
 	return 0;
 }
 
