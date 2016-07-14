@@ -505,6 +505,9 @@ size_t Experiment::run_experiment(size_t exp,
 			cypress::Network netw;  // shared network
 
 			while (true) {
+				if (cancel) {
+					exit(1);
+				}
 				// Fetch index, if already done, finish with last simulation if
 				// network is not empty
 				{
@@ -619,5 +622,13 @@ int Experiment::run(std::string file_name)
 		run_experiment(i, names, ofs);
 	}
 	return 0;
+}
+
+void int_handler(int)
+{
+	if (cancel) {
+		exit(1);
+	}
+	cancel = true;
 }
 }

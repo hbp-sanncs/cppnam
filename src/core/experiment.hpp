@@ -21,6 +21,7 @@
 #ifndef CPPNAM_UTIL_EXPERIMENT_HPP
 #define CPPNAM_UTIL_EXPERIMENT_HPP
 
+#include <atomic>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -94,5 +95,14 @@ public:
 	Experiment(cypress::Json &json, std::string backend);
 	int run(std::string file_name);
 };
+
+/**
+ * SIGINT handler. Sets the global "cancel" flag to true when called once,
+ * terminates the program if called twice. This allows to terminate the program,
+ * even if it is not responsive (the cancel flag is not checked).
+ */
+static std::atomic_bool cancel(false);
+void int_handler(int);
+
 }
 #endif /* CPPNAM_UTIL_EXPERIMENT_HPP */
