@@ -72,6 +72,11 @@ struct ExpResults {
 	ExpResults(double Info, SampleError se)
 	    : Info(Info), fp(se.fp), fn(se.fn){};
 	ExpResults(){};
+	void print()
+	{
+		std::cout << "Info :" << Info << " pos:" << fp << " neg: " << fn
+		          << std::endl;
+	}
 };
 
 /**
