@@ -281,10 +281,28 @@ public:
 
 				// Try to balance the bit usage
 				if (balance) {
+					// If the number of bits that have minimum usage is smaller
+					// than
+					// the number of remaining bits, allow a one-off error
+					// (slack)
+					// during balancing to avoid clustering of ones
+					uint8_t slack = 0;
+					{
+						uint32_t idcs_with_min_usage = 0;
+						for (size_t k = 0; k < idx; k++) {
+							idcs_with_min_usage +=
+							    selected[k] && (usage[k] - min_usage == 0) ? 1
+							                                               : 0;
+						}
+						if (idcs_with_min_usage < node->remaining()) {
+							slack = 1;
+						}
+					}
+
 					// Check which indices are minimally used, only select those
 					// which are
 					for (size_t k = 0; k < idx; k++) {
-						balancable[k] = (usage[k] == min_usage) ? 1 : 0;
+						balancable[k] = (usage[k] - min_usage <= slack) ? 1 : 0;
 						selected[k] = selected[k] && balancable[k];
 					}
 
@@ -294,7 +312,7 @@ public:
 					uint32_t cum_balancable = 0;
 					for (size_t k = 0; k < idx; k++) {
 						cum_balancable = cum_balancable + balancable[k];
-						allowed(k) =
+						allowed[k] =
 						    std::min<uint32_t>(n_ones - j, cum_balancable);
 						max_allowed = std::max(max_allowed, allowed[k]);
 					}
