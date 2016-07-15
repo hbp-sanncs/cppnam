@@ -88,8 +88,8 @@ int main(int argc, char *argv[])
 
 	// Generate the requested data
 	std::cerr << "Generating data..." << std::endl;
-	DataGenerator empty;
-	auto data = empty.generate(n_bits, n_ones, n_samples, show_progress);
+	auto data = DataGenerator().generate(
+	    n_bits, n_ones, n_samples, show_progress);
 	std::cerr << std::endl;
 
 	// Print a non-sparse version of the matrix to std::cout
