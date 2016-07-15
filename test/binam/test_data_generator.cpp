@@ -55,9 +55,10 @@ static void check_col_sum(size_t n_bits, size_t n_ones, size_t n_samples)
 			min = std::min(min, sums[j]);
 			max = std::max(max, sums[j]);
 		}
-		EXPECT_GE(3, max - min);  // Allow a little sloppyness while balancing
+		EXPECT_GE(4, max - min);  // Allow a little sloppyness while balancing
 		                          // -- the greedy approach used in the
-		                          // algorithm is not perfect
+		                          // algorithm is not perfect and some slack
+		                          // is allowed under circumstances
 	}
 }
 
