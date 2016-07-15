@@ -177,24 +177,6 @@ BinaryMatrix DataGenerator::generate_balanced(
 		return res;
 	};
 
-	auto approximate_large_weight = [](uint32_t k, uint32_t r_ones,
-	                                   uint32_t r_bits, int r_ones_offs,
-	                                   double offs_sum) {
-		double ln_a = lnncrr(k, r_ones - 1);
-
-		double p1 = 1.0;
-		for (int i = 1; i <= int(r_bits) - int(r_ones); i++) {
-			p1 *= double(r_ones + i) / double(i);
-		}
-
-		double p2 = 1.0;
-		for (int i = 1; i < r_ones_offs; i++) {
-			p2 *= double(r_ones + i) / double(i);
-		}
-
-		return std::exp(ln_a - std::log(offs_sum + p1 - p2));
-	};
-
 	BinaryMatrix res(n_samples, n_bits);  // Result matrix
 	std::vector<uint32_t> usage(
 	    n_bits);  // vector tracking how often each bit is used
