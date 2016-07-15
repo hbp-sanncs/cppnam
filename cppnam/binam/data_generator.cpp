@@ -248,36 +248,36 @@ BinaryMatrix DataGenerator::generate_balanced(
 					weights[k] = selected[k] ? node->permutation_count(k) : 0;
 					total += weights[k];
 				}
-				// For permutation tree nodes with a permutation_count larger
-				// than MAX_PERMS we manually calculate an approximate remaining
-				// permutation count used for normalisation. Further down we
-				// calculate the actual approximate selection probability
-				{
-					double ncr = std::numeric_limits<uint32_t>::max();
-					for (size_t k = size_t(node->max()); k < idx; k++) {
-						total += selected[k] ? ncr : 0;
-						ncr *= (k + 1.0) / (k - node->remaining() + 2.0);
+
+				// Approximate the remaining weights
+				double large_weight_total = 0.0;
+				double large_weight_total_renorm = 0.0;
+				for (size_t k = node->max(); k < idx; k++) {
+					const float w =
+					    approximate_weight(k, node->remaining(), idx);
+					weights[k] = selected[k] ? w : 0;
+					large_weight_total += weights[k];
+					large_weight_total_renorm += w;
+				}
+
+				if (large_weight_total_renorm > 0.0) {
+					double inv_total =
+					    large_weight_total_renorm / large_weight_total;
+					for (size_t k = node->max(); k < idx; k++) {
+						weights[k] *= inv_total;
 					}
 				}
 
-				// Normalise the weights for the small values
-				double inv_total = 1.0 / total;
-				double sum1 = 0.0;
-				for (size_t k = 0; k < size_t(node->max()); k++) {
-					weights[k] = weights[k] * inv_total;
-					sum1 += weights[k];
+				// Normalise the weights
+				if (total > 0.0) {
+					double inv_total =
+					    (1.0 - large_weight_total_renorm) / total;
+					for (size_t k = 0; k < size_t(node->max()); k++) {
+						weights[k] = std::max(0.0, weights[k] * inv_total);
+					}
 				}
-
-				// Approximate and normalise the remaining weights
-				double sum2 = 0.0;
-				for (size_t k = node->max(); k < idx; k++) {
-					weights[k] = selected[k] ? approximate_weight(
-					                               k, node->remaining(), idx)
-					                         : 0;
-					sum2 += weights[k];
-				}
-				if (sum2 > 0.0) {
-					inv_total = (1.0 - sum1) / sum2;
+				else if (large_weight_total > 0.0) {
+					double inv_total = 1.0 / large_weight_total;
 					for (size_t k = node->max(); k < idx; k++) {
 						weights[k] *= inv_total;
 					}
