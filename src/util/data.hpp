@@ -245,7 +245,7 @@ public:
 			const uint32_t num_f0 = k - r_ones + 2;
 			const uint32_t den_f0 = r_bits - r_ones + 1;
 			double res = double(r_ones) / double(r_bits);
-			for (int i = 0; i < int(r_ones) - 2; i++) {
+			for (int i = 0; i <= int(r_ones) - 2; i++) {
 				res *= double(num_f0 + i) / double(den_f0 + i);
 			}
 			return res;
