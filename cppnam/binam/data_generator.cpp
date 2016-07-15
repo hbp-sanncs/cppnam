@@ -46,7 +46,9 @@ public:
 	 */
 	void initialize_permutations()
 	{
-		// Initialize the m_permutations list
+		// Initialize the m_permutations list, calculate
+		//                      binom(i, m_remaining - 1)
+		// for each i from zero to m_idx - 1.
 		m_permutations.clear();
 		m_min = 0;
 		m_max = m_idx;
