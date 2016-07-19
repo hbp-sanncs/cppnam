@@ -356,7 +356,7 @@ public:
 						large_weight_total_renorm += w;
 					}
 
-					if (large_weight_total_renorm > 0.0) {
+					if (large_weight_total > 0.0) {
 						double inv_total =
 						    large_weight_total_renorm / large_weight_total;
 						for (size_t k = node->max(); k < idx; k++) {
