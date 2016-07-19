@@ -294,7 +294,7 @@ public:
 							    selected[k] && (usage[k] - min_usage == 0) ? 1
 							                                               : 0;
 						}
-						if (idcs_with_min_usage < node->remaining()) {
+						if (idcs_with_min_usage < size_t(node->remaining())) {
 							slack = 1;
 						}
 					}
