@@ -28,6 +28,7 @@
 #include <vector>
 
 #include <cypress/cypress.hpp>
+#include <cypress/backend/power/netio4.hpp>
 #include "experiment.hpp"
 #include "spiking_binam.hpp"
 #include "util/read_json.hpp"
@@ -187,7 +188,9 @@ void run_standard_neat_output(SpikingBinam &SpBinam, std::ostream &ofs,
 	std::cout << "simulation ... " << std::endl;
 	std::thread spiking_network([&netw, backend, &t3, &t4]() mutable {
 		t3 = system_clock::now();
-		netw.run(cypress::PyNN(backend));
+		cypress::PowerManagementBackend pwbackend(std::make_shared<cypress::NetIO4>(),
+	                               cypress::Network::make_backend(backend));
+		netw.run(pwbackend);
 		t4 = system_clock::now();
 	});
 	std::thread recall([&SpBinam, &t5, &t6]() mutable {
@@ -277,8 +280,9 @@ std::vector<size_t> check_run(
 	if ((netw.neuron_count() + next_neuron_count > max_neurons ||
 	     j >= sweep_values.size() - 1) &&
 	    sp_binam_vec.size() > 0) {
-
-		netw.run(cypress::PyNN(backend));
+		cypress::PowerManagementBackend pwbackend(std::make_shared<cypress::NetIO4>(),
+	                               cypress::Network::make_backend(backend));
+		netw.run(pwbackend);
 		// Generate results
 		std::shared_lock<std::shared_timed_mutex> lock(mutex);
 		for (size_t k = 0; k < sp_binam_vec.size(); k++) {
