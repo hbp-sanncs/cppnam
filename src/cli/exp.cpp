@@ -39,9 +39,12 @@ int main(int argc, const char *argv[])
 	}
 	
 	signal(SIGINT, int_handler);
-	
-	std::ifstream ifs(argv[2], std::ifstream::in);
-	cypress::Json json(ifs);
+
+	cypress::Json json;
+	{
+		std::ifstream ifs(argv[2], std::ifstream::in);
+		json << ifs;
+	}
 	
 	Experiment exp(json, argv[1]);
 	exp.run(argv[2]);
