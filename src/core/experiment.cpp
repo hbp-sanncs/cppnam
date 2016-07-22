@@ -406,7 +406,7 @@ void Experiment::run_no_data(size_t exp,
 	}
 	std::vector<size_t> counter;  // for the number of parallel networks
 	std::ofstream out;            // suppress output
-	SpikingBinam sp_binam(json, data_params, out);  // Standard binam
+	SpikingBinam sp_binam(json, data_params, out, true, false);  // Standard binam
 	std::vector<SpikingBinam>
 	    sp_binam_vec;       // Emplace binam network for every parameter run
 	cypress::Network netw;  // shared network

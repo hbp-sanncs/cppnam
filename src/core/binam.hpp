@@ -273,6 +273,47 @@ public:
 		return *this;
 	};
 
+	BiNAM_Container<T> &set_up_from_file()
+	{
+		size_t height;
+		size_t width;
+		std::fstream ss("../data/data_in", std::fstream::in);
+		ss.read((char *)&width, sizeof(width));
+		ss.read((char *)&height, sizeof(height));
+		m_input = BinaryMatrix<T>(height, width);
+		ss.read((char *)m_input.cells().data(),
+		        m_input.cells().size() * sizeof(uint64_t));
+		ss.close();
+		if (m_input.cols() != m_params.bits_in() ||
+		    m_input.rows() != m_params.samples()) {
+			std::stringstream s;
+			s << "Input data size " << m_input.cols() << " and "
+			   << m_input.rows() << " differs from given Parameters "
+			   << m_params.bits_in() << " and " << m_params.samples() << " !"
+			   << std::endl;
+			throw std::out_of_range(s.str());
+		}
+
+		ss.open("../data/data_out", std::fstream::in);
+		ss.read((char *)&width, sizeof(width));
+		ss.read((char *)&height, sizeof(height));
+		m_output = BinaryMatrix<T>(height, width);
+		ss.read((char *)m_output.cells().data(),
+		        m_output.cells().size() * sizeof(uint64_t));
+		ss.close();
+		if (m_output.cols() != m_params.bits_out() ||
+		    m_output.rows() != m_params.samples()) {
+			std::stringstream s;
+			s << "Output data size " << m_output.cols() << " and "
+			   << m_output.rows() << " differs from given Parameters "
+			   << m_params.bits_out() << " and " << m_params.samples() << " !"
+			   << std::endl;
+			throw std::out_of_range(s.str());
+		}
+		m_BiNAM.train_mat(m_input, m_output);
+		return *this;
+	}
+
 	/**
 	 * Recalls the patterns with the input matrix
 	 */

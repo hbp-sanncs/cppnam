@@ -17,6 +17,7 @@
  */
 
 #include <csignal>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -66,8 +67,8 @@ int main(int argc, char *argv[])
 {
 	signal(SIGINT, int_handler);
 
-	if (argc != 4) {
-		std::cerr << "Usage: ./data_generator <BITS> <ONES> <SAMPLES>"
+	if (argc != 5) {
+		std::cerr << "Usage: ./data_generator <BITS> <ONES> <SAMPLES> <seed>"
 		          << std::endl;
 		return 1;
 	}
@@ -75,6 +76,7 @@ int main(int argc, char *argv[])
 	int n_bits = std::stoi(argv[1]);
 	int n_ones = std::stoi(argv[2]);
 	int n_samples = std::stoi(argv[3]);
+	size_t seed = std::stoi(argv[4]);
 
 	if (n_bits < 0 || n_ones < 0 || n_samples < 0) {
 		std::cerr << "Invalid parameter combination, all arguments "
@@ -89,17 +91,27 @@ int main(int argc, char *argv[])
 
 	// Generate the requested data
 	std::cerr << "Generating data..." << std::endl;
-	DataGenerator empty;
+	DataGenerator empty(seed, true, true, true);
 	auto data =
-	    empty.generate<uint8_t>(n_bits, n_ones, n_samples, show_progress);
+	    empty.generate<uint64_t>(n_bits, n_ones, n_samples, show_progress);
 	std::cerr << std::endl;
 
 	// Print a non-sparse version of the matrix to std::cout
-	for (size_t i = 0; i < data.rows(); i++) {
-		for (size_t j = 0; j < data.cols(); j++) {
-			std::cout << (int)(data.get_bit(i, j));
+	/*for (size_t i = 0; i < data.numberOfCells(data.rows()); i++) {
+		for (size_t j = 0; j < data.numberOfCells(data.cols()); j++) {
+			std::cout << (int)(data.get_cell(i, j))<< ",";
 		}
 		std::cout << std::endl;
-	}
+	}*/
+	std::fstream ss("data", std::fstream::out);
+	size_t height = n_samples;
+	size_t width = n_bits;
+	ss.write((char *)&width, sizeof(width));
+	ss.write((char *)&height, sizeof(height));
+	ss.write((char *)data.cells().data(), data.cells().size() * sizeof(uint64_t));
+	
+	ss.close();
+	
+
 	return 0;
 }

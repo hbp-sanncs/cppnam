@@ -87,7 +87,7 @@ public:
 	 * Constructor, which overwites DataParameters from JSON
 	 */
 	SpikingBinam(cypress::Json &json, DataParameters params,
-	             std::ostream &out = std::cout, bool recall = true);
+	             std::ostream &out = std::cout, bool recall = true, bool read = false);
 
 	/**
 	 * Getters for the parameter structures.

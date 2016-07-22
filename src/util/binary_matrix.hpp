@@ -190,6 +190,13 @@ public:
 		m_mat(row, col) = value;
 		return *this;
 	}
+	
+	/**
+	 * Return data matrix
+	 */
+	Matrix<T> cells(){
+		return m_mat;
+	}
 
 	/**
 	 * Give out matrix sizes
@@ -334,3 +341,4 @@ constexpr uint32_t BinaryMatrix<T>::intWidth;
 }
 
 #endif /* CPPNAM_UTIL_BINARY_MATRIX_HPP */
+
