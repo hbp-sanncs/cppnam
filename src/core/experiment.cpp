@@ -19,13 +19,16 @@
 #include <algorithm>
 #include <chrono>
 #include <fstream>
+#include <mutex>
 #include <random>
+#include <shared_mutex>
 #include <string>
 #include <sstream>
 #include <thread>
 #include <vector>
 
 #include <cypress/cypress.hpp>
+#include <cypress/backend/power/netio4.hpp>
 #include "experiment.hpp"
 #include "spiking_binam.hpp"
 #include "util/read_json.hpp"
@@ -55,6 +58,18 @@ std::vector<std::string> split(const std::string &s, char delim)
 	std::vector<std::string> elems;
 	split(s, delim, elems);
 	return elems;
+}
+
+void progress_callback(double p)
+{
+	const int w = 50;
+	std::cerr << std::fixed << std::setprecision(2) << std::setw(6) << p * 100.0
+	          << "% [";
+	const int j = p * float(w);
+	for (int i = 0; i < w; i++) {
+		std::cerr << (i > j ? ' ' : (i == j ? '>' : '='));
+	}
+	std::cerr << "]\r";
 }
 
 /**
@@ -170,9 +185,12 @@ void run_standard_neat_output(SpikingBinam &SpBinam, std::ostream &ofs,
 	t1 = system_clock::now();
 	SpBinam.build(netw);
 	t2 = system_clock::now();
+	std::cout << "simulation ... " << std::endl;
 	std::thread spiking_network([&netw, backend, &t3, &t4]() mutable {
 		t3 = system_clock::now();
-		netw.run(cypress::PyNN(backend));
+		cypress::PowerManagementBackend pwbackend(std::make_shared<cypress::NetIO4>(),
+	                               cypress::Network::make_backend(backend));
+		netw.run(pwbackend);
 		t4 = system_clock::now();
 	});
 	std::thread recall([&SpBinam, &t5, &t6]() mutable {
@@ -182,6 +200,7 @@ void run_standard_neat_output(SpikingBinam &SpBinam, std::ostream &ofs,
 	});
 	recall.join();
 	spiking_network.join();
+	std::cout << "\t ... done" << std::endl;
 	auto runtime = netw.runtime();
 	if (neat) {
 		SpBinam.evaluate_neat(ofs);
@@ -236,7 +255,7 @@ DataParameters prepare_data_params(
  * improved -> TODO
  */
 static const std::map<std::string, size_t> neuron_numbers{
-    {"spikey", 0}, {"spinnaker", 1000}, {"nmmc1", 1e5}, {"nest", 1e3}};
+    {"spikey", 0}, {"spinnaker", 8192}, {"nmmc1", 1e5}, {"nest", 1e2}};
 
 /**
  * Checks, wether an additional parallel run will be to big, and if that is the
@@ -248,34 +267,36 @@ static const std::map<std::string, size_t> neuron_numbers{
  * @param results: vector containing all results for this experiment
  * @param next_neuron_count: number of output neurons needed in the next run
  */
-void check_run(std::vector<SpikingBinam> &sp_binam_vec,
-               const std::vector<std::vector<float>> &sweep_values,
-               cypress::Network &netw, size_t j, std::vector<size_t> &counter,
-               const std::string &backend,
-               std::vector<std::pair<ExpResults, ExpResults>> &results,
-               size_t next_neuron_count)
+std::vector<size_t> check_run(
+    std::vector<SpikingBinam> &sp_binam_vec,
+    const std::vector<std::vector<float>> &sweep_values, cypress::Network &netw,
+    size_t j, std::vector<size_t> &counter, const std::string &backend,
+    std::vector<std::pair<ExpResults, ExpResults>> &results,
+    size_t &next_neuron_count, std::shared_timed_mutex &mutex)
 {
 	size_t max_neurons = neuron_numbers.find(backend)->second;
 	// Check wether the next run is too big or if we are in the last run of the
 	// experiment
-	if (netw.neuron_count() + next_neuron_count > max_neurons ||
-	    j == sweep_values.size() - 1) {
-
-		netw.run(cypress::PyNN(backend));
-
+	if ((netw.neuron_count() + next_neuron_count > max_neurons ||
+	     j >= sweep_values.size() - 1) &&
+	    sp_binam_vec.size() > 0) {
+		cypress::PowerManagementBackend pwbackend(std::make_shared<cypress::NetIO4>(),
+	                               cypress::Network::make_backend(backend));
+		netw.run(pwbackend);
 		// Generate results
+		std::shared_lock<std::shared_timed_mutex> lock(mutex);
 		for (size_t k = 0; k < sp_binam_vec.size(); k++) {
 			results[counter[k]] = sp_binam_vec[k].evaluate_res();
 		}
 
 		// Reset variables
-		// counter.erase(counter.begin(), counter.end());
+		auto done = counter;
 		counter = std::vector<size_t>();
 		sp_binam_vec.erase(sp_binam_vec.begin(), sp_binam_vec.end());
 		netw = cypress::Network();
-		std::cout << size_t(100 * float(j + 1) / sweep_values.size())
-		          << "% done" << std::endl;
+		return done;
 	}
+	return std::vector<size_t>();
 }
 
 /**
@@ -283,14 +304,14 @@ void check_run(std::vector<SpikingBinam> &sp_binam_vec,
  */
 void output(const std::vector<std::vector<float>> &sweep_values,
             const std::vector<std::pair<ExpResults, ExpResults>> &results,
-            std::ostream &ofs, std::vector<std::string> &names)
+            std::ostream &ofs, const std::vector<std::string> &names)
 {
 	for (size_t j = 0; j < results.size(); j++) {              // all values
 		for (size_t k = 0; k < sweep_values[j].size(); k++) {  // all parameter
 			if (names[k] == "data") {
 				ofs << size_t(sweep_values[j][k]) << ",";
 			}
-			else {
+			else if (names[k] != "data_generator") {
 				ofs << sweep_values[j][k] << ",";
 			}
 		}
@@ -326,7 +347,8 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 				m_repetitions.emplace_back(1);
 			}
 			if (i.value().find("optimal_sample_count") != i.value().end()) {
-				m_optimal_sample.emplace_back(i.value()["optimal_sample_count"]);
+				m_optimal_sample.emplace_back(
+				    i.value()["optimal_sample_count"]);
 			}
 			else {
 				m_optimal_sample.emplace_back(false);
@@ -391,34 +413,49 @@ void Experiment::run_standard(std::string file_name)
 	run_standard_neat_output(SpBinam, ofs, m_backend, true);
 }
 
-void Experiment::run_no_data(size_t exp,
-                             std::vector<std::vector<std::string>> &names,
-                             std::ostream &ofs)
+size_t Experiment::run_experiment(size_t exp,
+                                  std::vector<std::vector<std::string>> &names,
+                                  std::ostream &ofs)
 {
-	std::vector<std::pair<ExpResults, ExpResults>> results(
-	    m_sweep_values[exp].size(), std::pair<ExpResults, ExpResults>());
+	using Results = std::vector<std::pair<ExpResults, ExpResults>>;
+	Results results(m_sweep_values[exp].size(),
+	                std::pair<ExpResults, ExpResults>());
+	std::shared_timed_mutex res_mutex;
 	std::vector<std::vector<std::string>> params_names;
-	std::vector<size_t> params_indices;
+
+	// param_indices contains all indices of single parameters NOT changing the
+	// DataParameters-structure, data_indices all SWEEP-parameters changing the
+	// structure, other_indices are remaining sweep indices
+	std::vector<size_t> param_indices, data_indices, other_indices;
+	std::ofstream out;        // suppress output
+	int bits_out_index = -1;  // if bits_out are changed, this is the index
+
+	for (size_t k = 0; k < names.size(); k++) {
+		if (names[k][0] != "data" && names[k][0] != "data_generator") {
+			other_indices.emplace_back(k);
+		}
+		else {
+			data_indices.emplace_back(k);
+		}
+		if (names[k][1] == "n_bits_out") {
+			bits_out_index = k;
+		}
+	}
+
+	bool data_changed = data_indices.size();
 	DataParameters data_params =
-	    prepare_data_params(json, params_names, params_indices, m_params[exp]);
+	    prepare_data_params(json, params_names, param_indices, m_params[exp]);
+	SpikingBinam sp_binam(json, data_params, out, false, false);  // Standard binam
+
+	// Single parameter settings
+	for (size_t k : param_indices) {
+		set_parameter(sp_binam, params_names[k], m_params[exp][k].second);
+	}
 	if (m_optimal_sample[exp]) {
 		data_params.optimal_sample_count();
 	}
-	std::vector<size_t> counter;  // for the number of parallel networks
-	std::ofstream out;            // suppress output
-	SpikingBinam sp_binam(json, data_params, out, true, false);  // Standard binam
-	std::vector<SpikingBinam>
-	    sp_binam_vec;       // Emplace binam network for every parameter run
-	cypress::Network netw;  // shared network
-	size_t neuron_count =
-	    data_params.bits_out();  // number of neurons in next run
 
-	// Single parameter settings
-	for (size_t k : params_indices) {
-		set_parameter(sp_binam, params_names[k], m_params[exp][k].second);
-	}
-
-	// If there are no sweep values
+	// If there are no sweep values, run normal simulation
 	if (m_sweep_values[exp].size() == 0) {
 		if (m_repetitions[exp] == 1) {
 			run_standard_neat_output(sp_binam, ofs, m_backend, true);
@@ -435,79 +472,20 @@ void Experiment::run_no_data(size_t exp,
 			run_standard_neat_output(sp_binam, ofs, m_backend, false, false,
 			                         true);
 		}
+		return 0;
 	}
 
-	else {
-		ofs << "# ";
-		for (size_t j = 0; j < names.size(); j++) {
-			ofs << names[j][1] << ", ";
-		}
-		ofs << "info, info_th,info_n, fp, fp_th, fn, fn_th" << std::endl;
-
-		std::default_random_engine generator(1010);
-		std::vector<size_t> indices(m_sweep_values[exp].size());
-		for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {
-			indices[j] = j;
-		}
-		std::shuffle(indices.begin(), indices.end(), generator);
-		for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {  // all values
-			// std::uniform_int_distribution<int> distribution(0,
-			//                                                indices.size() -
-			//                                                1);
-			// size_t indices_index = distribution(generator);
-			size_t index = indices[j];
-			// indices.erase(indices.begin() + indices_index);
-
-			sp_binam_vec.push_back(sp_binam);
-			for (size_t k = 0; k < m_sweep_values[exp][index].size(); k++) {
-				set_parameter(sp_binam_vec[counter.size()], names[k],
-				              m_sweep_values[exp][index][k]);
-			}
-			sp_binam_vec[counter.size()].build(netw);
-			counter.emplace_back(index);
-			check_run(sp_binam_vec, m_sweep_values[exp], netw, j, counter,
-			          m_backend, results, neuron_count);
-		}
-		output(m_sweep_values[exp], results, ofs, names[0]);
-	}
-}
-
-void Experiment::run_data(size_t exp,
-                          std::vector<std::vector<std::string>> &names,
-                          std::ostream &ofs)
-{
-	std::vector<std::pair<ExpResults, ExpResults>> results(
-	    m_sweep_values[exp].size(), std::pair<ExpResults, ExpResults>());
-	std::vector<std::vector<std::string>> params_names;
-	std::vector<size_t> params_indices;
-	DataParameters data_params =
-	    prepare_data_params(json, params_names, params_indices, m_params[exp]);
-	std::vector<size_t> counter;  // for the number of parallel networks
-	std::ofstream out;            // suppress output
-	std::vector<SpikingBinam>
-	    sp_binam_vec;         // Emplace binam network for every parameter run
-	cypress::Network netw;    // shared network
-	int bits_out_index = -1;  // if bits_out are changed, this is the index
-
-	std::vector<size_t> data_indices, other_indices;
-	for (size_t k = 0; k < names.size(); k++) {
-		if (names[k][0] != "data") {
-			other_indices.emplace_back(k);
-		}
-		else {
-			data_indices.emplace_back(k);
-		}
-		if (names[k][1] == "n_bits_out") {
-			bits_out_index = k;
-		}
-	}
-
+	// Prepare output of sweep
 	ofs << "# ";
 	for (size_t j = 0; j < names.size(); j++) {
-		ofs << names[j][1] << ", ";
+		if (names[j][0] != "data_generator") {
+			ofs << names[j][1] << ", ";
+		}
 	}
 	ofs << "info, info_th,info_n, fp, fp_th, fn, fn_th" << std::endl;
 
+	// Shuffle sweep indices for stochastic independence in simulations on
+	// spikey
 	std::default_random_engine generator(1010);
 	std::vector<size_t> indices(m_sweep_values[exp].size());
 	for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {
@@ -515,40 +493,180 @@ void Experiment::run_data(size_t exp,
 	}
 	std::shuffle(indices.begin(), indices.end(), generator);
 
-	for (size_t j = 0; j < m_sweep_values[exp].size(); j++) {  // all values
-		size_t index = indices[j];
-		for (auto k : data_indices) {
-			data_params.set(names[k][1], m_sweep_values[exp][index][k]);
-		}
-		if (m_optimal_sample[exp]) {
-			data_params.optimal_sample_count();
-		}
-		sp_binam_vec.emplace_back(SpikingBinam(json, data_params, out));
-		for (size_t k : params_indices) {
-			set_parameter(sp_binam_vec.back(), params_names[k],
-			              m_params[exp][k].second);
-		}
-		for (auto k : other_indices) {
-			set_parameter(sp_binam_vec.back(), names[k],
-			              m_sweep_values[exp][index][k]);
-		}
+	// Global state variables, guarded by the idx_mutex
+	size_t current_job_idx = 0;
+	std::mutex idx_mutex;
+	std::vector<size_t> jobs_done;
+	std::mutex done_mutex;
 
-		// sp_binam_vec.emplace_back(sp_binam);
-		sp_binam_vec.back().build(netw);
-		counter.emplace_back(index);
-		size_t neuron_count = 0;
+	// Create n_threads working on the experiments (when using NEST)
+	const size_t n_threads =
+	    (m_backend != "nest" && m_backend != "ess")
+	        ? 1
+	        : std::max<size_t>(1, std::thread::hardware_concurrency());
+	std::vector<std::thread> threads;
+	if (!data_changed) {
+		sp_binam.recall();
+	}
 
-		if (j + 1 < m_sweep_values.size() && bits_out_index >= 0) {
-			neuron_count = m_sweep_values[exp][indices[j + 1]][bits_out_index];
-		}
-		else {
-			neuron_count = data_params.ones_out();
-		}
+	// Check if last simulation broke down, recover state if backup is there
+	std::fstream ss(experiment_names[exp] + "_" + m_backend + "_bak.dat",
+	                std::fstream::in);
+	bool resume = ss.good();
+	if (resume) {
+		ss.read((char *)indices.data(), indices.size() * sizeof(size_t));
+		ss.read((char *)results.data(),
+		        results.size() * sizeof(Results::value_type));
+		size_t length = 0;
+		ss.read((char *)&length, sizeof(length));
+		jobs_done.resize(length);
+		ss.read((char *)jobs_done.data(), length * sizeof(size_t));
+		ss.close();
+	}
 
-		check_run(sp_binam_vec, m_sweep_values[exp], netw, j, counter,
-		          m_backend, results, neuron_count);
+	for (size_t i = 0; i < n_threads; i++) {
+		threads.emplace_back([&, data_params]() mutable {
+			size_t index, this_idx;
+			std::vector<size_t> counter;  // for the number of parallel networks
+			// Emplace binam network for every parameter run
+			std::vector<SpikingBinam> sp_binam_vec;
+			size_t neuron_count = data_params.bits_out();
+			cypress::Network netw;  // shared network
+
+			while (true) {
+				if (cancel) {
+					exit(1);
+				}
+				
+				// Fetch index, if already done, finish with last simulation if
+				// network is not empty
+				{
+					std::lock_guard<std::mutex> lock(idx_mutex);
+					if (current_job_idx >= results.size()) {
+						check_run(sp_binam_vec, m_sweep_values[exp], netw,
+						          m_sweep_values[exp].size() - 1, counter,
+						          m_backend, results, neuron_count, res_mutex);
+						return;
+					}
+					this_idx = current_job_idx++;
+				}
+
+				// Shuffeld index
+				index = indices[this_idx];
+
+				// Check if job has already been done in backup
+				if (resume) {
+					std::lock_guard<std::mutex> lock(done_mutex);
+					if (std::find(jobs_done.begin(), jobs_done.end(), index) !=
+					    jobs_done.end()) {
+						continue;
+					}
+				}
+
+				// Special preparations if data changed
+				if (!data_changed) {
+					sp_binam_vec.emplace_back(sp_binam);
+				}
+				else {
+					// Preparation of data_params and generation params
+					DataGenerationParameters gen_params(json["data_generator"],
+					                                    false);
+					for (auto k : data_indices) {
+						if (names[k][0] == "data") {
+							data_params.set(names[k][1],
+							                m_sweep_values[exp][index][k]);
+						}
+						else if (names[k][0] == "data_generator") {
+							gen_params.set(names[k][1],
+							               m_sweep_values[exp][index][k]);
+						}
+					}
+					if (m_optimal_sample[exp]) {
+						data_params.optimal_sample_count();
+					}
+
+					sp_binam_vec.emplace_back(SpikingBinam(
+					    json, data_params, gen_params, out, true, false));
+
+					for (size_t k : param_indices) {
+						set_parameter(sp_binam_vec.back(), params_names[k],
+						              m_params[exp][k].second);
+					}
+
+					if (bits_out_index >= 0 && this_idx < indices.size() - 1) {
+						// only relevant when not on nest, as on nest we want no
+						// parallelised networks
+						neuron_count =
+						    m_sweep_values[exp][indices[this_idx +
+						                                1]][bits_out_index];
+						// TODO
+					}
+					else {
+						neuron_count = data_params.ones_out();
+					}
+				}
+				for (auto k : other_indices) {
+					set_parameter(sp_binam_vec.back(), names[k],
+					              m_sweep_values[exp][index][k]);
+				}
+
+				// Build last network and save index for writing results
+				sp_binam_vec.back().build(netw);
+				counter.emplace_back(index);
+				auto done = check_run(sp_binam_vec, m_sweep_values[exp], netw,
+				                      this_idx, counter, m_backend, results,
+				                      neuron_count, res_mutex);
+				// Emplace all indices with complete jobs
+				if (done.size() > 0) {
+					std::lock_guard<std::mutex> lock(done_mutex);
+					jobs_done.insert(jobs_done.end(), done.begin(), done.end());
+				}
+			}
+		});
+	}
+	// Wait for all threads to be done, periodically call the progress
+	// callback, do a backup
+	using namespace std::chrono;
+	system_clock::time_point t = system_clock::now();
+	while (true) {
+		{
+			std::lock_guard<std::mutex> lock(idx_mutex);
+			progress_callback(double(current_job_idx) / double(results.size()));
+			if (current_job_idx >= results.size()) {
+				std::cerr << std::endl;
+				break;
+			}
+			// Every 100 seconds backup the sweep state
+			if (duration_cast<seconds>(system_clock::now() - t).count() > 100 &&
+			    jobs_done.size() > 0) {
+				std::lock_guard<std::mutex> lock2(done_mutex);
+
+				std::unique_lock<std::shared_timed_mutex> lock3(res_mutex);
+				ss.open(experiment_names[exp] + "_" + m_backend + "_bak.dat",
+				        std::fstream::out);
+				ss.write((char *)indices.data(),
+				         indices.size() * sizeof(size_t));
+				ss.write((char *)results.data(),
+				         results.size() * sizeof(Results::value_type));
+				size_t length = jobs_done.size();
+				ss.write((char *)&length, sizeof(length));
+				ss.write((char *)jobs_done.data(), length * sizeof(size_t));
+				t = system_clock::now();
+				ss.close();
+			}
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	}
+	// Wait for all threads to finish
+	for (size_t i = 0; i < threads.size(); i++) {
+		threads[i].join();
 	}
 	output(m_sweep_values[exp], results, ofs, names[0]);
+
+	auto file = experiment_names[exp] + "_" + m_backend + "_bak.dat";
+	// char *tmp = &file[0];
+	remove(file.c_str());
+	return 0;
 }
 
 int Experiment::run(std::string file_name)
@@ -566,26 +684,20 @@ int Experiment::run(std::string file_name)
 			names.emplace_back(split(j, '.'));
 		}
 
-		// Check, wether DataParameters was changed. This is important
-		// for later computation
-		bool data_changed = false;
-		for (size_t k = 0; k < names.size(); k++) {
-			if (names[k][0] == "data") {
-				data_changed = true;
-			}
-		}
-
 		// Open file and write first line
 		std::ofstream ofs(experiment_names[i] + "_" + m_backend + ".csv",
 		                  std::ofstream::out);
 
-		if (!data_changed) {
-			run_no_data(i, names, ofs);
-		}
-		else {
-			run_data(i, names, ofs);
-		}
+		run_experiment(i, names, ofs);
 	}
 	return 0;
+}
+
+void int_handler(int)
+{
+	if (cancel) {
+		exit(1);
+	}
+	cancel = true;
 }
 }

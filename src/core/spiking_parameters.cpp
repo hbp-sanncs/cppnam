@@ -31,7 +31,7 @@ namespace nam {
 namespace {
 
 std::vector<float> read_neuron_parameters_from_json(
-    const cypress::NeuronType &type, const cypress::Json &obj)
+    const cypress::NeuronType &type, const cypress::Json &obj, bool warn = true)
 {
 	std::map<std::string, float> input = json_to_map<float>(obj);
 	// special case if g_leak was given instead of tau_m,
@@ -78,15 +78,16 @@ std::vector<float> read_neuron_parameters_from_json(
 	}
 
 	return read_check<float>(input, type.parameter_names,
-	                         type.parameter_defaults);
+	                         type.parameter_defaults, warn);
 }
 }
 
 NeuronParameters::NeuronParameters(const cypress::NeuronType &type,
-                                   const cypress::Json &json, std::ostream &out)
+                                   const cypress::Json &json, std::ostream &out,
+                                   bool warn)
     : m_parameter_names(type.parameter_names)
 {
-	m_params = read_neuron_parameters_from_json(type, json["params"]);
+	m_params = read_neuron_parameters_from_json(type, json["params"], warn);
 	out << "# Neuron Parameters: " << std::endl;
 	for (size_t i = 0; i < m_params.size(); i++) {
 		out << type.parameter_names[i] << ": " << m_params[i] << std::endl;
@@ -110,11 +111,11 @@ const std::vector<float> NetworkParameters::defaults{1, 1, 100, 1, 0,  0,
                                                      0, 0, 0.1, 1, 100};
 
 NetworkParameters::NetworkParameters(const cypress::Json &obj,
-                                     std::ostream &out)
+                                     std::ostream &out, bool warn)
 {
 	out << "# NetworkParameters: " << std::endl;
 	std::map<std::string, float> input = json_to_map<float>(obj);
-	arr = read_check<float>(input, names, defaults);
+	arr = read_check<float>(input, names, defaults, warn);
 
 	for (size_t i = 0; i < names.size(); i++) {
 		out << names[i] << ": " << arr[i] << std::endl;

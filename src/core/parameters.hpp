@@ -40,7 +40,7 @@ public:
 	      m_random(random),
 	      m_balanced(balanced),
 	      m_unique(unique){};
-	DataGenerationParameters(const cypress::Json &obj);
+	DataGenerationParameters(const cypress::Json &obj, bool warn = true);
 	DataGenerationParameters()
 	    : m_seed(0), m_random(true), m_balanced(true), m_unique(true){};
 
@@ -61,6 +61,26 @@ public:
 		    << "Random: " << m_random << std::endl
 		    << "Balanced: " << m_balanced << std::endl
 		    << "Unique: " << m_unique << std::endl;
+	}
+
+	DataGenerationParameters &set(const std::string name, const size_t value)
+	{
+		if (name == "seed") {
+			m_seed = value;
+		}
+		else if (name == "random") {
+			m_random = value;
+		}
+		else if (name == "balanced") {
+			m_balanced = value;
+		}
+		else if (name == "unique") {
+			m_unique = value;
+		}
+		else {
+			throw std::invalid_argument("Unknown parameter \"" + name + "\"");
+		}
+		return *this;
 	}
 };
 
@@ -83,7 +103,7 @@ public:
 	{
 	}
 
-	DataParameters(const cypress::Json &obj);
+	DataParameters(const cypress::Json &obj, bool warn = true);
 
 	static DataParameters optimal(const size_t bits, const size_t samples = 0);
 
@@ -175,7 +195,7 @@ public:
 		return *this;
 	}
 
-	void print(std::ostream &out = std::cout)
+	void print(std::ostream &out = std::cout) const
 	{
 		out << "# Data Parameters: " << std::endl
 		    << "Input Bits: " << m_bits_in << std::endl

@@ -29,57 +29,67 @@
 #include <random>
 
 #include "binary_matrix.hpp"
-#include "ncr.hpp"
-
-#include <cypress/util/matrix.hpp>
 
 namespace nam {
+namespace {
+/**
+ * Class used internally in the data generator to represent a node in the trie
+ * which represents already generated permutations.
+ */
 class PermutationTrieNode {
 private:
+	static constexpr uint32_t MAX_PERMS = std::numeric_limits<uint32_t>::max();
+
 	int m_idx;
 	int m_remaining;
+	int m_min;
+	int m_max;
 	uint64_t m_total;
-	Vector<uint32_t> m_max_permutations;
-	Vector<uint32_t> m_permutations;
+	std::vector<uint32_t> m_permutations;
 	std::map<int, PermutationTrieNode> m_children;
-	static constexpr uint32_t MAX_PERMS = std::numeric_limits<uint32_t>::max();
+
+	/**
+	 * Reinitializes the permutation list.
+	 */
+	void initialize_permutations()
+	{
+		// Initialize the m_permutations list
+		m_permutations.clear();
+		m_min = 0;
+		m_max = m_idx;
+		for (int i = 0; i < m_max; i++) {
+			if (i < m_remaining - 1 || m_remaining == 0) {
+				++m_min;
+			}
+			else if (i == m_remaining - 1) {
+				m_permutations.push_back(1);
+			}
+			else {
+				uint64_t n = (uint64_t(m_permutations.back()) * uint64_t(i)) /
+				             uint64_t(i - m_remaining + 1);
+				if (n >= MAX_PERMS) {
+					m_max = i;
+					break;
+				}
+				m_permutations.push_back(n);
+			}
+		}
+		m_total =
+		    std::accumulate<typename std::vector<uint32_t>::iterator, uint64_t>(
+		        m_permutations.begin(), m_permutations.end(), uint64_t(0));
+	}
 
 public:
 	PermutationTrieNode(int idx, int remaining)
 	    : m_idx(idx), m_remaining(remaining)
 	{
-		// Binary search for the point at which ncr(n, rem - 1) = MAX_PERMS
-		int min = 0;
-		int max = m_idx - 1;
-		while (max - min > 10) {  // Accuracy is not imporant here
-			uint32_t n = (min + max) / 2;
-			uint32_t res = ncr_clamped32(n, remaining - 1);
-			if (res < MAX_PERMS) {
-				min = n;
-			}
-			else {
-				max = n;
-			}
-		}
-
-		// Reserve as many entries as estimated above and fill them
-		m_max_permutations = Vector<uint32_t>(max + 1);
-		for (int i = 0; i <= max; i++) {
-			if (i > 0 && m_max_permutations[i - 1] == MAX_PERMS) {
-				m_max_permutations(i) = MAX_PERMS;
-			}
-			else {
-				m_max_permutations(i) = ncr_clamped32(i, remaining - 1);
-			}
-		}
-		m_permutations = m_max_permutations;
-		m_total = std::accumulate<uint32_t *, uint64_t>(
-		    m_max_permutations.begin(), m_max_permutations.end(), uint64_t(0));
+		initialize_permutations();
 	}
 
 	int idx() const { return m_idx; }
 	int remaining() const { return m_remaining; }
-	int total() const { return m_total; }
+	uint64_t total() const { return m_total; }
+	int max() const { return m_max; }
 	PermutationTrieNode &fetch(int idx)
 	{
 		auto it = m_children.find(idx);
@@ -93,40 +103,37 @@ public:
 
 	bool has_permutation(int idx)
 	{
-		return idx >= int(m_permutations.size()) ? true
-		                                         : m_permutations[idx] > 0;
+		return idx < m_min
+		           ? false
+		           : (idx >= m_max ? true : m_permutations[idx - m_min] > 0);
 	}
 
 	uint32_t permutation_count(int idx)
 	{
-		if (idx >= int(m_permutations.size())) {
-			return MAX_PERMS;
-		}
-		return m_permutations[idx];
+		return idx < m_min ? 0 : (idx >= m_max ? MAX_PERMS
+		                                       : m_permutations[idx - m_min]);
 	}
 
 	bool decrement_permutation(int idx)
 	{
-		if (idx >= int(m_permutations.size())) {
-			return true;
-		}
-
-		if (m_permutations[idx] == MAX_PERMS) {
+		// Do not decrement the number of permutations if it equals MAX_PERMS
+		if (idx >= m_max) {
 			return true;
 		}
 
 		if (m_total > 1) {
-			m_permutations(idx)--;
-			m_total--;
+			if (idx >= m_min) {
+				m_permutations[idx - m_min]--;
+				m_total--;
+			}
 			return true;
 		}
 
-		m_permutations = m_max_permutations;
-		m_total = std::accumulate<uint32_t *, uint64_t>(
-		    m_max_permutations.begin(), m_max_permutations.end(), 0);
+		initialize_permutations();
 		return false;
 	}
 };
+}
 
 /**
  * The DataGenerator class allows to generate random data vectors for storage in
@@ -152,9 +159,9 @@ public:
 	 * @param balanced if true, bit balancing is performed.
 	 * @param unique if true, the generated bit vectors are unique.
 	 * @param seed is the random seed used for the data generation.
-	 */ 
+	 */
 
-	DataGenerator(bool random =true , bool balance =true, bool unique=true)
+	DataGenerator(bool random = true, bool balance = true, bool unique = true)
 	    : m_seed(std::random_device()()),
 	      m_random(random),
 	      m_balance(balance),
@@ -162,7 +169,8 @@ public:
 	{
 	}
 
-	DataGenerator(size_t seed, bool random =true, bool balance=true, bool unique=true)
+	DataGenerator(size_t seed, bool random = true, bool balance = true,
+	              bool unique = true)
 	    : m_seed(seed), m_random(random), m_balance(balance), m_unique(unique)
 	{
 	}
@@ -229,6 +237,20 @@ public:
 	                                  bool random, bool balance, bool unique,
 	                                  const ProgressCallback &progress)
 	{
+		auto approximate_weight = [](uint32_t k, uint32_t r_ones,
+		                             uint32_t r_bits) -> double {
+			//                                (k | r_ones - 1)
+			// exact solution for -------------------------------------
+			//                     sum((j | r_ones - 1), j=r_ones-1...r_bits-1)
+			const uint32_t num_f0 = k - r_ones + 2;
+			const uint32_t den_f0 = r_bits - r_ones + 1;
+			double res = double(r_ones) / double(r_bits);
+			for (int i = 0; i <= int(r_ones) - 2; i++) {
+				res *= double(num_f0 + i) / double(den_f0 + i);
+			}
+			return res;
+		};
+
 		BinaryMatrix<T> res(n_samples, n_bits);  // Result matrix
 		Vector<uint32_t> usage(
 		    n_bits,
@@ -259,10 +281,28 @@ public:
 
 				// Try to balance the bit usage
 				if (balance) {
+					// If the number of bits that have minimum usage is smaller
+					// than
+					// the number of remaining bits, allow a one-off error
+					// (slack)
+					// during balancing to avoid clustering of ones
+					uint8_t slack = 0;
+					{
+						uint32_t idcs_with_min_usage = 0;
+						for (size_t k = 0; k < idx; k++) {
+							idcs_with_min_usage +=
+							    selected[k] && (usage[k] - min_usage == 0) ? 1
+							                                               : 0;
+						}
+						if (idcs_with_min_usage < size_t(node->remaining())) {
+							slack = 1;
+						}
+					}
+
 					// Check which indices are minimally used, only select those
 					// which are
 					for (size_t k = 0; k < idx; k++) {
-						balancable[k] = (usage[k] == min_usage) ? 1 : 0;
+						balancable[k] = (usage[k] - min_usage <= slack) ? 1 : 0;
 						selected[k] = selected[k] && balancable[k];
 					}
 
@@ -272,7 +312,7 @@ public:
 					uint32_t cum_balancable = 0;
 					for (size_t k = 0; k < idx; k++) {
 						cum_balancable = cum_balancable + balancable[k];
-						allowed(k) =
+						allowed[k] =
 						    std::min<uint32_t>(n_ones - j, cum_balancable);
 						max_allowed = std::max(max_allowed, allowed[k]);
 					}
@@ -297,28 +337,60 @@ public:
 					// Weight the entries with the possible permutations the
 					// corresponding path still can generate. Calculate the
 					// probabilities (weights) with which the indices are
-					// selected
-					size_t total = 0;
-					for (size_t k = 0; k < idx; k++) {
+					// selected.
+					double total = 0.0;
+					for (size_t k = 0; k < size_t(node->max()); k++) {
 						weights[k] =
 						    selected[k] ? node->permutation_count(k) : 0;
 						total += weights[k];
 					}
 
+					// Approximate the remaining weights
+					double large_weight_total = 0.0;
+					double large_weight_total_renorm = 0.0;
+					for (size_t k = node->max(); k < idx; k++) {
+						const float w =
+						    approximate_weight(k, node->remaining(), idx);
+						weights[k] = selected[k] ? w : 0;
+						large_weight_total += weights[k];
+						large_weight_total_renorm += w;
+					}
+
+					if (large_weight_total > 0.0) {
+						double inv_total =
+						    large_weight_total_renorm / large_weight_total;
+						for (size_t k = node->max(); k < idx; k++) {
+							weights[k] *= inv_total;
+						}
+					}
+
 					// Normalise the weights
-					double inv_total = 1.0/double(total);
-					for (size_t k = 0; k < idx; k++) {
-						weights[k] = weights[k] * inv_total;
+					if (total > 0.0) {
+						double inv_total =
+						    (1.0 - large_weight_total_renorm) / total;
+						for (size_t k = 0; k < size_t(node->max()); k++) {
+							weights[k] = std::max(0.0, weights[k] * inv_total);
+						}
+					}
+					else if (large_weight_total > 0.0) {
+						double inv_total = 1.0 / large_weight_total;
+						for (size_t k = node->max(); k < idx; k++) {
+							weights[k] *= inv_total;
+						}
 					}
 
 					// Select the indices
 					const double rnd =
-					    std::uniform_real_distribution<double>(0, 1)(re);
-					double w_sum = 0;
+					    std::uniform_real_distribution<double>(0.0, 1.0)(re);
+					double w_sum = 0.0;
 					for (size_t k = 0; k < idx; k++) {
 						w_sum += weights[k];
+						if (selected[k]) {
+							chosen_idx =
+							    k;  // Ensures sensible selection if sum
+							        // weights[k] < 1.0
+						}
 						if (w_sum >= rnd) {
-							chosen_idx = k;
 							break;
 						}
 					}

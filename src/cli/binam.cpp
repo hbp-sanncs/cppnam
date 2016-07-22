@@ -69,10 +69,12 @@ void information_graph(size_t bits_in, size_t bits_out, size_t ones_in,
 
 int main(int argc, char *argv[])
 {
-	if (argc != 4 && argc != 6) {
-		std::cerr << "Usage: ./data_generator <BITS> <ONES> <SAMPLES> "
-		          << "or <BITS_IN> <BITS_OUT> <ONES_IN> <ONES_OUT> <MAX_SAMPLES>"
-		          << std::endl;
+	if (argc != 4 && argc != 6 && argc != 7) {
+		std::cerr
+		    << "Usage: ./data_generator <BITS> <ONES> <SAMPLES> "
+		    << "or <BITS_IN> <BITS_OUT> <ONES_IN> <ONES_OUT> <MAX_SAMPLES>"
+		    << "or <BITS_IN> <BITS_OUT> <ONES_IN> <ONES_OUT> <SAMPLES> <bla>"
+		    << std::endl;
 		return 1;
 	}
 	if (argc == 6) {
@@ -81,13 +83,25 @@ int main(int argc, char *argv[])
 		                  std::stoi(argv[5]));
 		return 0;
 	}
+
 	int n_bits = std::stoi(argv[1]);
+	int n_bits_out = std::stoi(argv[1]);
 	int n_ones = std::stoi(argv[2]);
+	int n_ones_out = std::stoi(argv[2]);
 	int n_samples = std::stoi(argv[3]);
-	std::cout << n_bits << " bits, " << n_ones << " ones and " << n_samples << " samples" <<std::endl;
-	DataParameters params(n_bits, n_bits, n_ones, n_ones, n_samples);
+	if (argc == 7) {
+		n_bits = std::stoi(argv[1]);
+		n_bits_out = std::stoi(argv[2]);
+		n_ones = std::stoi(argv[3]);
+		n_ones_out = std::stoi(argv[4]);
+		n_samples = std::stoi(argv[5]);
+	}
+	std::cout << n_bits << " bits, " << n_ones << " ones and " << n_samples
+	          << " samples" << std::endl;
+	DataParameters params(n_bits, n_bits_out, n_ones, n_ones_out, n_samples);
 	BiNAM_Container<uint64_t> binam(params);
 	binam.set_up().recall().analysis();
+	binam.trained_matrix().print();
 	// binam.print();
 	return 0;
 }

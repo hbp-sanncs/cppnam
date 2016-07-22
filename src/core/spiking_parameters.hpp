@@ -50,7 +50,7 @@ public:
 	 * Construct from Json, give out parameters to @param out
 	 */
 	NeuronParameters(const cypress::NeuronType &type, const cypress::Json &json,
-	                 std::ostream &out = std::cout);
+	                 std::ostream &out = std::cout, bool warn = true);
 
 	NeuronParameters(){};
 
@@ -115,7 +115,8 @@ public:
 	/**
 	 * Construct from Json, give out parameters to @param out
 	 */
-	NetworkParameters(const cypress::Json &json, std::ostream &out = std::cout);
+	NetworkParameters(const cypress::Json &json, std::ostream &out = std::cout,
+	                  bool warn = true);
 
 	/**
 	 * Empty constructor
@@ -135,7 +136,7 @@ public:
 		}
 		throw std::invalid_argument("Unknown neuron parameter" + name);
 	}
-	
+
 	void print(std::ostream &out = std::cout)
 	{
 		out << "# Network Parameters: " << std::endl;

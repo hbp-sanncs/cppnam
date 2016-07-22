@@ -132,6 +132,15 @@ target_link_libraries(exp
 	cppnam_util
 )
 
+add_executable(random_output
+	src/cli/random_output
+)
+
+target_link_libraries(random_output
+	cppnam_core
+	cppnam_util
+)
+
 #
 # Unit tests -- only enable if gtest is present
 #
