@@ -326,15 +326,12 @@ public:
 	ExpResults analysis(
 	    const BinaryMatrix<T> &recall_matrix = BinaryMatrix<T>())
 	{
-		BinaryMatrix<T> recall_mat;
+		auto recall_mat= &recall_matrix;
 		if (recall_matrix.size() == 0) {
-			recall_mat = m_recall;
-		}
-		else {
-			recall_mat = recall_matrix;
+			recall_mat = &m_recall;
 		}
 		std::vector<SampleError> se =
-		    m_BiNAM.false_bits_mat(m_output, recall_mat);
+		    m_BiNAM.false_bits_mat(m_output, *recall_mat);
 		double info = entropy_hetero(m_params, se);
 		SampleError sum = sum_false_bits(se);
 		return ExpResults(info, sum);
