@@ -74,7 +74,7 @@ add_library(cppnam_core
 )
 
 target_link_libraries(cppnam_core
-	${CYPRESS_LIBRARIES}
+	cypress
 	cppnam_util
 	-pthread
 )
@@ -89,7 +89,7 @@ add_library(cppnam_util
 )
 
 target_link_libraries(cppnam_util
-	${CYPRESS_LIBRARIES}
+	cypress
 	-pthread
 )
 
