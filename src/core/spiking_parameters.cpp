@@ -59,7 +59,7 @@ std::vector<float> read_neuron_parameters_from_json(
 	// special case if tau_m was given instead of g_leak on spikey
 	iter = input.find("tau_m");
 	if (iter != input.end() &&
-	    &type != &cypress::IfFacetsHardware1::inst()) {
+	    &type == &cypress::IfFacetsHardware1::inst()) {
 		auto iter2 = input.find("cm");
 		float cm = 0;
 		if (iter2 == input.end()) {
