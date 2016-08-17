@@ -123,14 +123,6 @@ target_link_libraries(sp_binam
 	cppnam_util
 )
 
-add_executable(exp
-	src/cli/exp
-)
-
-target_link_libraries(exp
-	cppnam_core
-	cppnam_util
-)
 
 add_executable(random_output
 	src/cli/random_output
