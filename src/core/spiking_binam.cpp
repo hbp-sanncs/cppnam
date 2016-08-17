@@ -33,7 +33,7 @@ namespace {
 /**
  * Helper to return an instance of a certain neuron type
  */
-NeuronType detect_type(std::string neuron_type_str)
+const NeuronType& detect_type(std::string neuron_type_str)
 {
 	if (neuron_type_str == "IF_cond_exp") {
 		return IfCondExp::inst();
@@ -77,7 +77,7 @@ SpikingBinam::SpikingBinam(Json &json, std::ostream &out, bool recall)
 	m_BiNAM_Container = std::make_shared<BiNAM_Container<uint64_t>>(
 	    m_dataParams, DataGenerationParameters(json["data_generator"]));
 	m_neuronType = json["network"]["neuron_type"];
-	auto neuronType = detect_type(m_neuronType);
+	const auto &neuronType = detect_type(m_neuronType);
 
 	m_neuronParams = NeuronParameters(neuronType, json["network"], out);
 	m_networkParams = NetworkParameters(json["network"], out);
@@ -95,7 +95,7 @@ SpikingBinam::SpikingBinam(Json &json, DataParameters params, std::ostream &out,
 	m_BiNAM_Container = std::make_shared<BiNAM_Container<uint64_t>>(
 	    m_dataParams, DataGenerationParameters(json["data_generator"]));
 	m_neuronType = json["network"]["neuron_type"];
-	auto neuronType = detect_type(m_neuronType);
+	const auto &neuronType = detect_type(m_neuronType);
 
 	m_neuronParams = NeuronParameters(neuronType, json["network"], out);
 	m_networkParams = NetworkParameters(json["network"], out);
@@ -118,7 +118,7 @@ SpikingBinam::SpikingBinam(Json &json, DataParameters params,
 	m_BiNAM_Container = std::make_shared<BiNAM_Container<uint64_t>>(
 	    m_dataParams,gen_params);
 	m_neuronType = json["network"]["neuron_type"];
-	auto neuronType = detect_type(m_neuronType);
+	const auto &neuronType = detect_type(m_neuronType);
 
 	m_neuronParams = NeuronParameters(neuronType, json["network"], out, warn);
 	m_networkParams = NetworkParameters(json["network"], out, warn);

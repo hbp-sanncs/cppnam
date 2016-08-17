@@ -67,7 +67,7 @@ TEST(SpikingParameters, NeuronParameters)
 {
 	std::stringstream ss(test_json);
 	cypress::Json json(ss);
-	cypress::IfCondExp neurontype = cypress::IfCondExp::inst();
+	const cypress::IfCondExp &neurontype = cypress::IfCondExp::inst();
 	std::ofstream out;
 	auto params = NeuronParameters(neurontype, json["network"], out);
 	std::vector<float> parameter = params.parameter();
