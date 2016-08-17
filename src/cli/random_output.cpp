@@ -24,10 +24,14 @@
 #include "core/parameters.hpp"
 
 using namespace nam;
+
+/**
+ * This program calculates the information stored in a BiNAM with random output
+ */
 int main(int argc, char *argv[])
 {
 	if (argc != 6) {
-		std::cerr << "Usage: ./data_generator <BITS_IN> <BITS_OUT> <ONES_IN> "
+		std::cerr << "Usage: ./random_output <BITS_IN> <BITS_OUT> <ONES_IN> "
 		             "<ONES_OUT> <SAMPLES>"
 		          << std::endl;
 		return 1;
@@ -58,7 +62,7 @@ int main(int argc, char *argv[])
 			std::cout << i << ", " << info_res << std::endl;
 		}
 	}
-	deviation = std::sqrt((deviation-average*average/500)/499);
+	deviation = std::sqrt((deviation - average * average / 500) / 499);
 	average = average / 500;
 	std::cout << "Average : " << average << std::endl;
 	std::cout << "Standard deviation : " << deviation << std::endl;
