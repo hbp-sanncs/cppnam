@@ -68,6 +68,7 @@ add_library(cppnam_core
 	src/core/entropy
 	src/core/experiment
 	src/core/parameters
+	src/core/rec_binam
 	src/core/spike_trains
 	src/core/spiking_binam
 	src/core/spiking_parameters
@@ -132,6 +133,16 @@ target_link_libraries(random_output
 	cppnam_core
 	cppnam_util
 )
+
+add_executable(recurrent_BiNAM
+	src/cli/recurrent_BiNAM.cpp
+)
+target_link_libraries(recurrent_BiNAM
+	cppnam_core
+	cppnam_util
+)
+
+
 
 #
 # Unit tests -- only enable if gtest is present
