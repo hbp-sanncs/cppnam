@@ -172,7 +172,7 @@ public:
 	 * @param out is the original sample
 	 * @param recall the one with errors (the recalled sample)
 	 */
-	SampleError false_bits(BinaryVector<T> out, BinaryVector<T> recall)
+	static SampleError false_bits(BinaryVector<T> out, BinaryVector<T> recall)
 	{
 		SampleError error;
 		for (size_t i = 0; i < Base::numberOfCells(out.size()); i++) {
@@ -188,7 +188,7 @@ public:
 	 * @param out is the original sample matrix
 	 * @param recall the one with errors (the recalled one)
 	 */
-	std::vector<SampleError> false_bits_mat(BinaryMatrix<T> out,
+	static std::vector<SampleError> false_bits_mat(BinaryMatrix<T> out,
 	                                        BinaryMatrix<T> res)
 	{
 		if (res.rows() > out.rows()) {
@@ -334,13 +334,8 @@ public:
 	/**
 	 * Returns the number of all false positives and negatives of the recall.
 	 */
-	SampleError sum_false_bits(std::vector<SampleError> vec_err = {
-	                               SampleError(-1, -1)})
+	static SampleError sum_false_bits(std::vector<SampleError> vec_err )
 	{
-		if (vec_err[0].fp < 0) {
-			vec_err = m_SampleError;
-		}
-
 		SampleError sum(0, 0);
 		for (size_t i = 0; i < vec_err.size(); i++) {
 			sum.fp += vec_err[i].fp;
@@ -359,7 +354,7 @@ public:
 	};
 
 	/**
-	 * Calculate the false psotives and negatives as well as the stored
+	 * Calculate the false positives and negatives as well as the stored
 	 * information.
 	 * @param recall_matrix: recalled matrix from experiment. If nothing is
 	 * given, it takes the member recall matrix.

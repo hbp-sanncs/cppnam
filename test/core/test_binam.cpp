@@ -266,7 +266,7 @@ TEST(BiNAM, BiNAM2)
 	cont.output_matrix(compare);
 	cont.recall();
 	std::vector<SampleError> false_bits = cont.false_bits();
-	SampleError sum_false_bits = cont.sum_false_bits();
+	SampleError sum_false_bits = cont.sum_false_bits(false_bits);
 	EXPECT_EQ(1, false_bits[0].fp);
 	EXPECT_EQ(0, false_bits[0].fn);
 	EXPECT_EQ(0, false_bits[1].fp);
@@ -429,7 +429,7 @@ TEST(BiNAM, BiNAM3)
 	cont.output_matrix(compare);
 	cont.recall();
 	std::vector<SampleError> false_bits = cont.false_bits();
-	SampleError sum_false_bits = cont.sum_false_bits();
+	SampleError sum_false_bits = cont.sum_false_bits(false_bits);
 	EXPECT_EQ(1, false_bits[0].fp);
 	EXPECT_EQ(0, false_bits[0].fn);
 	EXPECT_EQ(0, false_bits[1].fp);
