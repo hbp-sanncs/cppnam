@@ -188,8 +188,9 @@ void run_standard_neat_output(SpikingBinam &SpBinam, std::ostream &ofs,
 	std::cout << "simulation ... " << std::endl;
 	std::thread spiking_network([&netw, backend, &t3, &t4]() mutable {
 		t3 = system_clock::now();
-		cypress::PowerManagementBackend pwbackend(std::make_shared<cypress::NetIO4>(),
-	                               cypress::Network::make_backend(backend));
+		cypress::PowerManagementBackend pwbackend(
+		    std::make_shared<cypress::NetIO4>(),
+		    cypress::Network::make_backend(backend));
 		netw.run(pwbackend);
 		t4 = system_clock::now();
 	});
@@ -280,8 +281,9 @@ std::vector<size_t> check_run(
 	if ((netw.neuron_count() + next_neuron_count > max_neurons ||
 	     j >= sweep_values.size() - 1) &&
 	    sp_binam_vec.size() > 0) {
-		cypress::PowerManagementBackend pwbackend(std::make_shared<cypress::NetIO4>(),
-	                               cypress::Network::make_backend(backend));
+		cypress::PowerManagementBackend pwbackend(
+		    std::make_shared<cypress::NetIO4>(),
+		    cypress::Network::make_backend(backend));
 		netw.run(pwbackend);
 		// Generate results
 		std::shared_lock<std::shared_timed_mutex> lock(mutex);
@@ -340,60 +342,8 @@ Experiment::Experiment(cypress::Json &json, std::string backend)
 			std::vector<std::string> sweep_params;
 			std::vector<std::vector<float>> sweep_values;
 			std::string name = i.key();
-			if (i.value().find("repeat") != i.value().end()) {
-				m_repetitions.emplace_back(i.value()["repeat"]);
-			}
-			else {
-				m_repetitions.emplace_back(1);
-			}
-			if (i.value().find("optimal_sample_count") != i.value().end()) {
-				m_optimal_sample.emplace_back(
-				    i.value()["optimal_sample_count"]);
-			}
-			else {
-				m_optimal_sample.emplace_back(false);
-			}
-
-			for (auto j = json["experiments"][name].begin();
-			     j != json["experiments"][name].end(); j++) {
-				const cypress::Json val = j.value();
-
-				// See if val is a number (no sweep), an array or an object
-				if (val.is_number()) {
-					if (j.key() == "repeat") {
-						continue;
-					}
-					else {
-						params.emplace_back(
-						    std::pair<std::string, float>(j.key(), val));
-					}
-				}
-				else if (val.is_array()) {
-					if (val.size() == 1) {
-						params.emplace_back(
-						    std::pair<std::string, float>(j.key(), val));
-					}
-					else {
-						add_sweep_parameter(j.key(), val, sweep_params,
-						                    sweep_values, m_repetitions.back());
-					}
-				}
-				else if (val.is_object()) {
-					auto map = json_to_map<float>(val);
-					auto range = read_check<float>(map, names,
-					                               std::vector<float>{0, 0, 0});
-					std::vector<float> values;
-					double step = (range[1] - range[0]) / (range[2] - 1.0);
-					for (size_t k = 0; k < range[2]; k++) {
-						values.emplace_back<float>(range[0] + float(k) * step);
-					}
-					add_sweep_parameter(j.key(), values, sweep_params,
-					                    sweep_values, m_repetitions.back());
-				}
-				else {
-					throw std::invalid_argument("Unknown Json value!");
-				}
-			}
+			read_in_exp_descr(i.value(), params, sweep_params, sweep_values,
+			                  m_repetitions, m_optimal_sample);
 			m_params.emplace_back(params);
 			m_sweep_params.emplace_back(sweep_params);
 			m_sweep_values.emplace_back(sweep_values);
@@ -445,7 +395,8 @@ size_t Experiment::run_experiment(size_t exp,
 	bool data_changed = data_indices.size();
 	DataParameters data_params =
 	    prepare_data_params(json, params_names, param_indices, m_params[exp]);
-	SpikingBinam sp_binam(json, data_params, out, false, false);  // Standard binam
+	SpikingBinam sp_binam(json, data_params, out, false,
+	                      false);  // Standard binam
 
 	// Single parameter settings
 	for (size_t k : param_indices) {
@@ -537,7 +488,7 @@ size_t Experiment::run_experiment(size_t exp,
 				if (cancel) {
 					exit(1);
 				}
-				
+
 				// Fetch index, if already done, finish with last simulation if
 				// network is not empty
 				{
@@ -699,5 +650,63 @@ void int_handler(int)
 		exit(1);
 	}
 	cancel = true;
+}
+
+void Experiment::read_in_exp_descr(
+    cypress::Json &json, std::vector<std::pair<std::string, float>> &params,
+    std::vector<std::string> &sweep_params,
+    std::vector<std::vector<float>> &sweep_values,
+    std::vector<size_t> &repetitions, std::vector<bool> &optimal_sample_count)
+{
+	const std::vector<std::string> names = {"min", "max", "count"};
+
+	repetitions.emplace_back(1);
+	optimal_sample_count.emplace_back(false);
+	if (json.find("repeat") != json.end()) {
+		repetitions.back() = json["repeat"];
+	}
+	if (json.find("optimal_sample_count") != json.end()) {
+		optimal_sample_count.back() = bool(json["optimal_sample_count"]);
+	}
+
+	for (auto j = json.begin(); j != json.end(); j++) {
+		const cypress::Json val = j.value();
+
+		// See if val is a number (no sweep), an array or an object
+		if (val.is_number()) {
+			if (j.key() == "repeat" || j.key() == "optimal_sample_count") {
+				continue;
+			}
+			else {
+				params.emplace_back(
+				    std::pair<std::string, float>(j.key(), val));
+			}
+		}
+		else if (val.is_array()) {
+			if (val.size() == 1) {
+				params.emplace_back(
+				    std::pair<std::string, float>(j.key(), val));
+			}
+			else {
+				add_sweep_parameter(j.key(), val, sweep_params, sweep_values,
+				                    repetitions.back());
+			}
+		}
+		else if (val.is_object()) {
+			auto map = json_to_map<float>(val);
+			auto range =
+			    read_check<float>(map, names, std::vector<float>{0, 0, 0});
+			std::vector<float> values;
+			double step = (range[1] - range[0]) / (range[2] - 1.0);
+			for (size_t k = 0; k < range[2]; k++) {
+				values.emplace_back<float>(range[0] + float(k) * step);
+			}
+			add_sweep_parameter(j.key(), values, sweep_params, sweep_values,
+			                    repetitions.back());
+		}
+		else {
+			throw std::invalid_argument("Unknown Json value!");
+		}
+	}
 }
 }

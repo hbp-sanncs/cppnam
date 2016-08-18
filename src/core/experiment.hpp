@@ -94,6 +94,22 @@ private:
 public:
 	Experiment(cypress::Json &json, std::string backend);
 	int run(std::string file_name);
+
+	/**
+	 * Tool for reading an experiment description from a Json object.
+	 * @param Params will contain name-value pairs of single parameters to set
+	 * @param sweep_params all names of sweep parameters,
+	 * @param sweep_values all related values
+	 * @param repetitions number of repetitions of each experiment
+	 * @param optimal_sample_count vector of flags if sample count should be
+	 * optimised
+	 */
+	static void read_in_exp_descr(
+	    cypress::Json &json, std::vector<std::pair<std::string, float>> &params,
+	    std::vector<std::string> &sweep_params,
+	    std::vector<std::vector<float>> &sweep_values,
+	    std::vector<size_t> &repetitions,
+	    std::vector<bool> &optimal_sample_count);
 };
 
 /**
@@ -103,6 +119,5 @@ public:
  */
 static std::atomic_bool cancel(false);
 void int_handler(int);
-
 }
 #endif /* CPPNAM_UTIL_EXPERIMENT_HPP */
