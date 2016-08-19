@@ -68,7 +68,6 @@ add_library(cppnam_core
 	src/core/entropy
 	src/core/experiment
 	src/core/parameters
-	src/core/rec_binam
 	src/core/spike_trains
 	src/core/spiking_binam
 	src/core/spiking_parameters
@@ -90,6 +89,15 @@ add_library(cppnam_util
 )
 
 target_link_libraries(cppnam_util
+	cypress
+	-pthread
+)
+
+add_library(cppnam_recurrent
+	src/recurrent/rec_binam
+)
+
+target_link_libraries(cppnam_recurrent
 	cypress
 	-pthread
 )
@@ -138,6 +146,7 @@ add_executable(recurrent_BiNAM
 	src/cli/recurrent_BiNAM.cpp
 )
 target_link_libraries(recurrent_BiNAM
+	cppnam_recurrent
 	cppnam_core
 	cppnam_util
 )
