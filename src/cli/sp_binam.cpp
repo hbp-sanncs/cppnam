@@ -18,11 +18,13 @@
 
 #include <csignal>
 #include <fstream>
+#include <functional>
+#include <memory>
 #include <string>
 
 #include "cypress/cypress.hpp"
 #include "core/experiment.hpp"
-
+#include "core/spiking_binam.hpp"
 
 using namespace nam;
 int main(int argc, const char *argv[])
@@ -37,7 +39,7 @@ int main(int argc, const char *argv[])
 		cypress::NMPI(argv[1], argc, argv);
 		return 0;
 	}
-	
+
 	signal(SIGINT, int_handler);
 
 	cypress::Json json;
@@ -45,8 +47,11 @@ int main(int argc, const char *argv[])
 		std::ifstream ifs(argv[2], std::ifstream::in);
 		json << ifs;
 	}
-	
-	Experiment exp(json, argv[1]);
+
+	Experiment exp(
+	    json, argv[1], [] (cypress::Json json, DataParameters params,
+	        DataGenerationParameters data_params, std::ostream &out, bool one,
+	        bool two) { return std::make_unique<SpikingBinam>(json, params, data_params, out, one, two); });
 	exp.run(argv[2]);
 	return 0;
 }

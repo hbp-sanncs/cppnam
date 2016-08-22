@@ -18,19 +18,30 @@
 
 #pragma once
 
-#ifndef CPPNAM_UTIL_EXPERIMENT_HPP
-#define CPPNAM_UTIL_EXPERIMENT_HPP
+#ifndef CPPNAM_CORE_EXPERIMENT_HPP
+#define CPPNAM_CORE_EXPERIMENT_HPP
 
 #include <atomic>
+#include <functional>
 #include <fstream>
+#include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
 #include <cypress/cypress.hpp>
-#include "spiking_binam.hpp"
+//#include "spiking_binam.hpp"
+#include "spiking_netw_basis.hpp"
 #include "util/read_json.hpp"
 
 namespace nam {
+
+/**
+ * Constructor function type which constructs a new BiNAM instance.
+ */
+using BiNAMCtor = std::function<std::unique_ptr<SpNetwBasis>(
+    cypress::Json, DataParameters, DataGenerationParameters, std::ostream &,
+    bool, bool)>;
 
 class Experiment {
 private:
@@ -39,6 +50,9 @@ private:
 
 	// Reference to the Json file containing all data
 	cypress::Json &json;
+
+	// Constructor of a BiNAM class
+	BiNAMCtor m_binam_ctor;
 
 	/*
 	 * A vector containing all single parameters which should not be swept
@@ -92,9 +106,14 @@ private:
 	                      std::ostream &ofs);
 
 public:
-	Experiment(cypress::Json &json, std::string backend);
-	int run(std::string file_name);
-
+	/**
+	 * Sets up the important values for experiment execution
+	 * @param json contains all parameters,
+	 * @param backend is the name of the neuromorphic platform on which it will be executed
+	 * @param binam_ctor is the constructor for the spiking binam network
+	 */
+	Experiment(cypress::Json &json, std::string backend, BiNAMCtor binam_ctor);
+	
 	/**
 	 * Tool for reading an experiment description from a Json object.
 	 * @param Params will contain name-value pairs of single parameters to set
@@ -110,6 +129,11 @@ public:
 	    std::vector<std::vector<float>> &sweep_values,
 	    std::vector<size_t> &repetitions,
 	    std::vector<bool> &optimal_sample_count);
+	
+	/**
+	 * Preparing + execution 
+	 */
+	int run(std::string file_name);
 };
 
 /**
@@ -120,4 +144,4 @@ public:
 static std::atomic_bool cancel(false);
 void int_handler(int);
 }
-#endif /* CPPNAM_UTIL_EXPERIMENT_HPP */
+#endif /* CPPNAM_CORE_EXPERIMENT_HPP */

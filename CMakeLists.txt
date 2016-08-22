@@ -70,7 +70,9 @@ add_library(cppnam_core
 	src/core/parameters
 	src/core/spike_trains
 	src/core/spiking_binam
+	src/core/spiking_netw_basis
 	src/core/spiking_parameters
+	src/core/spiking_utils
 )
 
 target_link_libraries(cppnam_core

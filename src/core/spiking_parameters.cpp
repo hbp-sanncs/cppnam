@@ -37,8 +37,7 @@ std::vector<float> read_neuron_parameters_from_json(
 	// special case if g_leak was given instead of tau_m,
 	// But not on spikey, as there g_leak is the standard parameter name
 	auto iter = input.find("g_leak");
-	if (iter != input.end() &&
-	    &type != &cypress::IfFacetsHardware1::inst()) {
+	if (iter != input.end() && &type != &cypress::IfFacetsHardware1::inst()) {
 		auto iter2 = input.find("cm");
 		float cm = 0;
 		if (iter2 == input.end()) {
@@ -58,8 +57,7 @@ std::vector<float> read_neuron_parameters_from_json(
 
 	// special case if tau_m was given instead of g_leak on spikey
 	iter = input.find("tau_m");
-	if (iter != input.end() &&
-	    &type == &cypress::IfFacetsHardware1::inst()) {
+	if (iter != input.end() && &type == &cypress::IfFacetsHardware1::inst()) {
 		auto iter2 = input.find("cm");
 		float cm = 0;
 		if (iter2 == input.end()) {
@@ -105,10 +103,11 @@ const std::vector<std::string> NetworkParameters::names = {"input_burst_size",
                                                            "p1",
                                                            "weight",
                                                            "multiplicity",
-                                                           "general_offset"};
+                                                           "general_offset",
+                                                           "weight_rec"};
 
 const std::vector<float> NetworkParameters::defaults{1, 1, 100, 1, 0,  0,
-                                                     0, 0, 0.1, 1, 100};
+                                                     0, 0, 0.1, 1, 100, 0};
 
 NetworkParameters::NetworkParameters(const cypress::Json &obj,
                                      std::ostream &out, bool warn)

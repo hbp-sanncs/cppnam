@@ -28,8 +28,10 @@
 #include "binam.hpp"
 
 #include <cypress/cypress.hpp>
-#include "spiking_parameters.hpp"
 #include "parameters.hpp"
+#include "spiking_netw_basis.hpp"
+#include "spiking_parameters.hpp"
+
 
 namespace nam {
 /**
@@ -37,7 +39,7 @@ namespace nam {
  * necessary parameter structures, it is building, executing and evaluating
  * cypress networks. It is fed by a simple JSON structure.
  */
-class SpikingBinam {
+class SpikingBinam : public SpNetwBasis{
 private:
 	cypress::Network m_net;
 	cypress::Population<cypress::SpikeSourceArray> m_pop_source;
@@ -62,7 +64,8 @@ public:
 	 * Constructor, which overwites DataParameters from JSON
 	 */
 	SpikingBinam(cypress::Json &json, DataParameters params,
-	             std::ostream &out = std::cout, bool recall = true, bool read = false);
+	             std::ostream &out = std::cout, bool recall = true,
+	             bool read = false);
 
 	/**
 	 * Constructor, which overwites DataParameters from JSON and uses external
@@ -70,50 +73,55 @@ public:
 	 */
 	SpikingBinam(cypress::Json &json, DataParameters params,
 	             DataGenerationParameters gen_params,
-	             std::ostream &out = std::cout, bool recall = true, bool warn =false);
+	             std::ostream &out = std::cout, bool recall = true,
+	             bool warn = false);
+	~SpikingBinam() override {};
+	
+	std::unique_ptr<SpNetwBasis> clone() override
+	{
+		return std::make_unique<SpikingBinam>(*this);
+	};
+
 
 	/**
 	 * Getters for the parameter structures.
 	 */
-	const NetworkParameters &NetParams() const { return m_networkParams; }
-	const DataParameters &DataParams() const { return m_dataParams; }
-	const NeuronParameters &NeuronParams() const { return m_neuronParams; }
+	const NetworkParameters &NetParams() const override { return m_networkParams; }
+	const DataParameters &DataParams() const override { return m_dataParams; }
+	const NeuronParameters &NeuronParams() const override { return m_neuronParams; }
 
 	/**
 	 * Setters for the parameter structures.
 	 */
-	void NetParams(NetworkParameters net) { m_networkParams = net; }
-	void DataParams(DataParameters data) { m_dataParams = data; }
-	void NeuronParams(NeuronParameters params) { m_neuronParams = params; }
+	void NetParams(NetworkParameters net) override { m_networkParams = net; }
+	void DataParams(DataParameters data) override { m_dataParams = data; }
+	void NeuronParams(NeuronParameters params) override { m_neuronParams = params; }
 
 	/**
 	 * Recall theoretical BiNAM e.g. when DataParameters have been changed
 	 */
-	void recall() { m_BiNAM_Container->recall(); }
+	void recall() override { m_BiNAM_Container->recall(); }
+
+	
 
 	/**
 	 * Complete building of the spiking neural network
 	 */
-	SpikingBinam &build();
-	SpikingBinam &build(cypress::Network &network);
+	SpikingBinam &build() override;
+	SpikingBinam &build(cypress::Network &network) override;
 
 	/**
 	 * Execution on hardware or software platform
 	 * @param backend is the repective platform
-	 * @param argc and
-	 * @param argv are the command line options, this is used for the NMPI
-	 * execution on the hbp-collab
-	 * @param nmpi If true, NMPI and therefore the hbp-collab is used, else PyNN
-	 * is executed directly
 	 */
-	void run(std::string backend);
+	void run(std::string backend) override;
 
 	/**
 	 * Evaluation based on that one used in the BiNAM_Container
 	 */
-	void evaluate_neat(std::ostream &output = std::cout);
-	void evaluate_csv(std::ostream &output);
-	std::pair<ExpResults, ExpResults> evaluate_res();
+	void evaluate_neat(std::ostream &output = std::cout) override;
+	void evaluate_csv(std::ostream &output) override;
+	std::pair<ExpResults, ExpResults> evaluate_res() override;
 };
 }
 
