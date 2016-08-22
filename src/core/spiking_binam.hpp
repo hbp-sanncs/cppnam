@@ -49,31 +49,6 @@ private:
 
 	std::string m_neuronType;
 
-	/**
-	 * Creates a population of type @param T and adds them to m_net
-	 */
-	template <typename T>
-	cypress::PopulationBase add_typed_population(cypress::Network &network);
-
-	/**
-	 * Runs add_typed_population, but gets a string containing the neuron type
-	 * instead of a template argument
-	 */
-	cypress::PopulationBase add_population(std::string neuron_type_str,
-	                                       cypress::Network &network);
-
-	/**
-	 * Build the spike times for the spike source array using the input matrix
-	 * in BiNAM_Container and the corresponding parameters
-	 */
-	std::vector<std::vector<float>> build_spike_times(int seed = -1);
-
-	/**
-	 * Converts the spike times to an output matrix which can be compared to the
-	 * output patterns
-	 */
-	BinaryMatrix<uint64_t> spikes_to_matrix();
-
 public:
 	/**
 	 * Constructor: Takes a simple Json and reads in all the parameters.
