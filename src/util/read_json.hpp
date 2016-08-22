@@ -62,7 +62,7 @@ std::vector<T> read_check(std::map<std::string, T> &input,
 			input.erase(it);
 		}
 		else {
-			res[i] = defaults[i];
+			res[i] = defaults.at(i);
 			if (warn) {
 				std::cerr << "For " << names[i] << " the default value "
 				          << defaults[i] << " is used" << std::endl;
