@@ -25,6 +25,7 @@
 #include "cypress/cypress.hpp"
 #include "core/experiment.hpp"
 #include "core/spiking_binam.hpp"
+#include "recurrent/spiking_rec_binam.hpp"
 
 using namespace nam;
 int main(int argc, const char *argv[])
@@ -47,11 +48,26 @@ int main(int argc, const char *argv[])
 		std::ifstream ifs(argv[2], std::ifstream::in);
 		json << ifs;
 	}
-
-	Experiment exp(
+	
+	std::string mode;
+	if(json.find("mode")!=json.end()){
+		mode = json["mode"];
+	}else {
+		mode = "standard";
+	}
+	
+	if(mode=="standard"){
+		Experiment exp(
 	    json, argv[1], [] (cypress::Json json, DataParameters params,
 	        DataGenerationParameters data_params, std::ostream &out, bool one,
 	        bool two) { return std::make_unique<SpikingBinam>(json, params, data_params, out, one, two); });
-	exp.run(argv[2]);
+		exp.run(argv[2]);
+	}else if (mode == "recurrent"){
+		Experiment exp(
+	    json, argv[1], [] (cypress::Json json, DataParameters params,
+	        DataGenerationParameters data_params, std::ostream &out, bool one,
+	        bool two) { return std::make_unique<SpikingRecBinam>(json, params, data_params, out, one, two); });
+		exp.run(argv[2]);
+	}
 	return 0;
 }

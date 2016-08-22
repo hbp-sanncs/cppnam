@@ -101,6 +101,7 @@ add_library(cppnam_recurrent
 )
 
 target_link_libraries(cppnam_recurrent
+	cppnam_core
 	cypress
 	-pthread
 )
@@ -133,6 +134,7 @@ add_executable(sp_binam
 target_link_libraries(sp_binam
 	cppnam_core
 	cppnam_util
+	cppnam_recurrent
 )
 
 
