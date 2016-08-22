@@ -18,8 +18,8 @@
 
 #pragma once
 
-#ifndef CPPNAM_UTIL_SPIKING_BINAM_HPP
-#define CPPNAM_UTIL_SPIKING_BINAM_HPP
+#ifndef CPPNAM_CORE_SPIKING_BINAM_HPP
+#define CPPNAM_CORE_SPIKING_BINAM_HPP
 
 #include <array>
 #include <memory>
@@ -142,4 +142,4 @@ public:
 };
 }
 
-#endif /* CPPNAM_UTIL_SPIKING_BINAM_HPP */
+#endif /* CPPNAM_CORE_SPIKING_BINAM_HPP */

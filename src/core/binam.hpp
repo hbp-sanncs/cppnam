@@ -18,8 +18,8 @@
 
 #pragma once
 
-#ifndef CPPNAM_UTIL_BINAM_HPP
-#define CPPNAM_UTIL_BINAM_HPP
+#ifndef CPPNAM_CORE_BINAM_HPP
+#define CPPNAM_CORE_BINAM_HPP
 #include <fstream>
 #include <iostream>
 #include <random>
@@ -399,4 +399,4 @@ public:
 };
 }
 
-#endif /* CPPNAM_UTIL_BINAM_HPP */
+#endif /* CPPNAM_CORE_BINAM_HPP */

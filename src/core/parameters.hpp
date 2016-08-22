@@ -18,8 +18,8 @@
 
 #pragma once
 
-#ifndef CPPNAM_UTIL_PARAMETERS_HPP
-#define CPPNAM_UTIL_PARAMETERS_HPP
+#ifndef CPPNAM_CORE_PARAMETERS_HPP
+#define CPPNAM_CORE_PARAMETERS_HPP
 
 #include <cstddef>
 #include <iostream>
@@ -208,4 +208,4 @@ public:
 };
 }
 
-#endif /* CPPNAM_UTIL_PARAMETERS_HPP */
+#endif /* CPPNAM_CORE_PARAMETERS_HPP */

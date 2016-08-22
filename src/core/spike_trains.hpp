@@ -18,8 +18,8 @@
 
 #pragma once
 
-#ifndef CPPNAM_UTIL_SPIKE_TRAINS_HPP
-#define CPPNAM_UTIL_SPIKE_TRAINS_HPP
+#ifndef CPPNAM_CORE_SPIKE_TRAINS_HPP
+#define CPPNAM_CORE_SPIKE_TRAINS_HPP
 
 #include "spiking_parameters.hpp"
 #include "util/binary_matrix.hpp"
@@ -50,4 +50,4 @@ Vector<uint8_t> spikes_to_vector_tresh(Matrix<float> spikes, size_t samples,
                                        const NetworkParameters params);
 }
 
-#endif /* CPPNAM_UTIL_SPIKE_TRAINS_HPP */
+#endif /* CPPNAM_CORE_SPIKE_TRAINS_HPP */

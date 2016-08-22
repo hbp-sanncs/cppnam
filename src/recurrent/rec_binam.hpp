@@ -18,8 +18,8 @@
 
 #pragma once
 
-#ifndef CPPNAM_UTIL_REC_BINAM_HPP
-#define CPPNAM_UTIL_REC_BINAM_HPP
+#ifndef CPPNAM_RECURRENT_REC_BINAM_HPP
+#define CPPNAM_RECURRENT_REC_BINAM_HPP
 
 #include "core/binam.hpp"
 #include "core/parameters.hpp"
@@ -136,4 +136,4 @@ public:
 	void recall_matrix_rec(BinaryMatrix<uint64_t> mat) { m_recall_rec = mat; };
 };
 }
-#endif /* CPPNAM_UTIL_REC_BINAM_HPP */
+#endif /* CPPNAM_RECURRENT_REC_BINAM_HPP */

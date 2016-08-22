@@ -18,8 +18,8 @@
 
 #pragma once
 
-#ifndef CPPNAM_UTIL_ENTROPY_HPP
-#define CPPNAM_UTIL_ENTROPY_HPP
+#ifndef CPPNAM_CORE_ENTROPY_HPP
+#define CPPNAM_CORE_ENTROPY_HPP
 
 #include <vector>
 
@@ -100,4 +100,4 @@ double entropy_hetero(const DataParameters &params,
 double conventional_memory_entropy(const DataParameters &params);
 }
 
-#endif /* CPPNAM_UTIL_ENTROPY_HPP */
+#endif /* CPPNAM_CORE_ENTROPY_HPP */
