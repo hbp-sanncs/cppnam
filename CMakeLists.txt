@@ -97,6 +97,7 @@ target_link_libraries(cppnam_util
 
 add_library(cppnam_recurrent
 	src/recurrent/rec_binam
+	src/recurrent/spiking_rec_binam
 )
 
 target_link_libraries(cppnam_recurrent

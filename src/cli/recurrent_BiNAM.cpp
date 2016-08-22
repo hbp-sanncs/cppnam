@@ -20,7 +20,7 @@
 
 #include "core/binam.hpp"
 #include "core/entropy.hpp"
-#include "core/rec_binam.hpp"
+#include "recurrent/rec_binam.hpp"
 
 using namespace nam;
 
@@ -64,8 +64,8 @@ void information_graph(size_t bits_in, size_t bits_out, size_t ones_in,
 		file << i << "," << info << ","
 		     << binam.sum_false_bits(binam.false_bits()).fp;
 		if (rec) {
-			rec_binam binam2(params);
-			binam2.set_up();
+			RecBinam binam2(params);
+			binam2.set_up(true);
 			ExpResults se2 = binam2.analysis();
 			file << "," << se2.Info << "," << se2.fp;
 		}
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 	          << " samples" << std::endl;
 	DataParameters params(n_bits, n_bits_out, n_ones, n_ones_out, n_samples);
 	if (rec) {
-		rec_binam binam(params);
+		RecBinam binam(params);
 		auto res = binam.set_up().analysis();
 		res.print();
 	}
