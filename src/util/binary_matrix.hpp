@@ -188,13 +188,13 @@ public:
 	{
 		check_range_cells(row, col);
 		m_mat(row, col) = value;
-		return *this;
+ 		return *this;
 	}
 	
 	/**
 	 * Return data matrix
 	 */
-	Matrix<T> cells(){
+	Matrix<T>& cells(){
 		return m_mat;
 	}
 
