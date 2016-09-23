@@ -66,7 +66,7 @@ void progress_callback(double p)
 	const int w = 50;
 	std::cerr << std::fixed << std::setprecision(2) << std::setw(6) << p * 100.0
 	          << "% [";
-	const int j = p * float(w);
+	const int j = p * double(w);
 	for (int i = 0; i < w; i++) {
 		std::cerr << (i > j ? ' ' : (i == j ? '>' : '='));
 	}
