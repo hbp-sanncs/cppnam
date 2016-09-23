@@ -33,7 +33,8 @@ namespace {
 std::vector<cypress::Real> read_neuron_parameters_from_json(
     const cypress::NeuronType &type, const cypress::Json &obj, bool warn = true)
 {
-	std::map<std::string, cypress::Real> input = json_to_map<cypress::Real>(obj);
+	std::map<std::string, cypress::Real> input =
+	    json_to_map<cypress::Real>(obj);
 	// special case if g_leak was given instead of tau_m,
 	// But not on spikey, as there g_leak is the standard parameter name
 	auto iter = input.find("g_leak");
@@ -76,7 +77,7 @@ std::vector<cypress::Real> read_neuron_parameters_from_json(
 	}
 
 	return read_check<cypress::Real>(input, type.parameter_names,
-	                         type.parameter_defaults, warn);
+	                                 type.parameter_defaults, warn);
 }
 }
 
@@ -106,15 +107,16 @@ const std::vector<std::string> NetworkParameters::names = {"input_burst_size",
                                                            "general_offset",
                                                            "weight_rec"};
 
-const std::vector<float> NetworkParameters::defaults{1, 1, 100, 1, 0,  0,
-                                                     0, 0, 0.1, 1, 100, 0};
+const std::vector<cypress::Real> NetworkParameters::defaults{
+    1, 1, 100, 1, 0, 0, 0, 0, 0.1, 1, 100, 0};
 
 NetworkParameters::NetworkParameters(const cypress::Json &obj,
                                      std::ostream &out, bool warn)
 {
 	out << "# NetworkParameters: " << std::endl;
-	std::map<std::string, float> input = json_to_map<float>(obj);
-	arr = read_check<float>(input, names, defaults, warn);
+	std::map<std::string, cypress::Real> input =
+	    json_to_map<cypress::Real>(obj);
+	arr = read_check<cypress::Real>(input, names, defaults, warn);
 
 	for (size_t i = 0; i < names.size(); i++) {
 		out << names[i] << ": " << arr[i] << std::endl;

@@ -40,15 +40,15 @@ const NeuronType &SpikingUtils::detect_type(std::string neuron_type_str)
 	throw CypressException("Invalid neuron type \"" + neuron_type_str + "\"");
 }
 
-std::vector<std::vector<cypress::Real>> SpikingUtils::build_spike_times(
+std::vector<std::vector<Real>> SpikingUtils::build_spike_times(
     const BinaryMatrix<uint64_t> &input_mat, NetworkParameters &netwParams,
     int seed)
 {
 	// BinaryMatrix<uint64_t> mat = m_BiNAM_Container->input_matrix();
-	std::vector<std::vector<cypress::Real>> res;
+	std::vector<std::vector<Real>> res;
 	for (size_t i = 0; i < input_mat.cols(); i++) {  // over all neruons
 		for (size_t k = 0; k < netwParams.multiplicity(); k++) {
-			std::vector<cypress::Real> vec;
+			std::vector<Real> vec;
 			for (size_t j = 0; j < input_mat.rows(); j++) {  // over all samples
 				auto vec2 = build_spike_train(
 				    netwParams, input_mat.get_bit(j, i),
@@ -64,8 +64,8 @@ std::vector<std::vector<cypress::Real>> SpikingUtils::build_spike_times(
 
 template <typename T>
 PopulationBase SpikingUtils::add_typed_population(
-    cypress::Network &network, DataParameters &dataParams,
-    NetworkParameters &netwParams, NeuronParameters &neuronParams)
+    Network &network, DataParameters &dataParams, NetworkParameters &netwParams,
+    NeuronParameters &neuronParams)
 {
 	using Signals = typename T::Signals;
 	using Parameters = typename T::Parameters;
@@ -75,7 +75,7 @@ PopulationBase SpikingUtils::add_typed_population(
 }
 
 PopulationBase SpikingUtils::add_population(std::string &neuron_type_str,
-                                            cypress::Network &network,
+                                            Network &network,
                                             DataParameters &dataParams,
                                             NetworkParameters &netwParams,
                                             NeuronParameters &neuronParams)
@@ -97,14 +97,13 @@ PopulationBase SpikingUtils::add_population(std::string &neuron_type_str,
 }
 
 BinaryMatrix<uint64_t> SpikingUtils::spikes_to_matrix(
-    cypress::PopulationBase &popOutput, DataParameters &dataParams,
+    PopulationBase &popOutput, DataParameters &dataParams,
     NetworkParameters &netwParams)
 {
 	BinaryMatrix<uint64_t> res(dataParams.samples(), dataParams.bits_out());
 	size_t multi = netwParams.multiplicity();
 	for (size_t i = 0; i < dataParams.bits_out(); i++) {
-		Vector<uint8_t> spike_vec(dataParams.samples(),
-		                          cypress::MatrixFlags::ZEROS);
+		Vector<uint8_t> spike_vec(dataParams.samples(), MatrixFlags::ZEROS);
 		for (size_t j = 0; j < multi; j++) {
 			auto spikes = popOutput[i * multi + j].signals().data(0);
 			auto temp_vec =

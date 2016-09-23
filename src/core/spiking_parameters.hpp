@@ -34,11 +34,12 @@
  */
 #define NAMED_PARAMETER(NAME, IDX)            \
 	static constexpr size_t idx_##NAME = IDX; \
-	void NAME(float x) { arr[IDX] = x; }      \
-	float &NAME() { return arr[IDX]; }        \
-	float NAME() const { return arr[IDX]; }
+	void NAME(Real x) { arr[IDX] = x; }       \
+	Real &NAME() { return arr[IDX]; }         \
+	Real NAME() const { return arr[IDX]; }
 
 namespace nam {
+using Real = cypress::Real;
 
 class NeuronParameters {
 private:
@@ -90,7 +91,7 @@ public:
 
 class NetworkParameters {
 private:
-	std::vector<float> arr;
+	std::vector<Real> arr;
 
 public:
 	static const std::vector<std::string> names;
@@ -98,7 +99,7 @@ public:
 	/**
 	 * Default values
 	 */
-	static const std::vector<float> defaults;
+	static const std::vector<Real> defaults;
 
 	NAMED_PARAMETER(input_burst_size, 0);
 	NAMED_PARAMETER(output_burst_size, 1);
@@ -127,7 +128,7 @@ public:
 	/**
 	 * Set parameter with name @param name to @param value
 	 */
-	NetworkParameters &set(std::string name, float value)
+	NetworkParameters &set(std::string name, Real value)
 	{
 		for (size_t i = 0; i < names.size(); i++) {
 			if (names[i] == name) {

@@ -22,8 +22,8 @@
 #define CPPNAM_CORE_EXPERIMENT_HPP
 
 #include <atomic>
-#include <functional>
 #include <fstream>
+#include <functional>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -58,7 +58,7 @@ private:
 	 * A vector containing all single parameters which should not be swept
 	 * over for every experiment
 	 */
-	std::vector<std::vector<std::pair<std::string, float>>> m_params;
+	std::vector<std::vector<std::pair<std::string, cypress::Real>>> m_params;
 
 	/*
 	 * For every experiment a vector of parameter names is stored. It should be
@@ -72,7 +72,7 @@ private:
 	 * experiment, the second relates to the parameter run and the last belongs
 	 * to the indivdual parameter
 	 */
-	std::vector<std::vector<std::vector<float>>> m_sweep_values;
+	std::vector<std::vector<std::vector<cypress::Real>>> m_sweep_values;
 
 	/*
 	 * List of names of the experiments. Results are saved in files named after
@@ -109,11 +109,12 @@ public:
 	/**
 	 * Sets up the important values for experiment execution
 	 * @param json contains all parameters,
-	 * @param backend is the name of the neuromorphic platform on which it will be executed
+	 * @param backend is the name of the neuromorphic platform on which it will
+	 * be executed
 	 * @param binam_ctor is the constructor for the spiking binam network
 	 */
 	Experiment(cypress::Json &json, std::string backend, BiNAMCtor binam_ctor);
-	
+
 	/**
 	 * Tool for reading an experiment description from a Json object.
 	 * @param Params will contain name-value pairs of single parameters to set
@@ -124,14 +125,15 @@ public:
 	 * optimised
 	 */
 	static void read_in_exp_descr(
-	    cypress::Json &json, std::vector<std::pair<std::string, float>> &params,
+	    cypress::Json &json,
+	    std::vector<std::pair<std::string, cypress::Real>> &params,
 	    std::vector<std::string> &sweep_params,
-	    std::vector<std::vector<float>> &sweep_values,
+	    std::vector<std::vector<cypress::Real>> &sweep_values,
 	    std::vector<size_t> &repetitions,
 	    std::vector<bool> &optimal_sample_count);
-	
+
 	/**
-	 * Preparing + execution 
+	 * Preparing + execution
 	 */
 	int run(std::string file_name);
 };

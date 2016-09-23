@@ -26,6 +26,7 @@
 #include "core/spiking_parameters.hpp"
 
 namespace nam {
+using cypress::Real;
 
 static const std::string test_json =
     "{\n"
@@ -71,17 +72,17 @@ TEST(SpikingParameters, NeuronParameters)
 	std::ofstream out;
 	auto params = NeuronParameters(neurontype, json["network"], out);
 	std::vector<cypress::Real> parameter = params.parameter();
-	EXPECT_NEAR(float(0.2), parameter[0], 1e-8);
-	EXPECT_NEAR(float(50), parameter[1], 1e-8);
-	EXPECT_NEAR(float(2), parameter[2], 1e-8);
-	EXPECT_NEAR(float(5), parameter[3], 1e-8);  // Cypress standard
-	EXPECT_NEAR(float(0.0), parameter[4], 1e-8);
-	EXPECT_NEAR(float(-70), parameter[5], 1e-8);
-	EXPECT_NEAR(float(-57), parameter[6], 1e-8);
-	EXPECT_NEAR(float(-80), parameter[7], 1e-8);
-	EXPECT_NEAR(float(0), parameter[8], 1e-8);
-	EXPECT_NEAR(float(-70), parameter[9], 1e-8);  // Cypress standard
-	EXPECT_NEAR(float(0), parameter[10], 1e-8);
+	EXPECT_NEAR(Real(0.2), parameter[0], 1e-8);
+	EXPECT_NEAR(Real(50), parameter[1], 1e-8);
+	EXPECT_NEAR(Real(2), parameter[2], 1e-8);
+	EXPECT_NEAR(Real(5), parameter[3], 1e-8);  // Cypress standard
+	EXPECT_NEAR(Real(0.0), parameter[4], 1e-8);
+	EXPECT_NEAR(Real(-70), parameter[5], 1e-8);
+	EXPECT_NEAR(Real(-57), parameter[6], 1e-8);
+	EXPECT_NEAR(Real(-80), parameter[7], 1e-8);
+	EXPECT_NEAR(Real(0), parameter[8], 1e-8);
+	EXPECT_NEAR(Real(-70), parameter[9], 1e-8);  // Cypress standard
+	EXPECT_NEAR(Real(0), parameter[10], 1e-8);
 }
 
 TEST(SpikingParameters, NetworkParameters)

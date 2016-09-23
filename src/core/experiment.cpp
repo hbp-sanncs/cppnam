@@ -22,19 +22,20 @@
 #include <mutex>
 #include <random>
 #include <shared_mutex>
-#include <string>
 #include <sstream>
+#include <string>
 #include <thread>
 #include <vector>
 
-#include <cypress/cypress.hpp>
 #include <cypress/backend/power/netio4.hpp>
+#include <cypress/cypress.hpp>
 #include "experiment.hpp"
-#include "spiking_netw_basis.hpp"
 #include "spiking_binam.hpp"
+#include "spiking_netw_basis.hpp"
 #include "util/read_json.hpp"
 
 namespace nam {
+using Real = cypress::Real;
 namespace {
 /**
  * Splits a string @param s into parts devided by @param delim and stores the
@@ -84,16 +85,16 @@ void progress_callback(double p)
  * parameters
  */
 static void add_sweep_parameter(const std::string &key,
-                                const std::vector<float> &values,
+                                const std::vector<Real> &values,
                                 std::vector<std::string> &sweep_params,
-                                std::vector<std::vector<float>> &sweep_elems,
+                                std::vector<std::vector<Real>> &sweep_elems,
                                 size_t repeat = 1)
 {
 	// Add the sweep key
 	sweep_params.insert(sweep_params.begin(), key);
 
 	// Copy the old sweep elements
-	const std::vector<std::vector<float>> old_sweep_elems = sweep_elems;
+	const std::vector<std::vector<Real>> old_sweep_elems = sweep_elems;
 
 	// Fetch some constants
 	const size_t n_elems_old = old_sweep_elems.size();
@@ -104,7 +105,7 @@ static void add_sweep_parameter(const std::string &key,
 	if (n_elems_old == 0) {
 		sweep_elems.resize(repeat * values.size());
 		std::fill(sweep_elems.begin(), sweep_elems.end(),
-		          std::vector<float>(n_dim));
+		          std::vector<Real>(n_dim));
 		for (size_t i = 0; i < values.size(); i++) {
 			for (size_t j = 0; j < repeat; j++) {
 				sweep_elems[i * repeat + j][0] = values[i];
@@ -115,7 +116,7 @@ static void add_sweep_parameter(const std::string &key,
 		// Resize the elements matrix
 		sweep_elems.resize(n_elems);
 		std::fill(sweep_elems.begin(), sweep_elems.end(),
-		          std::vector<float>(n_dim));
+		          std::vector<Real>(n_dim));
 
 		for (size_t i = 0; i < values.size(); i++) {
 			// Copy old values, leave first entry empty
@@ -137,7 +138,7 @@ static void add_sweep_parameter(const std::string &key,
  * value willl be set to @param value
  */
 void set_parameter(SpNetwBasis &binam, std::vector<std::string> names,
-                   float value)
+                   Real value)
 {
 	if (names[0] == "params") {
 		auto params = binam.NeuronParams();
@@ -183,6 +184,9 @@ void run_standard_neat_output(SpNetwBasis &SpBinam, std::ostream &ofs,
 		ofs << std::endl;
 	}
 	cypress::Network netw;
+
+	netw.logger().min_level(cypress::DEBUG, 0);
+
 	t1 = system_clock::now();
 	SpBinam.build(netw);
 	t2 = system_clock::now();
@@ -192,6 +196,7 @@ void run_standard_neat_output(SpNetwBasis &SpBinam, std::ostream &ofs,
 		cypress::PowerManagementBackend pwbackend(
 		    std::make_shared<cypress::NetIO4>(),
 		    cypress::Network::make_backend(backend));
+		netw.logger().min_level(cypress::LogSeverity::DEBUG);
 		netw.run(pwbackend);
 		t4 = system_clock::now();
 	});
@@ -237,7 +242,7 @@ void run_standard_neat_output(SpNetwBasis &SpBinam, std::ostream &ofs,
 DataParameters prepare_data_params(
     cypress::Json json, std::vector<std::vector<std::string>> &params_names,
     std::vector<size_t> &params_indices,
-    std::vector<std::pair<std::string, float>> &parameters)
+    std::vector<std::pair<std::string, Real>> &parameters)
 {
 	DataParameters params(json["data"]);
 	for (size_t k = 0; k < parameters.size(); k++) {
@@ -256,8 +261,11 @@ DataParameters prepare_data_params(
  * Hard coded numbers of maximal neuron count for every plattform. Should be
  * improved -> TODO
  */
-static const std::map<std::string, size_t> neuron_numbers{
-    {"spikey", 0}, {"spinnaker", 8192}, {"nmmc1", 1e5}, {"nest", 1e2}};
+static const std::map<std::string, size_t> neuron_numbers{{"spikey", 0},
+                                                          {"spinnaker", 2000},
+                                                          {"nmmc1", 1e6},
+                                                          {"nest", 1e2},
+                                                          {"pynn.nest", 1e2}};
 
 /**
  * Checks, wether an additional parallel run will be to big, and if that is the
@@ -271,7 +279,7 @@ static const std::map<std::string, size_t> neuron_numbers{
  */
 std::vector<size_t> check_run(
     std::vector<std::unique_ptr<SpNetwBasis>> &sp_binam_vec,
-    const std::vector<std::vector<float>> &sweep_values, cypress::Network &netw,
+    const std::vector<std::vector<Real>> &sweep_values, cypress::Network &netw,
     size_t j, std::vector<size_t> &counter, const std::string &backend,
     std::vector<std::pair<ExpResults, ExpResults>> &results,
     size_t &next_neuron_count, std::shared_timed_mutex &mutex)
@@ -305,7 +313,7 @@ std::vector<size_t> check_run(
 /**
  * Prints out the results, sweep version
  */
-void output(const std::vector<std::vector<float>> &sweep_values,
+void output(const std::vector<std::vector<Real>> &sweep_values,
             const std::vector<std::pair<ExpResults, ExpResults>> &results,
             std::ostream &ofs, const std::vector<std::string> &names)
 {
@@ -340,9 +348,9 @@ Experiment::Experiment(cypress::Json &json, std::string backend,
 		     i != json["experiments"].end(); i++) {
 			// For every experiment read in all parameters and values, then
 			// append to member vectors
-			std::vector<std::pair<std::string, float>> params;
+			std::vector<std::pair<std::string, Real>> params;
 			std::vector<std::string> sweep_params;
-			std::vector<std::vector<float>> sweep_values;
+			std::vector<std::vector<Real>> sweep_values;
 			std::string name = i.key();
 			read_in_exp_descr(i.value(), params, sweep_params, sweep_values,
 			                  m_repetitions, m_optimal_sample);
@@ -355,9 +363,9 @@ Experiment::Experiment(cypress::Json &json, std::string backend,
 }
 
 void Experiment::read_in_exp_descr(
-    cypress::Json &json, std::vector<std::pair<std::string, float>> &params,
+    cypress::Json &json, std::vector<std::pair<std::string, Real>> &params,
     std::vector<std::string> &sweep_params,
-    std::vector<std::vector<float>> &sweep_values,
+    std::vector<std::vector<Real>> &sweep_values,
     std::vector<size_t> &repetitions, std::vector<bool> &optimal_sample_count)
 {
 	const std::vector<std::string> names = {"min", "max", "count"};
@@ -380,14 +388,12 @@ void Experiment::read_in_exp_descr(
 				continue;
 			}
 			else {
-				params.emplace_back(
-				    std::pair<std::string, float>(j.key(), val));
+				params.emplace_back(std::pair<std::string, Real>(j.key(), val));
 			}
 		}
 		else if (val.is_array()) {
 			if (val.size() == 1) {
-				params.emplace_back(
-				    std::pair<std::string, float>(j.key(), val));
+				params.emplace_back(std::pair<std::string, Real>(j.key(), val));
 			}
 			else {
 				add_sweep_parameter(j.key(), val, sweep_params, sweep_values,
@@ -395,13 +401,13 @@ void Experiment::read_in_exp_descr(
 			}
 		}
 		else if (val.is_object()) {
-			auto map = json_to_map<float>(val);
+			auto map = json_to_map<Real>(val);
 			auto range =
-			    read_check<float>(map, names, std::vector<float>{0, 0, 0});
-			std::vector<float> values;
-			double step = (range[1] - range[0]) / (range[2] - 1.0);
+			    read_check<Real>(map, names, std::vector<Real>{0, 0, 0});
+			std::vector<Real> values;
+			Real step = (range[1] - range[0]) / (range[2] - 1.0);
 			for (size_t k = 0; k < range[2]; k++) {
-				values.emplace_back<float>(range[0] + float(k) * step);
+				values.emplace_back<Real>(range[0] + Real(k) * step);
 			}
 			add_sweep_parameter(j.key(), values, sweep_params, sweep_values,
 			                    repetitions.back());
@@ -424,6 +430,8 @@ void Experiment::run_standard(std::string file_name)
 	    json, DataParameters(json["data"]),
 	    DataGenerationParameters(json["data_generator"]), null, true, true));
 
+	// SpikingBinam sp_binam(json, DataParameters(json["data"]), null, true,
+	// true);
 	run_standard_neat_output(*spbinam_pointer, ofs, m_backend, true);
 }
 
@@ -484,8 +492,8 @@ size_t Experiment::run_experiment(size_t exp,
 			for (size_t repeat_counter = 0;
 			     repeat_counter < m_repetitions[exp] - 2;
 			     repeat_counter++) {  // do all repetitions
-				run_standard_neat_output(*sp_binam, ofs, m_backend, false, false,
-				                         false);
+				run_standard_neat_output(*sp_binam, ofs, m_backend, false,
+				                         false, false);
 			}
 			run_standard_neat_output(*sp_binam, ofs, m_backend, false, false,
 			                         true);
@@ -615,8 +623,8 @@ size_t Experiment::run_experiment(size_t exp,
 						// only relevant when not on nest, as on nest we want no
 						// parallelised networks
 						neuron_count =
-						    m_sweep_values[exp][indices[this_idx +
-						                                1]][bits_out_index];
+						    m_sweep_values[exp][indices[this_idx + 1]]
+						                  [bits_out_index];
 						// TODO
 					}
 					else {
