@@ -20,19 +20,19 @@
 
 #include <cypress/cypress.hpp>
 
-#include "util/binary_matrix.hpp"
 #include "entropy.hpp"
 #include "parameters.hpp"
-#include "spike_trains.hpp"
 #include "spiking_binam.hpp"
 #include "spiking_utils.hpp"
+#include "util/binary_matrix.hpp"
 
 using namespace cypress;
 
 namespace nam {
 
 SpikingBinam::SpikingBinam(Json &json, std::ostream &out, bool recall)
-    : m_pop_source(cypress::PopulationBase(m_net, 0)), m_pop_output(m_net, 0),
+    : m_pop_source(cypress::PopulationBase(m_net, 0)),
+      m_pop_output(m_net, 0),
       m_dataParams(json["data"]),
       m_networkParams(json["network"], out)
 {
@@ -116,11 +116,14 @@ SpikingBinam &SpikingBinam::build()
 	const auto &mat = m_BiNAM_Container->trained_matrix();
 
 	m_pop_source.connect_to(
-	    m_pop_output, Connector::functor([&](NeuronIndex src, NeuronIndex tar) {
-		    size_t mult = m_networkParams.multiplicity();
-		    return mat.get_bit(std::floor(float(tar) / float(mult)),
-		                       std::floor(float(src) / float(mult)));
-		}, m_networkParams.weight()));
+	    m_pop_output, Connector::functor(
+	                      [&](NeuronIndex src, NeuronIndex tar) {
+		                      size_t mult = m_networkParams.multiplicity();
+		                      return mat.get_bit(
+		                          std::floor(double(tar) / double(mult)),
+		                          std::floor(double(src) / double(mult)));
+		                  },
+	                      m_networkParams.weight()));
 	return *this;
 }
 
@@ -145,17 +148,18 @@ SpikingBinam &SpikingBinam::build(cypress::Network &network)
 	const auto &mat = m_BiNAM_Container->trained_matrix();
 
 	size_t mult = m_networkParams.multiplicity();
-	m_pop_source.connect_to(
-	    m_pop_output,
-	    Connector::functor([&, mult](NeuronIndex src, NeuronIndex tar) {
-		    return mat.get_bit(std::floor(float(tar) / float(mult)),
-		                       std::floor(float(src) / float(mult)));
-		}, m_networkParams.weight()));
+	m_pop_source.connect_to(m_pop_output,
+	                        Connector::functor(
+	                            [&, mult](NeuronIndex src, NeuronIndex tar) {
+		                            return mat.get_bit(
+		                                std::floor(float(tar) / float(mult)),
+		                                std::floor(float(src) / float(mult)));
+		                        },
+	                            m_networkParams.weight()));
 	return *this;
 }
 
 void SpikingBinam::run(std::string backend) { m_net.run(PyNN(backend)); }
-
 
 void SpikingBinam::evaluate_neat(std::ostream &out)
 {

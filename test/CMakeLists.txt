@@ -24,9 +24,9 @@ add_executable(cppnam_test_core
 	core/test_binam
 	core/test_entropy
 	core/test_parameters
-	core/test_spike_trains
 	core/test_spiking_binam
 	core/test_spiking_parameters
+	core/test_spiking_utils
 )
 add_executable(cppnam_test_util
 	util/test_binary_matrix
