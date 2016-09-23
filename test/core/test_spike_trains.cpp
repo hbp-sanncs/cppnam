@@ -53,7 +53,7 @@ TEST(spiketrain, spikes_to_vector)
 	params.multiplicity(1);
 	params.general_offset(0);
 	using namespace cypress;
-	Vector<float> spike_vec(
+	Vector<cypress::Real> spike_vec(
 	    {0.1, 303, 709, 710, 711, 903, 904, 905, 906, 907, 10000});
 	auto res = spikes_to_vector_tresh(spike_vec, 15, params);
 	EXPECT_EQ(1, res[0]);

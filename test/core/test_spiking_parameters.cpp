@@ -70,7 +70,7 @@ TEST(SpikingParameters, NeuronParameters)
 	const cypress::IfCondExp &neurontype = cypress::IfCondExp::inst();
 	std::ofstream out;
 	auto params = NeuronParameters(neurontype, json["network"], out);
-	std::vector<float> parameter = params.parameter();
+	std::vector<cypress::Real> parameter = params.parameter();
 	EXPECT_NEAR(float(0.2), parameter[0], 1e-8);
 	EXPECT_NEAR(float(50), parameter[1], 1e-8);
 	EXPECT_NEAR(float(2), parameter[2], 1e-8);

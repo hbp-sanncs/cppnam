@@ -30,16 +30,16 @@
 namespace nam {
 namespace {
 
-std::vector<float> read_neuron_parameters_from_json(
+std::vector<cypress::Real> read_neuron_parameters_from_json(
     const cypress::NeuronType &type, const cypress::Json &obj, bool warn = true)
 {
-	std::map<std::string, float> input = json_to_map<float>(obj);
+	std::map<std::string, cypress::Real> input = json_to_map<cypress::Real>(obj);
 	// special case if g_leak was given instead of tau_m,
 	// But not on spikey, as there g_leak is the standard parameter name
 	auto iter = input.find("g_leak");
 	if (iter != input.end() && &type != &cypress::IfFacetsHardware1::inst()) {
 		auto iter2 = input.find("cm");
-		float cm = 0;
+		cypress::Real cm = 0;
 		if (iter2 == input.end()) {
 			for (size_t j = 0; j < type.parameter_names.size(); j++) {
 				if (type.parameter_names[j] == "cm") {
@@ -59,7 +59,7 @@ std::vector<float> read_neuron_parameters_from_json(
 	iter = input.find("tau_m");
 	if (iter != input.end() && &type == &cypress::IfFacetsHardware1::inst()) {
 		auto iter2 = input.find("cm");
-		float cm = 0;
+		cypress::Real cm = 0;
 		if (iter2 == input.end()) {
 			for (size_t j = 0; j < type.parameter_names.size(); j++) {
 				if (type.parameter_names[j] == "cm") {
@@ -75,7 +75,7 @@ std::vector<float> read_neuron_parameters_from_json(
 		input.erase(iter);
 	}
 
-	return read_check<float>(input, type.parameter_names,
+	return read_check<cypress::Real>(input, type.parameter_names,
 	                         type.parameter_defaults, warn);
 }
 }

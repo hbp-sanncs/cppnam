@@ -52,7 +52,7 @@ public:
 	 * Build the spike times for the spike source array using the input matrix
 	 * in BiNAM_Container and the corresponding parameters
 	 */
-	static std::vector<std::vector<float>> build_spike_times(
+	static std::vector<std::vector<cypress::Real>> build_spike_times(
 	    const BinaryMatrix<uint64_t> &input_mat, NetworkParameters &netwParams,
 	    int seed = -1);
 

@@ -40,15 +40,15 @@ const NeuronType &SpikingUtils::detect_type(std::string neuron_type_str)
 	throw CypressException("Invalid neuron type \"" + neuron_type_str + "\"");
 }
 
-std::vector<std::vector<float>> SpikingUtils::build_spike_times(
+std::vector<std::vector<cypress::Real>> SpikingUtils::build_spike_times(
     const BinaryMatrix<uint64_t> &input_mat, NetworkParameters &netwParams,
     int seed)
 {
 	// BinaryMatrix<uint64_t> mat = m_BiNAM_Container->input_matrix();
-	std::vector<std::vector<float>> res;
+	std::vector<std::vector<cypress::Real>> res;
 	for (size_t i = 0; i < input_mat.cols(); i++) {  // over all neruons
 		for (size_t k = 0; k < netwParams.multiplicity(); k++) {
-			std::vector<float> vec;
+			std::vector<cypress::Real> vec;
 			for (size_t j = 0; j < input_mat.rows(); j++) {  // over all samples
 				auto vec2 = build_spike_train(
 				    netwParams, input_mat.get_bit(j, i),

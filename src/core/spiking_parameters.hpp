@@ -42,7 +42,7 @@ namespace nam {
 
 class NeuronParameters {
 private:
-	std::vector<float> m_params;
+	std::vector<cypress::Real> m_params;
 	std::vector<std::string> m_parameter_names;
 
 public:
@@ -54,12 +54,12 @@ public:
 
 	NeuronParameters(){};
 
-	const std::vector<float> &parameter() const { return m_params; };
+	const std::vector<cypress::Real> &parameter() const { return m_params; };
 
 	/**
 	 * Set parameter with name @param name to @param value
 	 */
-	NeuronParameters &set(std::string name, float value)
+	NeuronParameters &set(std::string name, cypress::Real value)
 	{
 		for (size_t i = 0; i < m_parameter_names.size(); i++) {
 			if (m_parameter_names[i] == name) {
@@ -70,7 +70,7 @@ public:
 		throw std::invalid_argument("Unknown neuron parameter" + name);
 	}
 
-	float get(std::string name)
+	cypress::Real get(std::string name)
 	{
 		for (size_t i = 0; i < m_parameter_names.size(); i++) {
 			if (m_parameter_names[i] == name) {
