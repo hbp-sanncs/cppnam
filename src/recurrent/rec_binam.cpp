@@ -18,6 +18,9 @@
 
 #include "rec_binam.hpp"
 
+#include "core/binam.hpp"
+#include "util/data.hpp"
+
 namespace nam {
 RecBinam &RecBinam::set_up(bool train_res, bool recall)
 {
@@ -50,7 +53,7 @@ RecBinam &RecBinam::set_up(bool train_res, bool recall)
 		m_binam_rec.train_mat(m_output, m_output);
 	}
 	if (recall) {
-		m_recall_rec = m_binam_rec.recallMat(m_recall);
+		m_recall_rec = m_binam_rec.recallMat(m_recall, m_params.ones_out());
 	}
 	return *this;
 }

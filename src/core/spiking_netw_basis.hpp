@@ -23,8 +23,8 @@
 
 #include <cypress/cypress.hpp>
 #include "entropy.hpp"
-#include "spiking_parameters.hpp"
 #include "parameters.hpp"
+#include "spiking_parameters.hpp"
 
 namespace nam {
 /**

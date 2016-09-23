@@ -18,10 +18,6 @@
 
 #include "gtest/gtest.h"
 
-#include <cstdint>
-#include <limits>
-#include <iostream>
-
 #include <core/binam.hpp>
 #include <core/entropy.hpp>
 #include <core/parameters.hpp>

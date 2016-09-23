@@ -17,8 +17,8 @@
  */
 
 #include <algorithm>
-#include <map>
 #include <limits>
+#include <map>
 #include <random>
 
 #include "data.hpp"

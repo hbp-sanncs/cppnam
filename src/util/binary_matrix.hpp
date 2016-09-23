@@ -166,7 +166,8 @@ public:
 		uint32_t m = col % intWidth;
 		if (val) {
 			m_mat(row, cellNumber(col)) |= (T(1) << m);
-		} else {
+		}
+		else {
 			m_mat(row, cellNumber(col)) &= ~(T(1) << m);
 		}
 		return *this;
@@ -188,15 +189,13 @@ public:
 	{
 		check_range_cells(row, col);
 		m_mat(row, col) = value;
- 		return *this;
+		return *this;
 	}
-	
+
 	/**
 	 * Return data matrix
 	 */
-	Matrix<T>& cells(){
-		return m_mat;
-	}
+	Matrix<T> &cells() { return m_mat; }
 
 	/**
 	 * Give out matrix sizes
@@ -208,7 +207,7 @@ public:
 	/**
 	 * Gives back the row @param i as BinaryVector
 	 */
-	BinaryVector<T> row_vec(size_t i)
+	BinaryVector<T> row_vec(size_t i) const
 	{
 		BinaryVector<T> vec(m_cols);
 		for (size_t j = 0; j < numberOfCells(m_cols); j++) {
@@ -341,4 +340,3 @@ constexpr uint32_t BinaryMatrix<T>::intWidth;
 }
 
 #endif /* CPPNAM_UTIL_BINARY_MATRIX_HPP */
-

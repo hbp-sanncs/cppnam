@@ -24,8 +24,8 @@
 #include <memory>
 
 #include <cypress/cypress.hpp>
-#include "core/spiking_netw_basis.hpp"
 #include "core/parameters.hpp"
+#include "core/spiking_netw_basis.hpp"
 #include "core/spiking_parameters.hpp"
 #include "recurrent/rec_binam.hpp"
 

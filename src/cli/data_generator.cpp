@@ -22,8 +22,8 @@
 #include <iostream>
 #include <string>
 
-#include <util/data.hpp>
 #include <util/binary_matrix.hpp>
+#include <util/data.hpp>
 
 using namespace nam;
 
@@ -88,6 +88,8 @@ int main(int argc, char *argv[])
 		std::cerr << "<ONES> must be smaller than <BITS>!" << std::endl;
 		return 1;
 	}
+	std::cout << "bits, ones, samples, seed: " << n_bits << ", " << n_ones
+	          << ", " << n_samples << ", " << seed << std::endl;
 
 	// Generate the requested data
 	std::cerr << "Generating data..." << std::endl;
@@ -98,20 +100,20 @@ int main(int argc, char *argv[])
 
 	// Print a non-sparse version of the matrix to std::cout
 	/*for (size_t i = 0; i < data.numberOfCells(data.rows()); i++) {
-		for (size_t j = 0; j < data.numberOfCells(data.cols()); j++) {
-			std::cout << (int)(data.get_cell(i, j))<< ",";
-		}
-		std::cout << std::endl;
+	    for (size_t j = 0; j < data.numberOfCells(data.cols()); j++) {
+	        std::cout << (int)(data.get_cell(i, j))<< ",";
+	    }
+	    std::cout << std::endl;
 	}*/
 	std::fstream ss("data", std::fstream::out);
 	size_t height = n_samples;
 	size_t width = n_bits;
 	ss.write((char *)&width, sizeof(width));
 	ss.write((char *)&height, sizeof(height));
-	ss.write((char *)data.cells().data(), data.cells().size() * sizeof(uint64_t));
-	
+	ss.write((char *)data.cells().data(),
+	         data.cells().size() * sizeof(uint64_t));
+
 	ss.close();
-	
 
 	return 0;
 }

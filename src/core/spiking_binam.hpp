@@ -32,14 +32,13 @@
 #include "spiking_netw_basis.hpp"
 #include "spiking_parameters.hpp"
 
-
 namespace nam {
 /**
  * This is the class implementation of the spiking binam. Containing all
  * necessary parameter structures, it is building, executing and evaluating
  * cypress networks. It is fed by a simple JSON structure.
  */
-class SpikingBinam : public SpNetwBasis{
+class SpikingBinam : public SpNetwBasis {
 private:
 	cypress::Network m_net;
 	cypress::Population<cypress::SpikeSourceArray> m_pop_source;
@@ -75,34 +74,40 @@ public:
 	             DataGenerationParameters gen_params,
 	             std::ostream &out = std::cout, bool recall = true,
 	             bool warn = false);
-	~SpikingBinam() override {};
-	
+	~SpikingBinam() override{};
+
 	std::unique_ptr<SpNetwBasis> clone() override
 	{
 		return std::make_unique<SpikingBinam>(*this);
 	};
 
-
 	/**
 	 * Getters for the parameter structures.
 	 */
-	const NetworkParameters &NetParams() const override { return m_networkParams; }
+	const NetworkParameters &NetParams() const override
+	{
+		return m_networkParams;
+	}
 	const DataParameters &DataParams() const override { return m_dataParams; }
-	const NeuronParameters &NeuronParams() const override { return m_neuronParams; }
+	const NeuronParameters &NeuronParams() const override
+	{
+		return m_neuronParams;
+	}
 
 	/**
 	 * Setters for the parameter structures.
 	 */
 	void NetParams(NetworkParameters net) override { m_networkParams = net; }
 	void DataParams(DataParameters data) override { m_dataParams = data; }
-	void NeuronParams(NeuronParameters params) override { m_neuronParams = params; }
+	void NeuronParams(NeuronParameters params) override
+	{
+		m_neuronParams = params;
+	}
 
 	/**
 	 * Recall theoretical BiNAM e.g. when DataParameters have been changed
 	 */
 	void recall() override { m_BiNAM_Container->recall(); }
-
-	
 
 	/**
 	 * Complete building of the spiking neural network

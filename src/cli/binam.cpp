@@ -60,7 +60,8 @@ void information_graph(size_t bits_in, size_t bits_out, size_t ones_in,
 		binam.set_up().recall();
 		auto se = binam.false_bits();
 		double info = entropy_hetero(params, se);
-		file << i << "," << info << "," << binam.sum_false_bits().fp << "\n";
+		file << i << "," << info << ","
+		     << binam.sum_false_bits(binam.false_bits()).fp << "\n";
 		show_progress(double(i) / double(max_sample));
 	}
 	std::cerr << std::endl;

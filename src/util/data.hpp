@@ -96,8 +96,8 @@ public:
 		if (it != m_children.end()) {
 			return it->second;
 		}
-		return m_children.emplace(idx,
-		                          PermutationTrieNode({idx, m_remaining - 1}))
+		return m_children
+		    .emplace(idx, PermutationTrieNode({idx, m_remaining - 1}))
 		    .first->second;
 	}
 
@@ -349,7 +349,7 @@ public:
 					double large_weight_total = 0.0;
 					double large_weight_total_renorm = 0.0;
 					for (size_t k = node->max(); k < idx; k++) {
-						const float w =
+						const double w =
 						    approximate_weight(k, node->remaining(), idx);
 						weights[k] = selected[k] ? w : 0;
 						large_weight_total += weights[k];

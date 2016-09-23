@@ -21,8 +21,8 @@
 #ifndef CPPNAM_UTIL_OPTIMISATION
 #define CPPNAM_UTIL_OPTIMISATION
 
-#include <cstdint>
 #include <cmath>
+#include <cstdint>
 
 namespace nam {
 

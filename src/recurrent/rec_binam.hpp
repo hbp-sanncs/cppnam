@@ -58,8 +58,8 @@ public:
 	RecBinam(){};
 
 	RecBinam &set_up(bool train_res = true, bool recall = true);
-	
-	RecBinam &set_up_from_file(bool train_res=true);
+
+	RecBinam &set_up_from_file(bool train_res = true);
 
 	/**
 	 * Recalls the patterns with the input matrix

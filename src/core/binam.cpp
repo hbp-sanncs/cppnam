@@ -21,7 +21,3 @@
 namespace nam {
 // Do nothing here, just make sure the header compiles.
 }
-
-
-
-

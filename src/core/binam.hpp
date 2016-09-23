@@ -29,8 +29,8 @@
 
 #include "core/entropy.hpp"
 #include "core/parameters.hpp"
-#include "util/data.hpp"
 #include "util/binary_matrix.hpp"
+#include "util/data.hpp"
 #include "util/population_count.hpp"
 
 namespace nam {
@@ -134,20 +134,20 @@ public:
 			}
 		}
 		return vec;
-	}; /*
-	 BinaryVector<T> recall(BinaryVector<T> in)
-	 {
-	     BinaryVector<T> vec(Base::rows());
-	     BinaryVector<T> temp = in;
-	     size_t thresh = digit_sum(in);
-	     for (size_t i = 0; i < Base::rows(); i++) {
-	         size_t sum = digit_sum(temp.VectorMult(Base::row_vec(i)));
-	         if (sum >= thresh) {
-	             vec.set_bit(i);
-	         }
-	     }
-	     return vec;
-	 };*/
+	};
+	BinaryVector<T> recall(BinaryVector<T> in, size_t thresh)
+	{
+		BinaryVector<T> vec(Base::rows());
+		BinaryVector<T> temp = in;
+		// size_t thresh = digit_sum(in);
+		for (size_t i = 0; i < Base::rows(); i++) {
+			size_t sum = digit_sum(temp.VectorMult(Base::row_vec(i)));
+			if (sum >= thresh) {
+				vec.set_bit(i);
+			}
+		}
+		return vec;
+	};
 
 	/*
 	 * Recall procedure for a matrix of samples, @param thresh is the threshold
@@ -163,6 +163,21 @@ public:
 		BinaryMatrix<T> res(in.rows(), Base::rows());
 		for (size_t i = 0; i < res.rows(); i++) {
 			res.write_vec(i, recall(in.row_vec(i)));
+		};
+		return res;
+	}
+
+	BinaryMatrix<T> recallMat(BinaryMatrix<T> in, size_t thresh)
+	{
+		if (in.cols() != Base::cols()) {
+			std::stringstream ss;
+			ss << in.size() << " out of range for matrix of size "
+			   << Base::cols() << std::endl;
+			throw std::out_of_range(ss.str());
+		}
+		BinaryMatrix<T> res(in.rows(), Base::rows());
+		for (size_t i = 0; i < res.rows(); i++) {
+			res.write_vec(i, recall(in.row_vec(i), thresh));
 		};
 		return res;
 	}
@@ -189,7 +204,7 @@ public:
 	 * @param recall the one with errors (the recalled one)
 	 */
 	static std::vector<SampleError> false_bits_mat(BinaryMatrix<T> out,
-	                                        BinaryMatrix<T> res)
+	                                               BinaryMatrix<T> res)
 	{
 		if (res.rows() > out.rows()) {
 			std::stringstream ss;
@@ -275,41 +290,49 @@ public:
 
 	BiNAM_Container<T> &set_up_from_file()
 	{
-		size_t height;
-		size_t width;
+		std::cout << "Read in data-file..." << std::endl;
+		size_t height = 0;
+		size_t width = 0;
 		std::fstream ss("../data/data_in", std::fstream::in);
+		if (!ss.good()) {
+			throw;
+		}
 		ss.read((char *)&width, sizeof(width));
 		ss.read((char *)&height, sizeof(height));
 		m_input = BinaryMatrix<T>(height, width);
 		ss.read((char *)m_input.cells().data(),
-		        m_input.cells().size() * sizeof(uint64_t));
+		        m_input.cells().size() * sizeof(T));
 		ss.close();
 		if (m_input.cols() != m_params.bits_in() ||
 		    m_input.rows() != m_params.samples()) {
 			std::stringstream s;
 			s << "Input data size " << m_input.cols() << " and "
-			   << m_input.rows() << " differs from given Parameters "
-			   << m_params.bits_in() << " and " << m_params.samples() << " !"
-			   << std::endl;
+			  << m_input.rows() << " differs from given Parameters "
+			  << m_params.bits_in() << " and " << m_params.samples() << " !"
+			  << std::endl;
 			throw std::out_of_range(s.str());
 		}
 
 		ss.open("../data/data_out", std::fstream::in);
+		if (!ss.good()) {
+			throw;
+		}
 		ss.read((char *)&width, sizeof(width));
 		ss.read((char *)&height, sizeof(height));
 		m_output = BinaryMatrix<T>(height, width);
 		ss.read((char *)m_output.cells().data(),
-		        m_output.cells().size() * sizeof(uint64_t));
+		        m_output.cells().size() * sizeof(T));
 		ss.close();
 		if (m_output.cols() != m_params.bits_out() ||
 		    m_output.rows() != m_params.samples()) {
 			std::stringstream s;
 			s << "Output data size " << m_output.cols() << " and "
-			   << m_output.rows() << " differs from given Parameters "
-			   << m_params.bits_out() << " and " << m_params.samples() << " !"
-			   << std::endl;
+			  << m_output.rows() << " differs from given Parameters "
+			  << m_params.bits_out() << " and " << m_params.samples() << " !"
+			  << std::endl;
 			throw std::out_of_range(s.str());
 		}
+		std::cout << "\t\t...done" << std::endl;
 		m_BiNAM.train_mat(m_input, m_output);
 		return *this;
 	}
@@ -334,7 +357,7 @@ public:
 	/**
 	 * Returns the number of all false positives and negatives of the recall.
 	 */
-	static SampleError sum_false_bits(std::vector<SampleError> vec_err )
+	static SampleError sum_false_bits(std::vector<SampleError> vec_err)
 	{
 		SampleError sum(0, 0);
 		for (size_t i = 0; i < vec_err.size(); i++) {
@@ -362,7 +385,7 @@ public:
 	ExpResults analysis(
 	    const BinaryMatrix<T> &recall_matrix = BinaryMatrix<T>())
 	{
-		auto recall_mat= &recall_matrix;
+		auto recall_mat = &recall_matrix;
 		if (recall_matrix.size() == 0) {
 			recall_mat = &m_recall;
 		}

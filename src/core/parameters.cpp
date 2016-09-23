@@ -17,19 +17,19 @@
  */
 
 #include "entropy.hpp"
+#include "parameters.hpp"
 #include "util/optimisation.hpp"
 #include "util/read_json.hpp"
-#include "parameters.hpp"
 
 namespace nam {
 
-DataGenerationParameters::DataGenerationParameters(const cypress::Json &obj, bool warn)
+DataGenerationParameters::DataGenerationParameters(const cypress::Json &obj,
+                                                   bool warn)
 {
 	std::map<std::string, size_t> input = json_to_map<size_t>(obj);
 	std::vector<std::string> names = {"seed", "random", "balanced", "unique"};
-	std::vector<size_t> default_vals({0,1,1,1});
-	auto res =
-	     read_check<size_t>(input, names, default_vals, warn);
+	std::vector<size_t> default_vals({0, 1, 1, 1});
+	auto res = read_check<size_t>(input, names, default_vals, warn);
 	m_seed = res[0];
 	m_random = false;
 	m_balanced = false;
@@ -50,8 +50,8 @@ DataParameters::DataParameters(const cypress::Json &obj, bool warn)
 	std::map<std::string, size_t> input = json_to_map<size_t>(obj);
 	std::vector<std::string> names = {"n_bits_in", "n_bits_out", "n_ones_in",
 	                                  "n_ones_out", "n_samples"};
-	auto res =
-	    read_check<size_t>(input, names, std::vector<size_t>(names.size(), 0), warn);
+	auto res = read_check<size_t>(input, names,
+	                              std::vector<size_t>(names.size(), 0), warn);
 
 	m_bits_in = res[0];
 	m_bits_out = res[1];
@@ -104,8 +104,10 @@ size_t DataParameters::optimal_sample_count(const DataParameters &params)
 	               double(params.bits_in() * params.bits_out());
 	size_t N_min = 0;
 	size_t N_max = std::ceil(std::log(0.1) / std::log(p));
-	return find_minimum_unimodal([&params](int N) {
-		return -expected_entropy(DataParameters(params).samples(N));
-	}, N_min, N_max, 1.0);
+	return find_minimum_unimodal(
+	    [&params](int N) {
+		    return -expected_entropy(DataParameters(params).samples(N));
+		},
+	    N_min, N_max, 1.0);
 }
 }
