@@ -67,7 +67,7 @@ static const std::string test_json =
 TEST(SpikingParameters, NeuronParameters)
 {
 	std::stringstream ss(test_json);
-	cypress::Json json(ss);
+	cypress::Json json = cypress::Json::parse(ss);
 	const cypress::IfCondExp &neurontype = cypress::IfCondExp::inst();
 	std::ofstream out;
 	auto params = NeuronParameters(neurontype, json["network"], out);
@@ -88,7 +88,7 @@ TEST(SpikingParameters, NeuronParameters)
 TEST(SpikingParameters, NetworkParameters)
 {
 	std::stringstream ss(test_json);
-	cypress::Json json(ss);
+	cypress::Json json = cypress::Json::parse(ss);
 	std::ofstream out;
 	auto params = NetworkParameters(json["network"], out);
 	EXPECT_NEAR(1, params.input_burst_size(), 1e-8);

@@ -27,7 +27,7 @@
 #include "core/spiking_parameters.hpp"
 
 namespace nam {
-	
+
 static const std::string test_json =
     "{\n"
     "\t\"data\": {\n"
@@ -67,7 +67,7 @@ static const std::string test_json =
 TEST(SpikingBinam, SpikingBinam)
 {
 	std::stringstream ss(test_json);
-	cypress::Json json(ss);
+	cypress::Json json = cypress::Json::parse(ss);
 	std::ofstream out;
 	auto binam = SpikingBinam(json, out);
 	DataParameters data = binam.DataParams();
@@ -76,7 +76,7 @@ TEST(SpikingBinam, SpikingBinam)
 	EXPECT_EQ(4, data.ones_in());
 	EXPECT_EQ(4, data.ones_out());
 	EXPECT_EQ(1000, data.samples());
-	
+
 	auto parameter = binam.NeuronParams().parameter();
 	EXPECT_NEAR(0.2, parameter[0], 1e-8);
 	EXPECT_NEAR(50, parameter[1], 1e-8);
@@ -89,7 +89,7 @@ TEST(SpikingBinam, SpikingBinam)
 	EXPECT_NEAR(0, parameter[8], 1e-8);
 	EXPECT_NEAR(-70, parameter[9], 1e-8);  // Cypress standard
 	EXPECT_NEAR(0, parameter[10], 1e-8);
-	
+
 	NetworkParameters params = binam.NetParams();
 	EXPECT_EQ(1, params.input_burst_size());
 	EXPECT_EQ(1, params.output_burst_size());
@@ -101,5 +101,4 @@ TEST(SpikingBinam, SpikingBinam)
 	EXPECT_EQ(0, params.p1());
 	EXPECT_NEAR(0.01, params.weight(), 1e-8);
 }
-
 }

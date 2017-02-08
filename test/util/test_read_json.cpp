@@ -66,7 +66,7 @@ static const std::string test_json =
 TEST(ReadJSON, json_to_map)
 {
 	std::stringstream ss(test_json);
-	cypress::Json json(ss);
+	cypress::Json json = cypress::Json::parse(ss);
 
 	auto map = json_to_map<float>(json["network"]);
 	EXPECT_EQ(map.end(), map.find("neuron_type"));
@@ -85,7 +85,7 @@ TEST(ReadJSON, json_to_map)
 TEST(ReadJSON, read_check)
 {
 	std::stringstream ss(test_json);
-	cypress::Json json(ss);
+	cypress::Json json = cypress::Json::parse(ss);
 
 	auto map = json_to_map<float>(json["network"]);
 	auto res = read_check<float>(
