@@ -673,7 +673,7 @@ size_t Experiment::run_experiment(size_t exp,
 						// TODO
 					}
 					else {
-						neuron_count = data_params.ones_out();
+						neuron_count = data_params.bits_out();
 					}
 				}
 				for (auto k : other_indices) {
