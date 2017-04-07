@@ -75,6 +75,46 @@ void progress_callback(double p)
 }
 
 /**
+ * Manipulate backend string to set backend specific setup flags
+ */
+std::string manipulate_backend_setup(std::string backend, std::string name, std::string value){
+	// Check wether option is already set
+	if (backend.find(name)!=std::string::npos){
+		std::cerr << "Tried to set option " << name << "which was already set!"<<std::endl;
+		return backend;
+	}
+	// Check if other options are set
+	size_t pos = backend.find('}');
+	if (pos==std::string::npos){
+		return backend + "={\"" + name + "\":\"" + value + "\"}";
+	}
+	// Insert new option at the end
+	backend.insert(pos,",\"" + name + "\":\"" + value + "\"" );
+	return backend;
+}
+
+/**
+ * Set big_capacitor flag if weights are in that range
+ */
+std::string prepare_ess_backend(std::string backend, cypress::Real weight){
+	// Check for ESS
+	if(split(backend, '=')[0] != "ess"){
+		return backend;
+	}
+	if(weight <= cypress::Real(0.0002)|| weight >= cypress::Real(0.03)){
+		std::cerr << "Weigths will be clipped for Cm = 0.2nF"<<std::endl;
+		return backend;
+	}
+	if(weight < 0.0028){
+		return manipulate_backend_setup(backend, "big_capacitor", "1");
+	}
+	// Small capacitors are standard in cypress
+	return backend;
+}
+
+
+
+/**
  * Adds a sweep parameter to already existing structures.
  * @param key : string containing the name of the parameter
  * @param values : Vector of values which should be swept over
@@ -293,9 +333,10 @@ std::vector<size_t> check_run(
 	if ((netw.neuron_count() + next_neuron_count >= max_neurons ||
 	     j >= sweep_values.size() - 1) &&
 	    sp_binam_vec.size() > 0) {
+		std::string manip_backend = prepare_ess_backend(backend, sp_binam_vec[0]->NetParams().weight());
 		cypress::PowerManagementBackend pwbackend(
 		    std::make_shared<cypress::NetIO4>(),
-		    cypress::Network::make_backend(backend));
+		    cypress::Network::make_backend(manip_backend));
 		netw.run(pwbackend);
 		// Generate results
 		std::shared_lock<std::shared_timed_mutex> lock(mutex);
