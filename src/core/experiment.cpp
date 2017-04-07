@@ -186,16 +186,17 @@ void run_standard_neat_output(SpNetwBasis &SpBinam, std::ostream &ofs,
 	cypress::Network netw;
 
 	netw.logger().min_level(cypress::DEBUG, 0);
+	std::string manip_backend = prepare_ess_backend(backend, SpBinam.NetParams().weight());
 
 	t1 = system_clock::now();
 	SpBinam.build(netw);
 	t2 = system_clock::now();
 	std::cout << "simulation ... " << std::endl;
-	std::thread spiking_network([&netw, backend, &t3, &t4]() mutable {
+	std::thread spiking_network([&netw, manip_backend, &t3, &t4]() mutable {
 		t3 = system_clock::now();
 		cypress::PowerManagementBackend pwbackend(
 		    std::make_shared<cypress::NetIO4>(),
-		    cypress::Network::make_backend(backend));
+		    cypress::Network::make_backend(manip_backend));
 		netw.logger().min_level(cypress::LogSeverity::DEBUG);
 		netw.run(pwbackend);
 		t4 = system_clock::now();
@@ -264,8 +265,10 @@ DataParameters prepare_data_params(
 static const std::map<std::string, size_t> neuron_numbers{{"spikey", 0},
                                                           {"spinnaker", 2000},
                                                           {"nmmc1", 1e6},
+                                                          {"nmpm1", 0},
                                                           {"nest", 1e2},
-                                                          {"pynn.nest", 1e2}};
+                                                          {"pynn.nest", 0},
+                                                          {"ess", 0}};
 
 /**
  * Checks, wether an additional parallel run will be to big, and if that is the
@@ -284,10 +287,10 @@ std::vector<size_t> check_run(
     std::vector<std::pair<ExpResults, ExpResults>> &results,
     size_t &next_neuron_count, std::shared_timed_mutex &mutex)
 {
-	size_t max_neurons = neuron_numbers.find(backend)->second;
+	size_t max_neurons = neuron_numbers.find(split(backend, '=')[0])->second;
 	// Check wether the next run is too big or if we are in the last run of the
 	// experiment
-	if ((netw.neuron_count() + next_neuron_count > max_neurons ||
+	if ((netw.neuron_count() + next_neuron_count >= max_neurons ||
 	     j >= sweep_values.size() - 1) &&
 	    sp_binam_vec.size() > 0) {
 		cypress::PowerManagementBackend pwbackend(
@@ -423,7 +426,7 @@ void Experiment::run_standard(std::string file_name)
 
 	std::ofstream ofs, null;
 	ofs =
-	    std::ofstream(file_name + "_" + m_backend + ".txt", std::ofstream::app);
+	    std::ofstream(file_name + "_" + split(m_backend, '=')[0] + ".txt", std::ofstream::app);
 
 	// auto spbinam_pointer = std::move(m_binam_ctor(json, null, true));
 	auto spbinam_pointer = std::move(m_binam_ctor(
@@ -526,8 +529,9 @@ size_t Experiment::run_experiment(size_t exp,
 	std::mutex done_mutex;
 
 	// Create n_threads working on the experiments (when using NEST)
+	std::string stripped_backend = split(m_backend, '=')[0];
 	const size_t n_threads =
-	    (m_backend != "nest" && m_backend != "ess" && m_backend != "pynn.nest")
+	    (stripped_backend!= "nest" && stripped_backend != "ess" && stripped_backend != "pynn.nest")
 	        ? 1
 	        : std::max<size_t>(1, std::thread::hardware_concurrency());
 	std::vector<std::thread> threads;
@@ -536,7 +540,7 @@ size_t Experiment::run_experiment(size_t exp,
 	}
 
 	// Check if last simulation broke down, recover state if backup is there
-	std::fstream ss(experiment_names[exp] + "_" + m_backend + "_bak.dat",
+	std::fstream ss(experiment_names[exp] + "_" + stripped_backend + "_bak.dat",
 	                std::fstream::in);
 	bool resume = ss.good();
 	if (resume) {
@@ -668,7 +672,7 @@ size_t Experiment::run_experiment(size_t exp,
 				std::lock_guard<std::mutex> lock2(done_mutex);
 
 				std::unique_lock<std::shared_timed_mutex> lock3(res_mutex);
-				ss.open(experiment_names[exp] + "_" + m_backend + "_bak.dat",
+				ss.open(experiment_names[exp] + "_" + stripped_backend + "_bak.dat",
 				        std::fstream::out);
 				ss.write((char *)indices.data(),
 				         indices.size() * sizeof(size_t));
@@ -689,7 +693,7 @@ size_t Experiment::run_experiment(size_t exp,
 	}
 	output(m_sweep_values[exp], results, ofs, names[0]);
 
-	auto file = experiment_names[exp] + "_" + m_backend + "_bak.dat";
+	auto file = experiment_names[exp] + "_" + stripped_backend + "_bak.dat";
 	// char *tmp = &file[0];
 	remove(file.c_str());
 	return 0;
@@ -711,7 +715,7 @@ int Experiment::run(std::string file_name)
 		}
 
 		// Open file and write first line
-		std::ofstream ofs(experiment_names[i] + "_" + m_backend + ".csv",
+		std::ofstream ofs(experiment_names[i] + "_" + split(m_backend, '=')[0] + ".csv",
 		                  std::ofstream::out);
 
 		run_experiment(i, names, ofs);
