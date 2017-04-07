@@ -658,14 +658,20 @@ size_t Experiment::run_experiment(size_t exp,
 	// callback, do a backup
 	using namespace std::chrono;
 	system_clock::time_point t = system_clock::now();
+	size_t last_job_idx = 0;
 	while (true) {
 		{
 			std::lock_guard<std::mutex> lock(idx_mutex);
-			progress_callback(double(current_job_idx) / double(results.size()));
+			if(current_job_idx != last_job_idx){
+				progress_callback(double(current_job_idx) / double(results.size()));
+				last_job_idx = current_job_idx;
+			}
 			if (current_job_idx >= results.size()) {
 				std::cerr << std::endl;
 				break;
 			}
+		}
+		{
 			// Every 100 seconds backup the sweep state
 			if (duration_cast<seconds>(system_clock::now() - t).count() > 100 &&
 			    jobs_done.size() > 0) {
