@@ -573,7 +573,9 @@ size_t Experiment::run_experiment(size_t exp,
 	// Create n_threads working on the experiments (when using NEST)
 	std::string stripped_backend = split(m_backend, '=')[0];
 	const size_t n_threads =
-	    (stripped_backend!= "nest" && stripped_backend != "ess")
+	    (stripped_backend!= "nest" && stripped_backend != "ess" && 
+	    stripped_backend != "json.nest"  && 
+	    stripped_backend != "json.pynn.nest")
 	        ? 1
 	        : std::max<size_t>(1, std::thread::hardware_concurrency());
 	std::vector<std::thread> threads;
