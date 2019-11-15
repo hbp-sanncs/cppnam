@@ -21,6 +21,8 @@
 #include "core/binam.hpp"
 #include "util/data.hpp"
 
+#include <iomanip>
+
 namespace nam {
 RecBinam &RecBinam::set_up(bool train_res, bool recall)
 {

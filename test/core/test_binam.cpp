@@ -31,8 +31,8 @@ TEST(BiNAM, BiNAM)
 	vec_in.set_bit(1);
 	vec_out.set_bit(0).set_bit(2);
 
-	EXPECT_EQ(1, bin.digit_sum(vec_in));
-	EXPECT_EQ(2, bin.digit_sum(vec_out));
+	EXPECT_EQ(1u, bin.digit_sum(vec_in));
+	EXPECT_EQ(2u, bin.digit_sum(vec_out));
 
 	bin.train_vec_check(vec_in, vec_out);
 	EXPECT_FALSE(bin.get_bit(0, 0));
@@ -76,10 +76,10 @@ TEST(BiNAM, BiNAM)
 	BinaryMatrix<uint8_t> pat_recall(2, 3);
 	pat_recall.set_bit(1, 1).set_bit(1, 2);
 	std::vector<SampleError> err = bin2.false_bits_mat(pat_out, pat_recall);
-	EXPECT_EQ(0, err[0].fp);
-	EXPECT_EQ(1, err[0].fn);
-	EXPECT_EQ(1, err[1].fp);
-	EXPECT_EQ(0, err[1].fn);
+	EXPECT_EQ(0u, err[0].fp);
+	EXPECT_EQ(1u, err[0].fn);
+	EXPECT_EQ(1u, err[1].fp);
+	EXPECT_EQ(0u, err[1].fn);
 
 #ifndef NDEBUG
 	BiNAM<uint8_t> bin3(3, 4);
@@ -111,11 +111,11 @@ TEST(BiNAM, BiNAM)
 	    .set_bit(1, 9)
 	    .set_bit(1, 18);
 	auto se2 = bin2.false_bits_mat(out_test, out_false);
-	EXPECT_EQ(3, se2[0].fp);
-	EXPECT_EQ(0, se2[0].fn);
-	EXPECT_EQ(0, se2[1].fp);
-	EXPECT_EQ(2, se2[1].fn);
-	EXPECT_EQ(3, bin2.false_bits(out_test.row_vec(0), out_false.row_vec(0)).fp);
+	EXPECT_EQ(3u, se2[0].fp);
+	EXPECT_EQ(0u, se2[0].fn);
+	EXPECT_EQ(0u, se2[1].fp);
+	EXPECT_EQ(2u, se2[1].fn);
+	EXPECT_EQ(3u, bin2.false_bits(out_test.row_vec(0), out_false.row_vec(0)).fp);
 }
 TEST(BiNAM, BiNAM2)
 {

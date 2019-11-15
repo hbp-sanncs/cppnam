@@ -26,18 +26,18 @@ namespace nam {
 TEST(BinaryMatrix, constexpressions)
 {
 	BinaryMatrix<uint8_t> bin(3, 9);
-	EXPECT_EQ(8, bin.intWidth);
-	EXPECT_EQ(255, bin.intMax);
-	EXPECT_EQ(0, bin.numberOfCells(0));
-	EXPECT_EQ(2, bin.numberOfCells(9));
-	EXPECT_EQ(2, bin.numberOfCells(15));
-	EXPECT_EQ(2, bin.numberOfCells(16));
-	EXPECT_EQ(3, bin.numberOfCells(17));
-	EXPECT_EQ(0, bin.cellNumber(0));
-	EXPECT_EQ(1, bin.cellNumber(8));
-	EXPECT_EQ(1, bin.cellNumber(15));
-	EXPECT_EQ(2, bin.cellNumber(16));
-	EXPECT_EQ(2, bin.cellNumber(17));
+	EXPECT_EQ(uint32_t(8), bin.intWidth);
+	EXPECT_EQ(uint8_t(255), bin.intMax);
+	EXPECT_EQ(uint32_t(0), bin.numberOfCells(0));
+	EXPECT_EQ(uint32_t(2), bin.numberOfCells(9));
+	EXPECT_EQ(uint32_t(2), bin.numberOfCells(15));
+	EXPECT_EQ(uint32_t(2), bin.numberOfCells(16));
+	EXPECT_EQ(uint32_t(3), bin.numberOfCells(17));
+	EXPECT_EQ(uint32_t(0), bin.cellNumber(0));
+	EXPECT_EQ(uint32_t(1), bin.cellNumber(8));
+	EXPECT_EQ(uint32_t(1), bin.cellNumber(15));
+	EXPECT_EQ(uint32_t(2), bin.cellNumber(16));
+	EXPECT_EQ(uint32_t(2), bin.cellNumber(17));
 
 #ifndef NDEBUG
 	EXPECT_NO_THROW(bin.check_range(2, 8));
@@ -54,8 +54,8 @@ TEST(BinaryMatrix, manipulation)
 	BinaryMatrix<uint8_t> bin(3, 9);
 	bin.set_cell(0, 0, 1);
 
-	EXPECT_EQ(1, bin.get_cell(0, 0));
-	EXPECT_EQ(0, bin.get_cell(0, 1));
+	EXPECT_EQ(uint8_t(1), bin.get_cell(0, 0));
+	EXPECT_EQ(uint8_t(0), bin.get_cell(0, 1));
 	EXPECT_EQ(true, bin.get_bit(0, 0));
 	EXPECT_EQ(false, bin.get_bit(0, 1));
 #ifndef NDEBUG
@@ -71,8 +71,8 @@ TEST(BinaryMatrix, manipulation)
 	BinaryVector<uint8_t> vec(9);
 	vec.set_bit(1);
 
-	EXPECT_EQ(2, vec.get_cell(0));
-	EXPECT_EQ(0, vec.get_cell(1));
+	EXPECT_EQ(uint8_t(2), vec.get_cell(0));
+	EXPECT_EQ(uint8_t(0), vec.get_cell(1));
 	EXPECT_EQ(true, vec.get_bit(1));
 	EXPECT_EQ(false, vec.get_bit(0));
 #ifndef NDEBUG
@@ -82,8 +82,8 @@ TEST(BinaryMatrix, manipulation)
 
 	bin.write_vec(1, vec);
 
-	EXPECT_EQ(2, bin.get_cell(1, 0));
-	EXPECT_EQ(0, bin.get_cell(1, 1));
+	EXPECT_EQ(uint8_t(2), bin.get_cell(1, 0));
+	EXPECT_EQ(uint8_t(0), bin.get_cell(1, 1));
 	EXPECT_EQ(true, bin.get_bit(1, 1));
 	EXPECT_EQ(false, bin.get_bit(1, 0));
 
@@ -93,14 +93,14 @@ TEST(BinaryMatrix, manipulation)
 	EXPECT_FALSE(bin.row_vec(1).get_cell(1));
 
 	vec = bin.row_vec(1);
-	EXPECT_EQ(2, vec.get_cell(0));
-	EXPECT_EQ(0, vec.get_cell(1));
+	EXPECT_EQ(uint8_t(2), vec.get_cell(0));
+	EXPECT_EQ(uint8_t(0), vec.get_cell(1));
 	EXPECT_EQ(true, vec.get_bit(1));
 	EXPECT_EQ(false, vec.get_bit(0));
 
 	vec = bin.row_vec(0);
-	EXPECT_EQ(1, vec.get_cell(0));
-	EXPECT_EQ(0, vec.get_cell(1));
+	EXPECT_EQ(uint8_t(1), vec.get_cell(0));
+	EXPECT_EQ(uint8_t(0), vec.get_cell(1));
 	EXPECT_EQ(true, vec.get_bit(0));
 	EXPECT_EQ(false, vec.get_bit(1));
 
@@ -122,29 +122,29 @@ TEST(BinaryMatrix, manipulation)
 	
 	BinaryMatrix<uint8_t> mat(3,3);
 	cypress::Vector<uint8_t> hector({1,0,1});
-	EXPECT_EQ(1, hector[0]);
-	EXPECT_EQ(0, hector[1]);
-	EXPECT_EQ(1, hector[2]);
+	EXPECT_EQ(uint8_t(1), hector[0]);
+	EXPECT_EQ(uint8_t(0), hector[1]);
+	EXPECT_EQ(uint8_t(1), hector[2]);
 	mat.write_col_vec(1,hector);
-	EXPECT_EQ(0, mat.get_bit(0,0));
-	EXPECT_EQ(1, mat.get_bit(0,1));
-	EXPECT_EQ(0, mat.get_bit(0,2));
-	EXPECT_EQ(0, mat.get_bit(1,0));
-	EXPECT_EQ(0, mat.get_bit(1,1));
-	EXPECT_EQ(0, mat.get_bit(1,2));
-	EXPECT_EQ(0, mat.get_bit(2,0));
-	EXPECT_EQ(1, mat.get_bit(2,1));
-	EXPECT_EQ(0, mat.get_bit(2,2));
+	EXPECT_EQ(uint8_t(0), mat.get_bit(0,0));
+	EXPECT_EQ(uint8_t(1), mat.get_bit(0,1));
+	EXPECT_EQ(uint8_t(0), mat.get_bit(0,2));
+	EXPECT_EQ(uint8_t(0), mat.get_bit(1,0));
+	EXPECT_EQ(uint8_t(0), mat.get_bit(1,1));
+	EXPECT_EQ(uint8_t(0), mat.get_bit(1,2));
+	EXPECT_EQ(uint8_t(0), mat.get_bit(2,0));
+	EXPECT_EQ(uint8_t(1), mat.get_bit(2,1));
+	EXPECT_EQ(uint8_t(0), mat.get_bit(2,2));
 	mat.write_col_vec(2,hector);
-	EXPECT_EQ(0, mat.get_bit(0,0));
-	EXPECT_EQ(1, mat.get_bit(0,1));
-	EXPECT_EQ(1, mat.get_bit(0,2));
-	EXPECT_EQ(0, mat.get_bit(1,0));
-	EXPECT_EQ(0, mat.get_bit(1,1));
-	EXPECT_EQ(0, mat.get_bit(1,2));
-	EXPECT_EQ(0, mat.get_bit(2,0));
-	EXPECT_EQ(1, mat.get_bit(2,1));
-	EXPECT_EQ(1, mat.get_bit(2,2));
+	EXPECT_EQ(uint8_t(0), mat.get_bit(0,0));
+	EXPECT_EQ(uint8_t(1), mat.get_bit(0,1));
+	EXPECT_EQ(uint8_t(1), mat.get_bit(0,2));
+	EXPECT_EQ(uint8_t(0), mat.get_bit(1,0));
+	EXPECT_EQ(uint8_t(0), mat.get_bit(1,1));
+	EXPECT_EQ(uint8_t(0), mat.get_bit(1,2));
+	EXPECT_EQ(uint8_t(0), mat.get_bit(2,0));
+	EXPECT_EQ(uint8_t(1), mat.get_bit(2,1));
+	EXPECT_EQ(uint8_t(1), mat.get_bit(2,2));
 	
 }
 }

@@ -21,11 +21,11 @@
 #ifndef CPPNAM_UTIL_READ_JSON_HPP
 #define CPPNAM_UTIL_READ_JSON_HPP
 
+#include <cypress/cypress.hpp>
+
 #include <map>
 #include <string>
 #include <vector>
-
-#include <cypress/util/json.hpp>
 
 namespace nam {
 /**

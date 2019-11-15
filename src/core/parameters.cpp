@@ -16,10 +16,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "util/read_json.hpp"
+
 #include "entropy.hpp"
 #include "parameters.hpp"
 #include "util/optimisation.hpp"
-#include "util/read_json.hpp"
 
 namespace nam {
 

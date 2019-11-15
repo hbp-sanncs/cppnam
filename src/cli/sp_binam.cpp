@@ -16,6 +16,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "core/spiking_binam.hpp"
+#include "recurrent/spiking_rec_binam.hpp"
+
 #include <csignal>
 #include <fstream>
 #include <functional>
@@ -24,8 +27,6 @@
 
 #include "cypress/cypress.hpp"
 #include "core/experiment.hpp"
-#include "core/spiking_binam.hpp"
-#include "recurrent/spiking_rec_binam.hpp"
 
 using namespace nam;
 int main(int argc, const char *argv[])
@@ -46,7 +47,7 @@ int main(int argc, const char *argv[])
 	cypress::Json json;
 	{
 		std::ifstream ifs(argv[2], std::ifstream::in);
-		json << ifs;
+        ifs >> json;
 	}
 	
 	std::string mode;

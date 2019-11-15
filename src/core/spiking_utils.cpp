@@ -18,6 +18,8 @@
 
 #include <cypress/cypress.hpp>
 
+#include <algorithm>
+
 #include "entropy.hpp"
 #include "parameters.hpp"
 #include "util/binary_matrix.hpp"

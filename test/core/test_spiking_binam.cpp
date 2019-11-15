@@ -16,12 +16,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cypress/cypress.hpp>
+
 #include "gtest/gtest.h"
 
 #include <sstream>
 #include <vector>
 
-#include <cypress/cypress.hpp>
 #include "core/parameters.hpp"
 #include "core/spiking_binam.hpp"
 #include "core/spiking_parameters.hpp"
@@ -71,11 +72,11 @@ TEST(SpikingBinam, SpikingBinam)
 	std::ofstream out;
 	auto binam = SpikingBinam(json, out);
 	DataParameters data = binam.DataParams();
-	EXPECT_EQ(100, data.bits_in());
-	EXPECT_EQ(100, data.bits_out());
-	EXPECT_EQ(4, data.ones_in());
-	EXPECT_EQ(4, data.ones_out());
-	EXPECT_EQ(1000, data.samples());
+	EXPECT_EQ(100u, data.bits_in());
+	EXPECT_EQ(100u, data.bits_out());
+	EXPECT_EQ(4u, data.ones_in());
+	EXPECT_EQ(4u, data.ones_out());
+	EXPECT_EQ(1000u, data.samples());
 
 	auto parameter = binam.NeuronParams().parameter();
 	EXPECT_NEAR(0.2, parameter[0], 1e-8);
@@ -91,8 +92,8 @@ TEST(SpikingBinam, SpikingBinam)
 	EXPECT_NEAR(0, parameter[10], 1e-8);
 
 	NetworkParameters params = binam.NetParams();
-	EXPECT_EQ(1, params.input_burst_size());
-	EXPECT_EQ(1, params.output_burst_size());
+	EXPECT_EQ(1u, params.input_burst_size());
+	EXPECT_EQ(1u, params.output_burst_size());
 	EXPECT_EQ(100, params.time_window());
 	EXPECT_NEAR(2.0, params.isi(), 1e-8);
 	EXPECT_NEAR(2.0, params.sigma_t(), 1e-8);

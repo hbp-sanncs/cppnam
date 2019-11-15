@@ -15,11 +15,13 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <cypress/cypress.hpp>
 
 #include <algorithm>
 #include <chrono>
 #include <fstream>
 #include <mutex>
+#include <iomanip>
 #include <random>
 #include <shared_mutex>
 #include <sstream>
@@ -28,7 +30,6 @@
 #include <vector>
 
 #include <cypress/backend/power/netio4.hpp>
-#include <cypress/cypress.hpp>
 #include "experiment.hpp"
 #include "spiking_binam.hpp"
 #include "spiking_netw_basis.hpp"

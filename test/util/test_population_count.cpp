@@ -23,10 +23,10 @@
 namespace nam {
 
 TEST(population_count, basic) {
-	EXPECT_EQ(5, population_count<int8_t>(0x1F));
-	EXPECT_EQ(1, population_count<int8_t>(0x1));
-	EXPECT_EQ(1, population_count<uint64_t>(0x1));
-	EXPECT_EQ(1, population_count<uint64_t>(0x1L << 63));
+	EXPECT_EQ(uint8_t(5), population_count<int8_t>(0x1F));
+	EXPECT_EQ(uint8_t(1), population_count<int8_t>(0x1));
+	EXPECT_EQ(uint64_t(1), population_count<uint64_t>(0x1));
+	EXPECT_EQ(uint64_t(1), population_count<uint64_t>(0x1L << 63));
 }
 
 }

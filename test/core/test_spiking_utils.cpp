@@ -16,10 +16,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "core/spiking_parameters.hpp"
+
 #include "gtest/gtest.h"
 
 #include "core/parameters.hpp"
-#include "core/spiking_parameters.hpp"
 #include "core/spiking_utils.hpp"
 #include "util/binary_matrix.hpp"
 

@@ -16,14 +16,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "util/read_json.hpp"
+#include "core/spiking_parameters.hpp"
+
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
-
-#include "util/read_json.hpp"
-#include "core/spiking_parameters.hpp"
 
 namespace nam {
 

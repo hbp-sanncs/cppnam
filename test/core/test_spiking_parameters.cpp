@@ -16,13 +16,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cypress/cypress.hpp>
+
 #include "gtest/gtest.h"
 
 #include <fstream>
 #include <sstream>
 #include <vector>
 
-#include <cypress/cypress.hpp>
 #include "core/spiking_parameters.hpp"
 
 namespace nam {

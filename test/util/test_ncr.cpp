@@ -26,22 +26,22 @@
 namespace nam {
 
 TEST(ncr, ncr) {
-	EXPECT_EQ(0, ncr(0, -1));
-	EXPECT_EQ(10, ncr(5, 2));
+	EXPECT_EQ(uint64_t(0), ncr(0, -1));
+	EXPECT_EQ(uint64_t(10), ncr(5, 2));
 }
 
 TEST(ncr, ncr_clamped32) {
-	EXPECT_EQ(0, ncr_clamped32(0, -1));
-	EXPECT_EQ(10, ncr_clamped32(5, 2));
-	EXPECT_EQ(49995000, ncr_clamped32(10000, 2));
+	EXPECT_EQ(uint64_t(0), ncr_clamped32(0, -1));
+	EXPECT_EQ(uint64_t(10), ncr_clamped32(5, 2));
+	EXPECT_EQ(uint64_t(49995000), ncr_clamped32(10000, 2));
 	EXPECT_EQ(std::numeric_limits<uint32_t>::max(), ncr_clamped32(10000, 3));
 }
 
 TEST(ncr, ncr_clamped64) {
-	EXPECT_EQ(0, ncr_clamped64(0, -1));
-	EXPECT_EQ(10, ncr_clamped64(5, 2));
-	EXPECT_EQ(49995000, ncr_clamped64(10000, 2));
-	EXPECT_EQ(166616670001, ncr_clamped64(10000, 3));
+	EXPECT_EQ(uint64_t(0), ncr_clamped64(0, -1));
+	EXPECT_EQ(uint64_t(10), ncr_clamped64(5, 2));
+	EXPECT_EQ(uint64_t(49995000), ncr_clamped64(10000, 2));
+	EXPECT_EQ(uint64_t(166616670001), ncr_clamped64(10000, 3));
 	EXPECT_EQ(std::numeric_limits<uint64_t>::max(), ncr_clamped64(10000, 6));
 }
 

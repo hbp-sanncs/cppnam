@@ -16,9 +16,10 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
-
 #include <cypress/cypress.hpp>
+
+#include <string>
+#include <cypress/backend/power/netio4.hpp>
 
 #include "entropy.hpp"
 #include "parameters.hpp"
@@ -159,7 +160,13 @@ SpikingBinam &SpikingBinam::build(cypress::Network &network)
 	return *this;
 }
 
-void SpikingBinam::run(std::string backend) { m_net.run(PyNN(backend)); }
+void SpikingBinam::run(std::string backend, cypress::Network &netw)
+{
+	cypress::PowerManagementBackend pwbackend(
+	    std::make_shared<cypress::NetIO4>(),
+	    cypress::Network::make_backend(backend));
+	netw.run(pwbackend);
+}
 
 void SpikingBinam::evaluate_neat(std::ostream &out)
 {

@@ -16,12 +16,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "recurrent/rec_binam.hpp"
+
 #include <cstring>
+#include <iomanip>
 #include <thread>
 
 #include "core/binam.hpp"
 #include "core/entropy.hpp"
-#include "recurrent/rec_binam.hpp"
 
 using namespace nam;
 

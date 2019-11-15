@@ -35,8 +35,8 @@ add_executable(cppnam_test_util
 	util/test_read_json
 )
 
-add_dependencies(cppnam_test_core googletest)
-add_dependencies(cppnam_test_util googletest)
+add_dependencies(cppnam_test_core cypress_ext)
+add_dependencies(cppnam_test_util cypress_ext)
 
 target_link_libraries(cppnam_test_core
 	cppnam_util

@@ -21,13 +21,13 @@
 #ifndef CPPNAM_CORE_SPIKING_BINAM_HPP
 #define CPPNAM_CORE_SPIKING_BINAM_HPP
 
+#include <cypress/cypress.hpp>
+
 #include <array>
 #include <memory>
 #include <string>
 
 #include "binam.hpp"
-
-#include <cypress/cypress.hpp>
 #include "parameters.hpp"
 #include "spiking_netw_basis.hpp"
 #include "spiking_parameters.hpp"

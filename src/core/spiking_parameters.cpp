@@ -15,12 +15,14 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <cypress/cypress.hpp>
+
 #include <algorithm>  //std::sort
 #include <random>
 #include <string>
 #include <vector>
 
-#include <cypress/cypress.hpp>
+
 #include "parameters.hpp"
 #include "spiking_binam.hpp"
 #include "spiking_parameters.hpp"

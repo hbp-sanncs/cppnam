@@ -21,11 +21,12 @@
 #ifndef CPPNAM_CORE_SPIKING_PARAMETERS_HPP
 #define CPPNAM_CORE_SPIKING_PARAMETERS_HPP
 
+#include <cypress/cypress.hpp>
+
 #include <array>
 #include <iostream>
 #include <string>
 
-#include <cypress/cypress.hpp>
 #include "parameters.hpp"
 
 /**
