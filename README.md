@@ -7,11 +7,19 @@ It serves as a potential benchmark for neuromorphic hardware systems and as a te
 
 ## Usage
 
+First, build the project by executing in your target directory:
+
+    git clone https://github.com/hbp-unibi/cppnam 
+    mkdir cppnam/build && cd cppnam/build
+    cmake ..
+    make -j
+
+
 To run the complete analysis pipeline, run the program in one of the following
 forms:
 
-    ./run.py <SIMULATOR> [<EXPERIMENT>]
-    ./run.py <SIMULATOR>  <EXPERIMENT> NMPI
+    ./sp_binam <SIMULATOR> [<EXPERIMENT>]
+    ./sp_binam <SIMULATOR>  <EXPERIMENT> NMPI
 
 Where `SIMULATOR` is the simulator that should be used for execution (see below)
 and `EXPERIMENT` is a JSON file describing the experiment that should be executed.
