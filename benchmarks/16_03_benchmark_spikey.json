@@ -1,0 +1,153 @@
+{
+	"data": {
+		"n_bits_in": 1600,
+		"n_bits_out": 1600,
+		"n_ones_in": 4,
+		"n_ones_out": 4,
+		"n_samples" : 1000
+	},
+
+	"network": {
+		"params": {
+			"v_rest": -70.0,
+			"v_reset": -80.0,
+			"v_thresh": -57.0,
+			"tau_refrac": 0.0,
+			"g_leak": 0.02
+		},
+		"neuron_type": "IfFacetsHardware1",
+		"weight": 0.01,
+		"input_burst_size": 1,
+		"time_window": 100.0,
+		"isi": 2.0,
+		"sigma_t": 2.0,
+		"sigma_offs": 0.0,
+		"p0": 0.0,
+		"p1": 0.0,
+		"output_burst_size": 1,
+		"general_offset" : 100
+	},
+
+	"data_generator": {
+		"seed" : 1234,
+		"random" : 1,
+		"balanced" : 1,
+		"unique" : 1
+	},
+	"experiments" : {
+		"spikey" :  {
+			"data.n_bits_in" : 256,
+			"data.n_bits_out" : 384,
+			"repeat" : 10,
+			"data.n_samples" : 4619
+		},
+		"spikey_burst" :  {
+			"data.n_bits_in" : 256,
+			"data.n_bits_out" : 384,
+			"params.v_thresh" : -64.7,
+			"network.input_burst_size" : 4,
+			"network.weight" : 0.001,
+			"repeat" : 10,
+			"data.n_samples" : 4619
+		},
+		"spikey_pop" :  {
+			"data.n_bits_in" : 64,
+			"data.n_bits_out" : 96,
+			"params.v_thresh" : -64.7,
+			"network.input_burst_size" : 1,
+			"network.weight" : 0.001,
+			"network.multiplicity" : 4,
+			"repeat" : 10,
+			"data.n_samples" : 324
+		},
+		"spikey_pop_burst" :  {
+			"data.n_bits_in" : 64,
+			"data.n_bits_out" : 96,
+			"params.v_thresh" : -62.0,
+			"params.g_leak" : 0.089,
+			"network.input_burst_size" : 4,
+			"network.weight" : 0.001,
+			"network.multiplicity" : 4,
+			"repeat" : 10,
+			"data.n_samples" : 324
+		},
+		
+		
+		"spikey_small" :  {
+			"data.n_bits_in" : 256,
+			"data.n_bits_out" : 192,
+			"repeat" : 10,
+			"data.n_samples" : 2431
+		},
+		"spikey_burst_small" :  {
+			"data.n_bits_in" : 256,
+			"data.n_bits_out" : 192,
+			"params.v_thresh" : -64.7,
+			"network.input_burst_size" : 4,
+			"network.weight" : 0.001,
+			"repeat" : 10,
+			"data.n_samples" : 2431
+		},
+		"spikey_pop_small" :  {
+			"data.n_bits_in" : 64,
+			"data.n_bits_out" : 48,
+			"params.v_thresh" : -64.7,
+			"network.input_burst_size" : 1,
+			"network.weight" : 0.001,
+			"network.multiplicity" : 4,
+			"repeat" : 10,
+			"data.n_samples" : 178
+		},
+		"spikey_pop_burst_small" :  {
+			"data.n_bits_in" : 64,
+			"data.n_bits_out" : 48,
+			"params.v_thresh" : -62.0,
+			"params.g_leak" : 0.089,
+			"network.input_burst_size" : 4,
+			"network.weight" : 0.001,
+			"network.multiplicity" : 4,
+			"repeat" : 10,
+			"data.n_samples" : 178
+		},
+
+
+
+		"spikey_very_small" :  {
+			"data.n_bits_in" : 128,
+			"data.n_bits_out" : 192,
+			"repeat" : 10,
+			"data.n_samples" : 1215
+		},
+		"spikey_burst_very_small" :  {
+			"data.n_bits_in" : 128,
+			"data.n_bits_out" : 192,
+			"params.v_thresh" : -64.7,
+			"network.input_burst_size" : 4,
+			"network.weight" : 0.001,
+			"repeat" : 10,
+			"data.n_samples" : 1215
+		},
+		"spikey_pop_very_small" :  {
+			"data.n_bits_in" : 32,
+			"data.n_bits_out" : 48,
+			"params.v_thresh" : -64.7,
+			"network.input_burst_size" : 1,
+			"network.weight" : 0.001,
+			"network.multiplicity" : 4,
+			"repeat" : 10,
+			"data.n_samples" : 88
+		},
+		"spikey_pop_burst_very_small" :  {
+			"data.n_bits_in" : 32,
+			"data.n_bits_out" : 48,
+			"params.v_thresh" : -62.0,
+			"params.g_leak" : 0.089,
+			"network.input_burst_size" : 4,
+			"network.weight" : 0.001,
+			"network.multiplicity" : 4,
+			"repeat" : 10,
+			"data.n_samples" : 88
+		}
+	}
+}
+

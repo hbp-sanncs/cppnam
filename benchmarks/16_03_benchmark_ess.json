@@ -1,0 +1,210 @@
+{
+	"data": {
+		"n_bits_in": 1600,
+		"n_bits_out": 1600,
+		"n_ones_in": 4,
+		"n_ones_out": 4,
+		"n_samples" : 1000
+	},
+
+	"network": {
+		"params": {
+			"e_rev_E": 0.0,
+			"v_rest": -70.0,
+			"v_reset": -80.0,
+			"v_thresh": -57.0,
+			"tau_syn_E": 2.0,
+			"tau_refrac": 0.0,
+			"tau_m": 10,
+			"cm": 0.2
+		},
+		"neuron_type": "IF_cond_exp",
+		"weight": 0.01,
+		"input_burst_size": 1,
+		"time_window": 100.0,
+		"isi": 2.0,
+		"sigma_t": 2.0,
+		"sigma_offs": 0.0,
+		"p0": 0.0,
+		"p1": 0.0,
+		"output_burst_size": 1,
+		"general_offset" : 100
+	},
+
+	"data_generator": {
+		"seed" : 1234,
+		"random" : 1,
+		"balanced" : 1,
+		"unique" : 1
+	},
+	"experiments" : {
+		"ESS" :  {
+			"data.n_bits_in" : 224,
+			"data.n_bits_out" : 256,
+			"data.n_samples" : 2770
+		},
+
+
+
+
+		"ESS_burst" :  {
+			"data.n_bits_in" : 224,
+			"data.n_bits_out" : 256,
+			"params.v_thresh" : -64.7,
+			"network.input_burst_size" : 4,
+			"network.weight" : 0.001,
+			"data.n_samples" : 2770
+		},
+
+
+
+
+		"ESS_pop" :  {
+			"data.n_bits_in" : 56,
+			"data.n_bits_out" : 64,
+			"data.n_samples" : 198,
+			"params.v_thresh" : -64.7,
+			"network.input_burst_size" : 1,
+			"network.weight" : 0.001,
+			"network.multiplicity" : 4
+		},
+
+
+
+
+		"ESS_pop_burst" :  {
+			"data.n_bits_in" : 56,
+			"data.n_bits_out" : 64,
+			"data.n_samples" : 198,
+			"params.v_thresh" : -62.0,
+			"params.tau_m" : 2.25,
+			"network.input_burst_size" : 4,
+			"network.weight" : 0.001,
+			"network.multiplicity" : 4
+		}
+	},
+	"experiments2" : {
+
+
+
+		"ESS_small" :  {
+			"data.n_bits_in" : 224,
+			"data.n_bits_out" : 128,
+			"data.n_samples" : 1471
+		},
+
+
+
+
+		"ESS_small_burst" :  {
+			"data.n_bits_in" : 224,
+			"data.n_bits_out" : 128,
+			"params.v_thresh" : -64.7,
+			"network.input_burst_size" : 4,
+			"network.weight" : 0.001,
+			"data.n_samples" : 1471
+		},
+
+
+
+
+		"ESS_small_pop" :  {
+			"data.n_bits_in" : 56,
+			"data.n_bits_out" : 32,
+			"data.n_samples" : 108,
+			"params.v_thresh" : -64.7,
+			"network.input_burst_size" : 1,
+			"network.weight" : 0.001,
+			"network.multiplicity" : 4
+		},
+
+
+
+
+		"ESS_small_pop_burst" :  {
+			"data.n_bits_in" : 56,
+			"data.n_bits_out" : 32,
+			"data.n_samples" : 108,
+			"params.v_thresh" : -62.0,
+			"params.tau_m" : 2.25,
+			"network.input_burst_size" : 4,
+			"network.weight" : 0.001,
+			"network.multiplicity" : 4
+		}
+	},
+	"experiments2":{
+
+
+		"ESS_small2" :  {
+			"data.n_bits_in" : 112,
+			"data.n_bits_out" : 256,
+			"data.n_samples" : 1386
+		},
+
+		"ESS_small2_burst" :  {
+			"data.n_bits_in" : 112,
+			"data.n_bits_out" : 256,
+			"params.v_thresh" : -64.7,
+			"network.input_burst_size" : 4,
+			"network.weight" : 0.001,
+			"data.n_samples" : 1386
+		},
+		"ESS_small2_pop" :  {
+			"data.n_bits_in" : 28,
+			"data.n_bits_out" : 64,
+			"data.n_samples" : 99,
+			"params.v_thresh" : -64.7,
+			"network.input_burst_size" : 1,
+			"network.weight" : 0.001,
+			"network.multiplicity" : 4
+		},
+		"ESS_small2_pop_burst" :  {
+			"data.n_bits_in" : 28,
+			"data.n_bits_out" : 64,
+			"data.n_samples" : 99,
+			"params.v_thresh" : -62.0,
+			"params.tau_m" : 2.25,
+			"network.input_burst_size" : 4,
+			"network.weight" : 0.001,
+			"network.multiplicity" : 4
+		}
+	},
+	"experiments2":{
+
+
+		"ESS_tiny" :  {
+			"data.n_bits_in" : 112,
+			"data.n_bits_out" : 128,
+			"data.n_samples" : 735
+		},
+
+		"ESS_tiny_burst" :  {
+			"data.n_bits_in" : 112,
+			"data.n_bits_out" : 128,
+			"params.v_thresh" : -64.7,
+			"network.input_burst_size" : 4,
+			"network.weight" : 0.001,
+			"data.n_samples" : 735
+		},
+		"ESS_tiny_pop" :  {
+			"data.n_bits_in" : 28,
+			"data.n_bits_out" : 32,
+			"data.n_samples" : 54,
+			"params.v_thresh" : -64.7,
+			"network.input_burst_size" : 1,
+			"network.weight" : 0.001,
+			"network.multiplicity" : 4
+		},
+		"ESS_tiny_pop_burst" :  {
+			"data.n_bits_in" : 28,
+			"data.n_bits_out" : 32,
+			"data.n_samples" : 54,
+			"params.v_thresh" : -62.0,
+			"params.tau_m" : 2.25,
+			"network.input_burst_size" : 4,
+			"network.weight" : 0.001,
+			"network.multiplicity" : 4
+		}
+	}
+}
+

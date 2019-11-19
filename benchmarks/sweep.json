@@ -1,0 +1,67 @@
+{
+	"data": {
+		"n_bits_in": 256,
+		"n_bits_out": 384,
+		"n_ones_in": 4,
+		"n_ones_out": 21,
+		"n_samples" : 1000
+	},
+
+	"network": {
+		"params": {
+			"e_rev_E": 0.0,
+			"v_rest": -70.0,
+			"v_reset": -80.0,
+			"v_thresh": -57.0,
+			"tau_syn_E": 2.0,
+			"tau_refrac": 0.0,
+			"g_leak": 0.02,
+			"cm": 0.2
+		},
+		"neuron_type": "IF_cond_exp",
+		"weight": 0.01,
+		"input_burst_size": 1,
+		"output_burst_size": 1,
+		"time_window": 100.0,
+		"isi": 2.0,
+		"sigma_t": 2.0,
+		"sigma_offs": 0.0,
+		"p0": 0.0,
+		"p1": 0.0,
+		"general_offset" : 100
+	},
+
+	"data_generator": {
+		"seed" : 1234,
+		"random" : 1,
+		"balanced" : 0,
+		"unique" : 0
+	},
+	
+	"experiments": {
+		"Sweep_thresh_weight" : {
+			"network.weight" : {"min" : 0.001, "max": 0.015, "count" : 128},
+			"params.v_thresh" : {"min": -69, "max": -55, "count": 128},
+			"repeat" : 1
+		},
+		"Sweep_ones_out" : {
+			"data.n_ones_out" : {"min" : 2, "max": 60, "count" : 59},
+			"data_generator.seed" : {"min" : 1234, "max" : 1238, "count" : 5}
+		},
+		"Sweep_ones_in" : {
+			"data.n_ones_in" : {"min" : 2, "max": 60, "count" : 59},
+			"data_generator.seed" : {"min" : 1234, "max" : 1238, "count" : 5},
+			"data.n_ones_out": 4
+		},
+		"Sweep_bits_out" : {
+			"data.n_bits_out" : {"min" : 100, "max": 384, "count" : 500},
+			"data_generator.seed" : {"min" : 1234, "max" : 1238, "count" : 5},
+			"data.n_ones_out": 4
+		},
+		"Sweep_bits_in" : {
+			"data.n_bits_in" : {"min" : 100, "max": 256, "count" : 500},
+			"data_generator.seed" : {"min" : 1234, "max" : 1238, "count" : 5},
+			"data.n_ones_out": 4
+		}
+	}
+} 
