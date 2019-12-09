@@ -43,8 +43,6 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-find_package(PythonLibs 2.7 REQUIRED )
-
 # Add configuration option for static linking
 set(STATIC_LINKING FALSE CACHE BOOL "True for static linking")
 
@@ -166,5 +164,6 @@ target_link_libraries(recurrent_BiNAM
 # Unit tests -- only enable if gtest is present
 #
 if(${GTEST_FOUND})
+    enable_testing()
 	add_subdirectory(test)
 endif()
