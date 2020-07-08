@@ -127,7 +127,21 @@ public:
 	void evaluate_neat(std::ostream &output = std::cout) override;
 	void evaluate_csv(std::ostream &output) override;
 	std::pair<ExpResults, ExpResults> evaluate_res() override;
+
+	const cypress::PopulationBase &get_pop_output() const
+	{
+		return m_pop_output;
+	}
+	const cypress::PopulationBase &get_pop_source() const
+	{
+		return m_pop_source;
+	}
+
+	const std::shared_ptr<BiNAM_Container<uint64_t>> &get_BiNAM() const
+	{
+		return m_BiNAM_Container;
+	}
 };
-}
+}  // namespace nam
 
 #endif /* CPPNAM_CORE_SPIKING_BINAM_HPP */

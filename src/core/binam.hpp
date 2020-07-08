@@ -412,12 +412,12 @@ public:
 	/**
 	 * Print out matrices for testing purposes
 	 */
-	void print()
+	void print(std::ostream& ofs = std::cout)
 	{
-		m_BiNAM.print();
-		m_input.print();
-		m_output.print();
-		m_recall.print();
+		m_BiNAM.print(ofs);
+		m_input.print(ofs);
+		m_output.print(ofs);
+		m_recall.print(ofs);
 	};
 };
 }

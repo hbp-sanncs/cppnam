@@ -271,15 +271,15 @@ public:
 	/**
 	 * Print the matrix for testing purposes
 	 */
-	void print() const
+	void print(std::ostream& ofs = std::cout) const
 	{
 		for (size_t i = 0; i < m_rows; i++) {
 			for (size_t j = 0; j < m_cols; j++) {
-				std::cout << int(get_bit(i, j));
+				ofs << int(get_bit(i, j));
 			}
-			std::cout << "\n";
+			ofs << "\n";
 		}
-		std::cout << std::endl;
+		ofs << std::endl;
 	}
 };
 
