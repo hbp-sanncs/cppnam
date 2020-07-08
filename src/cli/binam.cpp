@@ -16,15 +16,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <csignal>
-#include <iomanip>
-#include <iostream>
-#include <fstream>
-#include <vector>
-
 #include <core/binam.hpp>
 #include <core/entropy.hpp>
 #include <core/parameters.hpp>
+#include <csignal>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <vector>
 
 using namespace nam;
 
@@ -97,9 +96,12 @@ int main(int argc, char *argv[])
 		n_ones_out = std::stoi(argv[4]);
 		n_samples = std::stoi(argv[5]);
 	}
+	auto params =
+	    DataParameters(n_bits, n_bits_out, n_ones, n_ones_out, n_samples);
+	std::cout << "The optimal sample count: "
+	          << DataParameters::optimal_sample_count(params) << std::endl;
 	std::cout << n_bits << " bits, " << n_ones << " ones and " << n_samples
 	          << " samples" << std::endl;
-	DataParameters params(n_bits, n_bits_out, n_ones, n_ones_out, n_samples);
 	BiNAM_Container<uint64_t> binam(params);
 	binam.set_up().recall().analysis();
 	binam.trained_matrix().print();
