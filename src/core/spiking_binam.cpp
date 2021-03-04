@@ -172,8 +172,10 @@ void SpikingBinam::evaluate_neat(std::ostream &out)
 {
 	BinaryMatrix<uint64_t> output = SpikingUtils::spikes_to_matrix(
 	    m_pop_output, m_dataParams, m_networkParams);
-	auto res_spike = m_BiNAM_Container->analysis(output);
-	auto res_theo = m_BiNAM_Container->analysis();
+	auto res_spike =
+	    m_BiNAM_Container->analysis(output, m_networkParams.n_samples_recall());
+	auto res_theo = m_BiNAM_Container->analysis(
+	    BinaryMatrix<uint64_t>(), m_networkParams.n_samples_recall());
 	out << "Result of the analysis" << std::endl;
 	out << "\tInfo \t nInfo \t fp \t fn" << std::endl;
 	out << "theor: \t" << res_theo.Info << "\t" << 1.00 << "\t" << res_theo.fp
@@ -186,8 +188,10 @@ void SpikingBinam::evaluate_csv(std::ostream &out)
 
 	BinaryMatrix<uint64_t> output = SpikingUtils::spikes_to_matrix(
 	    m_pop_output, m_dataParams, m_networkParams);
-	ExpResults res_spike = m_BiNAM_Container->analysis(output);
-	ExpResults res_theo = m_BiNAM_Container->analysis();
+	ExpResults res_spike =
+	    m_BiNAM_Container->analysis(output, m_networkParams.n_samples_recall());
+	ExpResults res_theo = m_BiNAM_Container->analysis(
+	    BinaryMatrix<uint64_t>(), m_networkParams.n_samples_recall());
 	out << res_spike.Info << "," << res_theo.Info << ","
 	    << res_spike.Info / res_theo.Info << "," << res_spike.fp << ","
 	    << res_theo.fp << "," << res_spike.fn << "," << res_theo.fn;
@@ -196,8 +200,10 @@ std::pair<ExpResults, ExpResults> SpikingBinam::evaluate_res()
 {
 	BinaryMatrix<uint64_t> output = SpikingUtils::spikes_to_matrix(
 	    m_pop_output, m_dataParams, m_networkParams);
-	ExpResults res_spike = m_BiNAM_Container->analysis(output);
-	ExpResults res_theo = m_BiNAM_Container->analysis();
+	ExpResults res_spike =
+	    m_BiNAM_Container->analysis(output, m_networkParams.n_samples_recall());
+	ExpResults res_theo = m_BiNAM_Container->analysis(
+	    BinaryMatrix<uint64_t>(), m_networkParams.n_samples_recall());
 	return std::pair<ExpResults, ExpResults>(res_theo, res_spike);
 }
-}
+}  // namespace nam

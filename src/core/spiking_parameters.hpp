@@ -114,6 +114,7 @@ public:
 	NAMED_PARAMETER(multiplicity, 9);
 	NAMED_PARAMETER(general_offset, 10);
 	NAMED_PARAMETER(weight_rec, 11);
+	NAMED_PARAMETER(n_samples_recall, 12);
 
 	/**
 	 * Construct from Json, give out parameters to @param out

@@ -51,11 +51,22 @@ std::vector<std::vector<Real>> SpikingUtils::build_spike_times(
     int seed)
 {
 	// BinaryMatrix<uint64_t> mat = m_BiNAM_Container->input_matrix();
+	size_t n_samples = 0;
+	if (netwParams.n_samples_recall() == 0)
+		n_samples = input_mat.rows();
+	else
+		n_samples = netwParams.n_samples_recall();
+	if (n_samples > input_mat.rows()) {
+		throw std::runtime_error(
+		    "Number of samples to recall " + std::to_string(n_samples) +
+		    " is too large! Max: " + std::to_string(input_mat.rows()));
+	}
+
 	std::vector<std::vector<Real>> res;
 	for (size_t i = 0; i < input_mat.cols(); i++) {  // over all neruons
 		for (size_t k = 0; k < netwParams.multiplicity(); k++) {
 			std::vector<Real> vec;
-			for (size_t j = 0; j < input_mat.rows(); j++) {  // over all samples
+			for (size_t j = 0; j < n_samples; j++) {  // over all samples
 				auto vec2 = build_spike_train(
 				    netwParams, input_mat.get_bit(j, i),
 				    netwParams.general_offset() + j * netwParams.time_window(),
@@ -346,7 +357,11 @@ BinaryMatrix<uint64_t> SpikingUtils::spike_trains_to_matrix(
     NetworkParameters &params)
 {
 	std::vector<std::vector<Real>> spike_mat = pop_to_spike_vector(popOutput);
-	return spike_vectors_to_matrix(spike_mat, data_params.samples(), params);
+	size_t samples = data_params.samples();
+	if (params.n_samples_recall() > 0) {
+		samples = params.n_samples_recall();
+	}
+	return spike_vectors_to_matrix(spike_mat, samples, params);
 }
 
 BinaryMatrix<uint64_t> SpikingUtils::spike_vectors_to_matrix2(
@@ -484,4 +499,4 @@ BinaryMatrix<uint64_t> SpikingUtils::spike_vectors_to_matrix_no_conv(
 	}
 	return res;
 }
-}
+}  // namespace nam

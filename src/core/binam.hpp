@@ -187,7 +187,8 @@ public:
 	 * @param out is the original sample
 	 * @param recall the one with errors (the recalled sample)
 	 */
-	static SampleError false_bits(BinaryVector<T> out, BinaryVector<T> recall)
+	static SampleError false_bits(const BinaryVector<T> &out,
+	                              const BinaryVector<T> &recall)
 	{
 		SampleError error;
 		for (size_t i = 0; i < Base::numberOfCells(out.size()); i++) {
@@ -203,8 +204,9 @@ public:
 	 * @param out is the original sample matrix
 	 * @param recall the one with errors (the recalled one)
 	 */
-	static std::vector<SampleError> false_bits_mat(BinaryMatrix<T> out,
-	                                               BinaryMatrix<T> res)
+	static std::vector<SampleError> false_bits_mat(const BinaryMatrix<T> &out,
+	                                               const BinaryMatrix<T> &res,
+	                                               size_t n_samples_max = 0.0)
 	{
 		if (res.rows() > out.rows()) {
 			std::stringstream ss;
@@ -212,8 +214,17 @@ public:
 			   << out.rows() << std::endl;
 			throw std::out_of_range(ss.str());
 		}
-		std::vector<SampleError> error(res.rows());
-		for (size_t i = 0; i < res.rows(); i++) {
+		if (n_samples_max == 0) {
+			n_samples_max = res.rows();
+		}
+		if (n_samples_max > res.rows()) {
+			throw std::runtime_error(
+			    "Number of samples to calc false bits " +
+			    std::to_string(n_samples_max) +
+			    " is too large! Max: " + std::to_string(res.rows()));
+		}
+		std::vector<SampleError> error(n_samples_max);
+		for (size_t i = 0; i < n_samples_max; i++) {
 			error[i] = false_bits(out.row_vec(i), res.row_vec(i));
 		}
 		return error;
@@ -357,7 +368,7 @@ public:
 	/**
 	 * Returns the number of all false positives and negatives of the recall.
 	 */
-	static SampleError sum_false_bits(std::vector<SampleError> vec_err)
+	static SampleError sum_false_bits(const std::vector<SampleError> &vec_err)
 	{
 		SampleError sum(0, 0);
 		for (size_t i = 0; i < vec_err.size(); i++) {
@@ -383,14 +394,15 @@ public:
 	 * given, it takes the member recall matrix.
 	 */
 	ExpResults analysis(
-	    const BinaryMatrix<T> &recall_matrix = BinaryMatrix<T>())
+	    const BinaryMatrix<T> &recall_matrix = BinaryMatrix<T>(),
+	    size_t n_samples_max = 0)
 	{
 		auto recall_mat = &recall_matrix;
 		if (recall_matrix.size() == 0) {
 			recall_mat = &m_recall;
 		}
 		std::vector<SampleError> se =
-		    m_BiNAM.false_bits_mat(m_output, *recall_mat);
+		    m_BiNAM.false_bits_mat(m_output, *recall_mat, n_samples_max);
 		double info = entropy_hetero(m_params, se);
 		SampleError sum = sum_false_bits(se);
 		return ExpResults(info, sum);
@@ -412,7 +424,7 @@ public:
 	/**
 	 * Print out matrices for testing purposes
 	 */
-	void print(std::ostream& ofs = std::cout)
+	void print(std::ostream &ofs = std::cout)
 	{
 		m_BiNAM.print(ofs);
 		m_input.print(ofs);
@@ -420,6 +432,6 @@ public:
 		m_recall.print(ofs);
 	};
 };
-}
+}  // namespace nam
 
 #endif /* CPPNAM_CORE_BINAM_HPP */
