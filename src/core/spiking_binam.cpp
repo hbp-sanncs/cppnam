@@ -16,10 +16,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cypress/cypress.hpp>
-
-#include <string>
 #include <cypress/backend/power/netio4.hpp>
+#include <cypress/cypress.hpp>
+#include <string>
 
 #include "entropy.hpp"
 #include "parameters.hpp"
@@ -123,7 +122,7 @@ SpikingBinam &SpikingBinam::build()
 		                      return mat.get_bit(
 		                          std::floor(double(tar) / double(mult)),
 		                          std::floor(double(src) / double(mult)));
-		                  },
+	                      },
 	                      m_networkParams.weight()));
 	return *this;
 }
@@ -155,17 +154,17 @@ SpikingBinam &SpikingBinam::build(cypress::Network &network)
 		                            return mat.get_bit(
 		                                std::floor(float(tar) / float(mult)),
 		                                std::floor(float(src) / float(mult)));
-		                        },
+	                            },
 	                            m_networkParams.weight()));
 	return *this;
 }
 void SpikingBinam::run(std::string backend) { m_net.run(backend); }
 /*void SpikingBinam::run(std::string backend, cypress::Network &netw)
 {
-	cypress::PowerManagementBackend pwbackend(
-	    std::make_shared<cypress::NetIO4>(),
-	    cypress::Network::make_backend(backend));
-	netw.run(pwbackend);
+    cypress::PowerManagementBackend pwbackend(
+        std::make_shared<cypress::NetIO4>(),
+        cypress::Network::make_backend(backend));
+    netw.run(pwbackend);
 }*/
 
 void SpikingBinam::evaluate_neat(std::ostream &out)
@@ -174,8 +173,9 @@ void SpikingBinam::evaluate_neat(std::ostream &out)
 	    m_pop_output, m_dataParams, m_networkParams);
 	auto res_spike =
 	    m_BiNAM_Container->analysis(output, m_networkParams.n_samples_recall());
-	auto res_theo = m_BiNAM_Container->analysis(
-	    BinaryMatrix<uint64_t>(), m_networkParams.n_samples_recall());
+	BinaryMatrix<uint64_t> tmp;
+	auto res_theo =
+	    m_BiNAM_Container->analysis(tmp, m_networkParams.n_samples_recall());
 	out << "Result of the analysis" << std::endl;
 	out << "\tInfo \t nInfo \t fp \t fn" << std::endl;
 	out << "theor: \t" << res_theo.Info << "\t" << 1.00 << "\t" << res_theo.fp
@@ -190,8 +190,9 @@ void SpikingBinam::evaluate_csv(std::ostream &out)
 	    m_pop_output, m_dataParams, m_networkParams);
 	ExpResults res_spike =
 	    m_BiNAM_Container->analysis(output, m_networkParams.n_samples_recall());
-	ExpResults res_theo = m_BiNAM_Container->analysis(
-	    BinaryMatrix<uint64_t>(), m_networkParams.n_samples_recall());
+	BinaryMatrix<uint64_t> tmp;
+	ExpResults res_theo =
+	    m_BiNAM_Container->analysis(tmp, m_networkParams.n_samples_recall());
 	out << res_spike.Info << "," << res_theo.Info << ","
 	    << res_spike.Info / res_theo.Info << "," << res_spike.fp << ","
 	    << res_theo.fp << "," << res_spike.fn << "," << res_theo.fn;
@@ -202,8 +203,9 @@ std::pair<ExpResults, ExpResults> SpikingBinam::evaluate_res()
 	    m_pop_output, m_dataParams, m_networkParams);
 	ExpResults res_spike =
 	    m_BiNAM_Container->analysis(output, m_networkParams.n_samples_recall());
-	ExpResults res_theo = m_BiNAM_Container->analysis(
-	    BinaryMatrix<uint64_t>(), m_networkParams.n_samples_recall());
+	BinaryMatrix<uint64_t> tmp;
+	ExpResults res_theo =
+	    m_BiNAM_Container->analysis(tmp, m_networkParams.n_samples_recall());
 	return std::pair<ExpResults, ExpResults>(res_theo, res_spike);
 }
 }  // namespace nam

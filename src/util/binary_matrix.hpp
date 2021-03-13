@@ -108,7 +108,7 @@ public:
 	{
 		m_mat = Matrix<T>(rows, numberOfCells(cols), MatrixFlags::ZEROS);
 	};
-
+    ~BinaryMatrix() = default;
 #ifndef NDEBUG
 	/**
 	 * Check if bit-numbers are in range of matrix to avoid overflows

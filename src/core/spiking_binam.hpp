@@ -74,7 +74,7 @@ public:
 	             DataGenerationParameters gen_params,
 	             std::ostream &out = std::cout, bool recall = true,
 	             bool warn = false);
-	~SpikingBinam() override{};
+	~SpikingBinam() override = default;
 
 	std::unique_ptr<SpNetwBasis> clone() override
 	{

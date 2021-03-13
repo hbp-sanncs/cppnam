@@ -65,11 +65,12 @@ public:
 	 */
 	BiNAM(){};
 	BiNAM(size_t output, size_t input) : BinaryMatrix<T>(output, input){};
+	~BiNAM() = default;
 
 	/**
 	 * Training of a sample pair with checking of dimensions
 	 */
-	BiNAM<T> &train_vec_check(BinaryVector<T> in, BinaryVector<T> out)
+	BiNAM<T> &train_vec_check(BinaryVector<T> &in, BinaryVector<T> &out)
 	{
 		if (in.size() != Base::cols() || out.size() != Base::rows()) {
 			std::stringstream ss;
@@ -84,7 +85,7 @@ public:
 	/**
 	 * Training of whole matrices, should be favoured for using
 	 */
-	BiNAM<T> &train_mat(BinaryMatrix<T> in, BinaryMatrix<T> out)
+	BiNAM<T> &train_mat(const BinaryMatrix<T> &in, const BinaryMatrix<T> &out)
 	{
 		if (in.cols() != Base::cols() || out.cols() != Base::rows() ||
 		    in.rows() != out.rows()) {
@@ -103,7 +104,7 @@ public:
 	/**
 	 * Sum of all set bits of a BinaryVector. Used for recall
 	 */
-	size_t digit_sum(const BinaryVector<T> vec)
+	size_t digit_sum(const BinaryVector<T> &vec)
 	{
 		size_t sum = 0;
 		for (size_t i = 0; i < Base::numberOfCells(vec.size()); i++) {
@@ -116,7 +117,7 @@ public:
 	 * Recall procedure for a single sample
 	 * @param thresh is the threshold
 	 */
-	BinaryVector<T> recall(BinaryVector<T> in)
+	BinaryVector<T> recall(const BinaryVector<T> &in)
 	{
 		BinaryVector<T> vec(Base::rows());
 		for (size_t i = 0; i < Base::rows(); i++) {
@@ -135,7 +136,7 @@ public:
 		}
 		return vec;
 	};
-	BinaryVector<T> recall(BinaryVector<T> in, size_t thresh)
+	BinaryVector<T> recall(const BinaryVector<T> &in, size_t thresh)
 	{
 		BinaryVector<T> vec(Base::rows());
 		BinaryVector<T> temp = in;
@@ -152,7 +153,7 @@ public:
 	/*
 	 * Recall procedure for a matrix of samples, @param thresh is the threshold
 	 */
-	BinaryMatrix<T> recallMat(BinaryMatrix<T> in)
+	BinaryMatrix<T> recallMat(const BinaryMatrix<T> &in)
 	{
 		if (in.cols() != Base::cols()) {
 			std::stringstream ss;
@@ -167,7 +168,7 @@ public:
 		return res;
 	}
 
-	BinaryMatrix<T> recallMat(BinaryMatrix<T> in, size_t thresh)
+	BinaryMatrix<T> recallMat(const BinaryMatrix<T> &in, size_t thresh)
 	{
 		if (in.cols() != Base::cols()) {
 			std::stringstream ss;
@@ -268,7 +269,9 @@ public:
 	    : m_BiNAM(params.bits_out(), params.bits_in()),
 	      m_params(params),
 	      m_datagen(){};
-	BiNAM_Container(){};
+	BiNAM_Container() = default;
+
+	~BiNAM_Container() = default;
 
 	/**
 	 * Generates input and output data, trains the storage matrix
@@ -393,20 +396,26 @@ public:
 	 * @param recall_matrix: recalled matrix from experiment. If nothing is
 	 * given, it takes the member recall matrix.
 	 */
-	ExpResults analysis(
-	    const BinaryMatrix<T> &recall_matrix = BinaryMatrix<T>(),
-	    size_t n_samples_max = 0)
+	ExpResults analysis(BinaryMatrix<T> &recall_matrix,
+	                    size_t n_samples_max = 0)
 	{
-		auto recall_mat = &recall_matrix;
+		std::vector<SampleError> se;
 		if (recall_matrix.size() == 0) {
-			recall_mat = &m_recall;
+			se = m_BiNAM.false_bits_mat(m_output, m_recall, n_samples_max);
 		}
-		std::vector<SampleError> se =
-		    m_BiNAM.false_bits_mat(m_output, *recall_mat, n_samples_max);
+		else {
+			se = m_BiNAM.false_bits_mat(m_output, recall_matrix, n_samples_max);
+		}
 		double info = entropy_hetero(m_params, se);
 		SampleError sum = sum_false_bits(se);
 		return ExpResults(info, sum);
 	};
+
+	ExpResults analysis(size_t n_samples_max = 0)
+	{
+		BinaryMatrix<T> tmp;
+		return analysis(tmp, n_samples_max);
+	}
 
 	/**
 	 * Getter for member matrices
