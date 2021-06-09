@@ -1,0 +1,52 @@
+{
+    "mode": "recurrent",
+	"data": {
+		"n_bits_in": 20,
+		"n_bits_out": 20,
+		"n_ones_in": 4,
+		"n_ones_out": 4,
+		"n_samples" : 0
+	},
+
+	"network": {
+		"params": {
+			"e_rev_E": 0.0, 
+			"e_rev_I": -100.0,
+			"v_rest": -80.0,
+			"v_reset": -80.0,
+			"v_thresh": -57.0,
+			"tau_syn_E": 2.0,
+			"tau_syn_I": 5.0,
+			"tau_refrac": 1.0,
+			"tau_m": 20.0,
+			"cm": 0.2
+		},
+		"neuron_type": "IF_cond_exp",
+		"input_burst_size": 1,
+		"output_burst_size": 1,
+		"time_window": 100.0,
+		"isi": 2.0,
+		"sigma_t": 2.0,
+		"sigma_offs": 0.0,
+		"p0": 0.0,
+		"p1": 0.0,
+        "multiplicity": 1,
+        "general_offset" : 100,
+        "weight": 0.013,
+        "weight_rec": 0.0175,
+        "weight_inhib": 0.04,
+        "delay": 0.0,
+        "delay_rec": 4.0,
+		"delay_inhib": 0.0,
+		"weight_control": -0.00233838,
+		"delay_control": 0.0,
+        "neuron_id": 2
+	},
+		
+	"data_generator": {
+		"seed" : 1234,
+		"random" : 1,
+		"balanced" : 1,
+		"unique" : 1
+	}
+} 

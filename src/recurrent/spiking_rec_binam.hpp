@@ -41,6 +41,7 @@ private:
 	cypress::Network m_net;
 	cypress::Population<cypress::SpikeSourceArray> m_pop_source;
 	cypress::PopulationBase m_pop_output;
+	cypress::PopulationBase m_pop_control;
 	std::string m_neuronType;
 	DataParameters m_dataParams;
 	NeuronParameters m_neuronParams;
@@ -121,8 +122,13 @@ public:
 	/**
 	 * Evaluation based on that one used in the BiNAM_Container
 	 */
+	void plot_spikes(cypress::PopulationBase &popOutput);
 	void evaluate_neat(std::ostream &output = std::cout) override;
 	void evaluate_csv(std::ostream &output) override;
+	Real spikes_to_recurrency_rate(cypress::PopulationBase &popOutput,
+	                               DataParameters &dataParams,
+	                               NetworkParameters &netwParams,
+	                               BinaryMatrix<uint64_t> output);
 	std::pair<ExpResults, ExpResults> evaluate_res() override;
 };
 }

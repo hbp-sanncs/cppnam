@@ -360,21 +360,24 @@ std::vector<size_t> check_run(
  */
 void output(const std::vector<std::vector<Real>> &sweep_values,
             const std::vector<std::pair<ExpResults, ExpResults>> &results,
-            std::ostream &ofs, const std::vector<std::string> &names)
+            std::ostream &ofs,
+            const std::vector<std::vector<std::string>> &names)
 {
 	for (size_t j = 0; j < results.size(); j++) {              // all values
 		for (size_t k = 0; k < sweep_values[j].size(); k++) {  // all parameter
-			if (names[k] == "data") {
-				ofs << size_t(sweep_values[j][k]) << ",";
+			if (names[k][0] == "data") {
+				ofs << size_t(sweep_values[j][k]) << ", ";
 			}
-			else if (names[k] != "data_generator") {
-				ofs << sweep_values[j][k] << ",";
+			else if (names[k][0] != "data_generator") {
+				ofs << sweep_values[j][k] << ", ";
 			}
 		}
-		ofs << results[j].second.Info << "," << results[j].first.Info << ","
-		    << results[j].second.Info / results[j].first.Info << ","
-		    << results[j].second.fp << "," << results[j].first.fp << ","
-		    << results[j].second.fn << "," << results[j].first.fn;
+		ofs << results[j].second.Info << ", " << results[j].first.Info << ", "
+		    << results[j].second.Info / results[j].first.Info << ", "
+		    << results[j].second.fp << ", " << results[j].first.fp << ", "
+		    << results[j].second.fn << ", " << results[j].first.fn << ", "
+		    << results[j].second.rr;
+		
 		ofs << std::endl;
 	}
 }
@@ -553,7 +556,7 @@ size_t Experiment::run_experiment(size_t exp,
 			ofs << names[j][1] << ", ";
 		}
 	}
-	ofs << "info, info_th,info_n, fp, fp_th, fn, fn_th" << std::endl;
+	ofs << "info, info_th,info_n, fp, fp_th, fn, fn_th, rec_rate" << std::endl;
 
 	// Shuffle sweep indices for stochastic independence in simulations on
 	// spikey
@@ -573,9 +576,9 @@ size_t Experiment::run_experiment(size_t exp,
 	// Create n_threads working on the experiments (when using NEST)
 	std::string stripped_backend = split(m_backend, '=')[0];
 	const size_t n_threads =
-	    (stripped_backend!= "nest" && stripped_backend != "ess" && 
-	    stripped_backend != "json.nest"  && 
-	    stripped_backend != "json.pynn.nest")
+	    (stripped_backend != "nest" && stripped_backend != "ess" &&
+	     stripped_backend != "json.nest" && stripped_backend != "genn" &&
+	     stripped_backend != "json.pynn.nest")
 	        ? 1
 	        : std::max<size_t>(1, std::thread::hardware_concurrency());
 	std::vector<std::thread> threads;
@@ -741,7 +744,7 @@ size_t Experiment::run_experiment(size_t exp,
 	for (size_t i = 0; i < threads.size(); i++) {
 		threads[i].join();
 	}
-	output(m_sweep_values[exp], results, ofs, names[0]);
+	output(m_sweep_values[exp], results, ofs, names);
 
 	auto file = experiment_names[exp] + "_" + stripped_backend + "_bak.dat";
 	// char *tmp = &file[0];

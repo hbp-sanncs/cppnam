@@ -65,10 +65,10 @@ struct SampleError {
 };
 
 struct ExpResults {
-	double Info, fp, fn;
+	double Info, fp, fn, rr;
 
-	ExpResults(double Info, double fp, double fn)
-	    : Info(Info), fp(fp), fn(fn){};
+	ExpResults(double Info, double fp, double fn, double rr)
+	    : Info(Info), fp(fp), fn(fn), rr(rr){};
 	ExpResults(double Info, SampleError se)
 	    : Info(Info), fp(se.fp), fn(se.fn){};
 	ExpResults() : Info(0), fp(0), fn(0){};
