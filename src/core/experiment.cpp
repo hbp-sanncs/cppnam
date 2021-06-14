@@ -361,14 +361,14 @@ std::vector<size_t> check_run(
 void output(const std::vector<std::vector<Real>> &sweep_values,
             const std::vector<std::pair<ExpResults, ExpResults>> &results,
             std::ostream &ofs,
-            const std::vector<std::vector<std::string>> &names)
+            const std::vector<std::string> &names)
 {
 	for (size_t j = 0; j < results.size(); j++) {              // all values
 		for (size_t k = 0; k < sweep_values[j].size(); k++) {  // all parameter
-			if (names[k][0] == "data") {
+			if (names[k] == "data") {
 				ofs << size_t(sweep_values[j][k]) << ", ";
 			}
-			else if (names[k][0] != "data_generator") {
+			else if (names[k] != "data_generator") {
 				ofs << sweep_values[j][k] << ", ";
 			}
 		}
@@ -744,7 +744,7 @@ size_t Experiment::run_experiment(size_t exp,
 	for (size_t i = 0; i < threads.size(); i++) {
 		threads[i].join();
 	}
-	output(m_sweep_values[exp], results, ofs, names);
+	output(m_sweep_values[exp], results, ofs, names[0]);
 
 	auto file = experiment_names[exp] + "_" + stripped_backend + "_bak.dat";
 	// char *tmp = &file[0];

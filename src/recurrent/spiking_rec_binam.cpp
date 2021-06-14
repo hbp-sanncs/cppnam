@@ -106,11 +106,11 @@ SpikingRecBinam &SpikingRecBinam::build(cypress::Network &network)
 
 	m_pop_output = SpikingUtils::add_population(
 	    m_neuronType, network, m_dataParams, m_networkParams, m_neuronParams);
-	m_pop_output.signals().record(1, true);
+	// m_pop_output.signals().record(1, true);
 
 	m_pop_control = SpikingUtils::add_population(
 	    m_neuronType, network, m_dataParams, m_networkParams, m_neuronParams);
-	m_pop_control.signals().record(1, true);
+	// m_pop_control.signals().record(1, true);
 
 	const auto &mat = m_recBinam->trained_matrix();
 	const auto &matRec = m_recBinam->trained_matrix_rec();
