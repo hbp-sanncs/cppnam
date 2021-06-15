@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 		                      n_samples);
 		if (rec) {
 			RecBinam binam(params);
-			auto res = binam.set_up(false).analysis();
+			auto res = binam.set_up(false, true).analysis();
 			res.print();
 		}
 		else {

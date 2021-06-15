@@ -115,6 +115,14 @@ public:
 	NAMED_PARAMETER(general_offset, 10);
 	NAMED_PARAMETER(weight_rec, 11);
 	NAMED_PARAMETER(n_samples_recall, 12);
+	NAMED_PARAMETER(delay, 13);
+	NAMED_PARAMETER(delay_rec, 14);
+	NAMED_PARAMETER(delay_inhib, 15);
+	NAMED_PARAMETER(weight_inhib, 16);
+	NAMED_PARAMETER(weight_inhib_feedback, 17);
+	NAMED_PARAMETER(weight_control, 18);
+	NAMED_PARAMETER(delay_control, 19);
+	NAMED_PARAMETER(neuron_id, 20);
 
 	/**
 	 * Construct from Json, give out parameters to @param out
@@ -125,7 +133,7 @@ public:
 	/**
 	 * Empty constructor
 	 */
-	NetworkParameters() : arr{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} {};
+	NetworkParameters() : arr{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} {};
 
 	/**
 	 * Set parameter with name @param name to @param value
